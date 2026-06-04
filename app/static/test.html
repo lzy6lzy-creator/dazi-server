@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I搭不搭 - 综合测试</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; background: #0f1117; color: #e1e4e8; }
+
+/* ── Layout ── */
+.header { background: #161b22; border-bottom: 1px solid #30363d; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.header h1 { font-size: 18px; font-weight: 600; }
+.header h1 span { color: #58a6ff; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.header-right input { background: #0d1117; border: 1px solid #30363d; color: #e1e4e8; border-radius: 4px; padding: 6px 10px; font-size: 13px; width: 260px; }
+.header-right label { font-size: 13px; color: #8b949e; }
+
+.container { display: flex; height: calc(100vh - 49px); }
+.sidebar { width: 180px; background: #161b22; border-right: 1px solid #30363d; padding: 12px 0; flex-shrink: 0; overflow-y: auto; }
+.sidebar a { display: block; padding: 8px 20px; color: #8b949e; text-decoration: none; font-size: 14px; cursor: pointer; }
+.sidebar a:hover { color: #e1e4e8; background: #1c2129; }
+.sidebar a.active { color: #58a6ff; background: #1c2129; border-left: 2px solid #58a6ff; }
+
+.main { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* ── Cards ── */
+.card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 16px; }
+.card-header { padding: 12px 16px; border-bottom: 1px solid #30363d; display: flex; align-items: center; justify-content: space-between; }
+.card-header h3 { font-size: 14px; font-weight: 600; }
+.card-body { padding: 16px; }
+
+/* ── Table ── */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; color: #8b949e; font-weight: 500; border-bottom: 1px solid #30363d; }
+td { padding: 8px 12px; border-bottom: 1px solid #21262d; }
+tr:hover { background: #1c2129; }
+
+/* ── Badges ── */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.badge-pending { background: #d29922; color: #000; }
+.badge-matching { background: #58a6ff; color: #000; }
+.badge-matched { background: #3fb950; color: #000; }
+.badge-active { background: #bc8cff; color: #000; }
+.badge-completed { background: #8b949e; color: #000; }
+.badge-cancelled { background: #f85149; color: #fff; }
+
+/* ── Buttons ── */
+.btn { padding: 6px 14px; border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: #e1e4e8; cursor: pointer; font-size: 13px; transition: background .15s; }
+.btn:hover { background: #30363d; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: #238636; border-color: #2ea043; }
+.btn-primary:hover { background: #2ea043; }
+.btn-danger { background: #da3633; border-color: #f85149; }
+.btn-danger:hover { background: #f85149; }
+.btn-blue { background: #1f6feb; border-color: #388bfd; }
+.btn-blue:hover { background: #388bfd; }
+.btn-sm { padding: 3px 10px; font-size: 12px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Forms ── */
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-size: 12px; color: #8b949e; margin-bottom: 4px; }
+.form-group input, .form-group textarea, .form-group select {
+  background: #0d1117; border: 1px solid #30363d; color: #e1e4e8;
+  border-radius: 6px; padding: 8px 12px; font-size: 13px; width: 100%;
+  font-family: inherit;
+}
+.form-group textarea { resize: vertical; min-height: 60px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+/* ── API Result ── */
+.api-result { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; margin-top: 12px; font-size: 12px; overflow: hidden; }
+.api-result-header { padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; border-bottom: 1px solid #21262d; }
+.api-result-header:hover { background: #161b22; }
+.api-result-method { font-weight: 700; margin-right: 8px; }
+.api-result-method.GET { color: #3fb950; }
+.api-result-method.POST { color: #58a6ff; }
+.api-result-method.PUT { color: #d29922; }
+.api-result-method.DELETE { color: #f85149; }
+.api-result-status { margin-left: auto; font-weight: 600; }
+.api-result-status.ok { color: #3fb950; }
+.api-result-status.err { color: #f85149; }
+.api-result-time { color: #8b949e; margin-left: 12px; }
+.api-result-body { padding: 12px; display: none; overflow-x: auto; }
+.api-result-body.open { display: block; }
+.api-result-body pre { white-space: pre-wrap; word-break: break-all; font-family: "SF Mono", Monaco, Menlo, monospace; font-size: 12px; line-height: 1.6; }
+
+/* JSON syntax highlighting */
+.json-key { color: #79c0ff; }
+.json-string { color: #a5d6ff; }
+.json-number { color: #d2a8ff; }
+.json-bool { color: #ff7b72; }
+.json-null { color: #8b949e; }
+
+/* ── Panels ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── Chat Panel ── */
+.chat-layout { display: grid; grid-template-columns: 1fr 380px; gap: 16px; min-height: 500px; }
+@media (max-width: 900px) { .chat-layout { grid-template-columns: 1fr; } }
+
+.chat-window { display: flex; flex-direction: column; background: #161b22; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; }
+.chat-messages { flex: 1; overflow-y: auto; padding: 16px; min-height: 350px; max-height: 500px; }
+.chat-input-area { padding: 12px; border-top: 1px solid #30363d; display: flex; gap: 8px; }
+.chat-input-area input { flex: 1; background: #0d1117; border: 1px solid #30363d; color: #e1e4e8; border-radius: 6px; padding: 8px 12px; font-size: 14px; }
+.chat-shortcuts { padding: 8px 12px; border-top: 1px solid #30363d; display: flex; gap: 8px; flex-wrap: wrap; }
+.chat-shortcuts button { padding: 4px 10px; border-radius: 14px; border: 1px solid #30363d; background: #21262d; color: #8b949e; font-size: 12px; cursor: pointer; }
+.chat-shortcuts button:hover { background: #30363d; color: #e1e4e8; }
+
+/* Chat bubbles */
+.msg-bubble { max-width: 80%; margin-bottom: 12px; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.5; word-wrap: break-word; }
+.msg-user { margin-left: auto; background: #c9510c; color: #fff; border-bottom-right-radius: 4px; }
+.msg-assistant { margin-right: auto; background: #30363d; color: #e1e4e8; border-bottom-left-radius: 4px; }
+.msg-time { font-size: 10px; color: #8b949e; margin-top: 4px; }
+
+/* Chat detail panel */
+.chat-detail { display: flex; flex-direction: column; gap: 12px; }
+.status-indicator { padding: 10px 14px; border-radius: 8px; border: 1px solid #30363d; background: #161b22; }
+.status-indicator .status-item { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 6px; }
+.status-indicator .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot-green { background: #3fb950; }
+.dot-yellow { background: #d29922; }
+.dot-grey { background: #484f58; }
+.event-created-banner { padding: 12px; background: #1a4727; border: 1px solid #238636; border-radius: 8px; color: #3fb950; font-weight: 600; text-align: center; font-size: 14px; }
+
+/* ── Toast ── */
+.toast { position: fixed; bottom: 20px; right: 20px; background: #238636; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 14px; z-index: 999; display: none; }
+.toast.error { background: #da3633; }
+
+/* ── Loading ── */
+.loading { text-align: center; padding: 40px; color: #8b949e; }
+
+/* ── Placeholder ── */
+.placeholder { text-align: center; padding: 60px 20px; color: #484f58; font-size: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>I搭不搭</span> Test Console</h1>
+  <div class="header-right">
+    <label>Admin Token:</label>
+    <input id="adminTokenInput" type="text" placeholder="admin token (optional)">
+    <button class="btn btn-blue btn-sm" onclick="runE2E()">E2E Test</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="sidebar" id="sidebarNav">
+    <a class="active" onclick="showPanel('auth')">Auth</a>
+    <a onclick="showPanel('user')">User</a>
+    <a onclick="showPanel('chat')">Agent Chat</a>
+    <a onclick="showPanel('events')">Events</a>
+    <a onclick="showPanel('matching')">Matching</a>
+    <a onclick="showPanel('p2pchat')">Chat</a>
+    <a onclick="showPanel('ws')">WebSocket</a>
+    <a onclick="showPanel('prompts')">Prompts</a>
+    <a onclick="showPanel('system')">System</a>
+  </div>
+
+  <div class="main">
+
+    <!-- ═══════════════════ Panel 1: Auth ═══════════════════ -->
+    <div id="panel-auth" class="panel active">
+      <div class="card">
+        <div class="card-header"><h3>Send Verification Code</h3></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Phone</label>
+              <input id="authPhone" type="text" value="13800138000">
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button class="btn btn-primary" onclick="authSendCode()">Send Code</button>
+            </div>
+          </div>
+          <div id="authSendCodeResult"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>Login</h3></div>
+        <div class="card-body">
+          <div class="form-row-3">
+            <div class="form-group">
+              <label>Phone</label>
+              <input id="authLoginPhone" type="text" value="13800138000">
+            </div>
+            <div class="form-group">
+              <label>Code</label>
+              <input id="authCode" type="text" placeholder="internal test code">
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button class="btn btn-primary" onclick="authLogin()">Login</button>
+            </div>
+          </div>
+          <div id="authLoginResult"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>Token Info</h3></div>
+        <div class="card-body">
+          <div id="tokenInfo" style="font-size:13px;color:#8b949e;">Not logged in</div>
+          <div style="margin-top:12px;" class="actions">
+            <button class="btn" onclick="authRefresh()">Refresh Token</button>
+            <button class="btn btn-danger btn-sm" onclick="authLogout()">Logout</button>
+          </div>
+          <div id="authRefreshResult"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ Panel 2: User / Agent ═══════════════════ -->
+    <div id="panel-user" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <h3>User Info</h3>
+          <button class="btn btn-sm" onclick="loadUserInfo()">GET /users/me</button>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group"><label>Name</label><input id="userNameInput" type="text"></div>
+            <div class="form-group"><label>Gender</label>
+              <select id="userGenderInput"><option value="">--</option><option value="male">Male</option><option value="female">Female</option></select>
+            </div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group"><label>Birth Year</label><input id="userBirthInput" type="number" placeholder="1995"></div>
+            <div class="form-group"><label>City</label><input id="userCityInput" type="text" placeholder="Shanghai"></div>
+            <div class="form-group"><label>Interests (comma)</label><input id="userInterestsInput" type="text" placeholder="movies,hiking"></div>
+          </div>
+          <div class="form-group"><label>Bio</label><textarea id="userBioInput" rows="2"></textarea></div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="updateUserInfo()">Update User</button>
+          </div>
+          <div id="userInfoResult"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Agent</h3>
+          <button class="btn btn-sm" onclick="loadAgentInfo()">GET /agents/me</button>
+        </div>
+        <div class="card-body">
+          <div class="form-row-3">
+            <div class="form-group"><label>Name</label><input id="agentNameInput" type="text"></div>
+            <div class="form-group"><label>Emoji</label><input id="agentEmojiInput" type="text"></div>
+            <div class="form-group"><label>Personality</label><input id="agentPersonalityInput" type="text"></div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="updateAgentInfo()">Update Agent</button>
+          </div>
+          <div id="agentInfoResult"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Memories</h3>
+          <button class="btn btn-sm" onclick="loadMemories()">GET /agents/me/memories</button>
+        </div>
+        <div class="card-body">
+          <div id="memoriesContent"><div class="loading" style="padding:20px;">Click to load</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ Panel 3: Agent Chat ═══════════════════ -->
+    <div id="panel-chat" class="panel">
+      <div class="chat-layout">
+        <!-- Left: chat window -->
+        <div class="chat-window">
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-shortcuts">
+            <button onclick="sendQuick('这周六想找人看电影')">这周六想找人看电影</button>
+            <button onclick="sendQuick('IMAX，浦东那边的影院')">IMAX，浦东那边的影院</button>
+            <button onclick="sendQuick('好的没问题')">好的没问题</button>
+          </div>
+          <div class="chat-input-area">
+            <input id="chatInput" type="text" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendChat()">
+            <button class="btn btn-primary" onclick="sendChat()">Send</button>
+          </div>
+          <div style="padding:8px 12px;border-top:1px solid #30363d;display:flex;gap:8px;">
+            <button class="btn btn-sm" onclick="loadChatHistory()">Load History</button>
+            <button class="btn btn-sm btn-danger" onclick="clearChatHistory()">Clear History</button>
+          </div>
+        </div>
+
+        <!-- Right: detail panel -->
+        <div class="chat-detail">
+          <div class="status-indicator" id="chatStatusPanel">
+            <div class="status-item"><span class="dot dot-grey" id="dotEventReady"></span> event_ready: <span id="valEventReady">false</span></div>
+            <div class="status-item"><span class="dot dot-grey" id="dotDraftPending"></span> event_draft_pending: <span id="valDraftPending">false</span></div>
+            <div class="status-item"><span class="dot dot-grey" id="dotEventId"></span> event_id: <span id="valEventId">-</span></div>
+          </div>
+          <div id="eventCreatedBanner" class="event-created-banner" style="display:none;">Event Created!</div>
+          <div class="card" style="margin-bottom:0;flex:1;overflow:auto;">
+            <div class="card-header"><h3>Last Request / Response</h3></div>
+            <div class="card-body" id="chatLastJson" style="overflow:auto;max-height:400px;">
+              <pre style="font-family:'SF Mono',Monaco,Menlo,monospace;font-size:12px;color:#8b949e;">No request yet</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ Panel 4: Events ═══════════════════ -->
+    <div id="panel-events" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <h3>My Events</h3>
+          <button class="btn btn-sm" onclick="loadMyEvents()">GET /events</button>
+        </div>
+        <div class="card-body">
+          <div id="myEventsTable"><div class="loading" style="padding:20px;">Click to load</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>Create Event Manually</h3></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group"><label>Title</label><input id="evtTitle" type="text" placeholder="Weekend movie"></div>
+            <div class="form-group"><label>Activity Type</label><input id="evtType" type="text" placeholder="movie"></div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group"><label>City</label><input id="evtCity" type="text" placeholder="Shanghai"></div>
+            <div class="form-group"><label>Location</label><input id="evtLocation" type="text" placeholder="IMAX Cinema"></div>
+            <div class="form-group"><label>Start Time</label><input id="evtStartTime" type="datetime-local"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Preferences (comma)</label><input id="evtPrefs" type="text" placeholder="IMAX,sci-fi"></div>
+            <div class="form-group"><label>Constraints (comma)</label><input id="evtConstraints" type="text" placeholder="no horror"></div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="createEvent()">Create Event</button>
+          </div>
+          <div id="createEventResult"></div>
+        </div>
+      </div>
+
+      <!-- Event detail modal (inline) -->
+      <div class="card" id="eventDetailCard" style="display:none;">
+        <div class="card-header">
+          <h3>Event Detail</h3>
+          <button class="btn btn-sm" onclick="document.getElementById('eventDetailCard').style.display='none'">Close</button>
+        </div>
+        <div class="card-body" id="eventDetailBody"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ Panel 5: Matching ═══════════════════ -->
+    <div id="panel-matching" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <h3>测试数据管理</h3>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="generateTestData()">生成 1000 事件</button>
+            <button class="btn btn-danger" onclick="cleanupTestData()">清理测试数据</button>
+            <button class="btn btn-sm" onclick="loadTestStats()">刷新统计</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="testStatsContent"><div class="loading" style="padding:12px">点击"刷新统计"</div></div>
+          <div id="testDataResult"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>匹配预览</h3>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group" style="flex:2"><label>Event ID</label><input id="previewEventId" type="text" placeholder="输入事件 ID"></div>
+            <div class="form-group" style="flex:1;align-self:flex-end"><button class="btn btn-primary" onclick="previewMatch()">预览匹配</button></div>
+          </div>
+          <div id="matchPreviewResult"></div>
+          <div id="matchPreviewDetail"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>匹配操作</h3>
+        </div>
+        <div class="card-body">
+          <div class="actions" style="margin-bottom:12px">
+            <button class="btn btn-primary" onclick="triggerMatchAll()">全量匹配 (同步)</button>
+            <button class="btn" onclick="triggerScheduledMatch()">触发定时匹配 (后台)</button>
+            <button class="btn btn-danger" onclick="resetAllEvents()">重置所有事件</button>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Event A ID</label><input id="manualMatchA" type="text" placeholder="事件 A"></div>
+            <div class="form-group"><label>Event B ID</label><input id="manualMatchB" type="text" placeholder="事件 B"></div>
+            <div class="form-group" style="align-self:flex-end"><button class="btn btn-primary" onclick="manualMatch()">手动匹配</button></div>
+          </div>
+          <div id="matchOpResult"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>匹配日志</h3>
+          <button class="btn btn-sm" onclick="loadMatchLogs()">加载日志</button>
+        </div>
+        <div class="card-body">
+          <div id="matchLogsContent"><div class="loading" style="padding:12px">点击加载</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ Panel 6: Chat Rooms ═══════════════════ -->
+    <div id="panel-p2pchat" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <h3>我的聊天室</h3>
+          <button class="btn btn-sm" onclick="loadChatRooms()">GET /chat/rooms</button>
+        </div>
+        <div class="card-body">
+          <div id="chatRoomsContent"><div class="loading" style="padding:12px">点击加载</div></div>
+          <div id="chatRoomsResult"></div>
+        </div>
+      </div>
+
+      <div class="card" id="chatRoomDetail" style="display:none">
+        <div class="card-header">
+          <h3 id="chatRoomTitle">聊天室消息</h3>
+          <div class="actions">
+            <button class="btn btn-sm" onclick="loadRoomMessages()">刷新消息</button>
+            <button class="btn btn-danger btn-sm" onclick="closeRoom()">关闭聊天室</button>
+            <button class="btn btn-sm" onclick="document.getElementById('chatRoomDetail').style.display='none'">收起</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="roomMessagesContent" style="max-height:400px;overflow-y:auto;margin-bottom:12px"></div>
+          <div class="form-row">
+            <div class="form-group" style="flex:3"><input id="roomMsgInput" type="text" placeholder="发送消息..."></div>
+            <div class="form-group" style="flex:1"><input id="roomMentionsInput" type="text" placeholder="@Agent名 (可选)"></div>
+            <div class="form-group" style="align-self:flex-end"><button class="btn btn-primary" onclick="sendRoomMessage()">发送</button></div>
+          </div>
+          <div id="roomMsgResult"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ Panel 7: WebSocket ═══════════════════ -->
+    <div id="panel-ws" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <h3>WebSocket 连接</h3>
+          <div class="actions">
+            <button class="btn btn-primary" id="wsConnectBtn" onclick="wsConnect()">连接</button>
+            <button class="btn btn-sm" onclick="wsSendPing()">Ping</button>
+            <button class="btn btn-danger btn-sm" onclick="wsDisconnect()">断开</button>
+            <button class="btn btn-sm" onclick="document.getElementById('wsLog').innerHTML=''">清空日志</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="margin-bottom:12px">
+            状态: <span id="wsStatus" class="badge badge-cancelled">未连接</span>
+          </div>
+          <div id="wsLog" style="font-family:monospace;font-size:12px;max-height:500px;overflow-y:auto;background:#0d1117;padding:12px;border-radius:6px;border:1px solid #30363d"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ Panel 8: Prompts ═══════════════════ -->
+    <div id="panel-prompts" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <h3>System Prompts</h3>
+          <div class="actions">
+            <button class="btn btn-sm" onclick="loadPrompts()">GET /admin/prompts</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="margin-bottom:12px;font-size:12px;color:#8b949e;">
+            编辑 prompt 模板后点击「Apply」即时生效并持久化到数据库。模板中 <code>{'{'}变量名{'}'}</code> 为占位符，运行时自动替换。<code>{'{'}{'{'}</code> 和 <code>{'}'}{'}'}</code> 表示字面花括号。
+          </div>
+          <div id="promptsListContent"><div class="loading" style="padding:20px;">点击加载</div></div>
+          <div id="promptsResult"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ Panel 9: System ═══════════════════ -->
+    <div id="panel-system" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <h3>系统状态</h3>
+          <button class="btn btn-sm" onclick="loadSystemStatus()">GET /admin/status</button>
+        </div>
+        <div class="card-body">
+          <div id="systemStatsContent"><div class="loading" style="padding:12px">点击加载</div></div>
+          <div id="systemStatusResult"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>应用日志</h3>
+          <div class="actions">
+            <select id="logLevelFilter" style="background:#0d1117;border:1px solid #30363d;color:#e1e4e8;border-radius:4px;padding:4px 8px;font-size:12px">
+              <option value="">All</option>
+              <option value="ERROR">ERROR</option>
+              <option value="WARNING">WARNING</option>
+              <option value="INFO">INFO</option>
+            </select>
+            <button class="btn btn-sm" onclick="loadAppLogs()">加载日志</button>
+            <button class="btn btn-danger btn-sm" onclick="clearAppLogs()">清空</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="appLogsContent" style="font-family:monospace;font-size:12px;max-height:600px;overflow-y:auto;background:#0d1117;padding:12px;border-radius:6px;border:1px solid #30363d">
+            <div class="loading">点击加载</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// Global State
+// ═══════════════════════════════════════════════════════════
+let accessToken = null;
+let refreshToken = null;
+let currentUserId = null;
+let adminToken = '';
+
+document.getElementById('adminTokenInput').addEventListener('input', e => { adminToken = e.target.value.trim(); });
+
+// ═══════════════════════════════════════════════════════════
+// Utility
+// ═══════════════════════════════════════════════════════════
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+function statusBadge(s) {
+  return `<span class="badge badge-${s}">${s}</span>`;
+}
+
+function syntaxHighlight(json) {
+  if (typeof json !== 'string') json = JSON.stringify(json, null, 2);
+  json = json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return json.replace(
+    /("(\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?|\bnull\b)/g,
+    function(match) {
+      let cls = 'json-number';
+      if (/^"/.test(match)) {
+        cls = /:$/.test(match) ? 'json-key' : 'json-string';
+      } else if (/true|false/.test(match)) {
+        cls = 'json-bool';
+      } else if (/null/.test(match)) {
+        cls = 'json-null';
+      }
+      return '<span class="' + cls + '">' + match + '</span>';
+    }
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// apiCall
+// ═══════════════════════════════════════════════════════════
+async function apiCall(method, path, body = null, useAdminToken = false) {
+  const start = Date.now();
+  const headers = { 'Content-Type': 'application/json' };
+  if (useAdminToken && adminToken) {
+    headers['Authorization'] = `Bearer ${adminToken}`;
+  } else if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+  const options = { method, headers };
+  if (body) options.body = JSON.stringify(body);
+
+  try {
+    const resp = await fetch(path, options);
+    const elapsed = Date.now() - start;
+    const data = await resp.json().catch(() => null);
+    return { status: resp.status, data, elapsed, method, path, body };
+  } catch (err) {
+    return { status: 0, data: { error: err.message }, elapsed: Date.now() - start, method, path, body };
+  }
+}
+
+function renderApiResult(containerId, result) {
+  const el = document.getElementById(containerId);
+  const isOk = result.status >= 200 && result.status < 300;
+  const id = 'ar_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+
+  const reqJson = result.body ? syntaxHighlight(result.body) : '<span class="json-null">null</span>';
+  const resJson = result.data ? syntaxHighlight(result.data) : '<span class="json-null">null</span>';
+
+  const html = `
+  <div class="api-result">
+    <div class="api-result-header" onclick="document.getElementById('${id}').classList.toggle('open')">
+      <span>
+        <span class="api-result-method ${result.method}">${result.method}</span>
+        <span style="color:#8b949e;">${result.path}</span>
+      </span>
+      <span>
+        <span class="api-result-status ${isOk ? 'ok' : 'err'}">${result.status}</span>
+        <span class="api-result-time">${result.elapsed}ms</span>
+      </span>
+    </div>
+    <div class="api-result-body" id="${id}">
+      <div style="margin-bottom:8px;color:#8b949e;font-size:11px;">REQUEST BODY:</div>
+      <pre>${reqJson}</pre>
+      <div style="margin:12px 0 8px;color:#8b949e;font-size:11px;">RESPONSE BODY:</div>
+      <pre>${resJson}</pre>
+    </div>
+  </div>`;
+
+  el.insertAdjacentHTML('beforeend', html);
+  // Auto-open the latest result
+  document.getElementById(id).classList.add('open');
+}
+
+// ═══════════════════════════════════════════════════════════
+// Navigation
+// ═══════════════════════════════════════════════════════════
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+
+  const links = document.querySelectorAll('.sidebar a');
+  const map = { auth:0, user:1, chat:2, events:3, matching:4, p2pchat:5, ws:6, prompts:7, system:8 };
+  if (map[name] !== undefined && links[map[name]]) links[map[name]].classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════
+// Panel 1: Auth
+// ═══════════════════════════════════════════════════════════
+async function authSendCode() {
+  const phone = document.getElementById('authPhone').value.trim();
+  const res = await apiCall('POST', '/api/v1/auth/send-code', { phone });
+  renderApiResult('authSendCodeResult', res);
+  if (res.status === 200) showToast('Code sent');
+}
+
+async function authLogin() {
+  const phone = document.getElementById('authLoginPhone').value.trim();
+  const code = document.getElementById('authCode').value.trim();
+  const res = await apiCall('POST', '/api/v1/auth/login', { phone, code });
+  renderApiResult('authLoginResult', res);
+
+  if (res.status === 200 && res.data) {
+    accessToken = res.data.access_token;
+    refreshToken = res.data.refresh_token;
+    currentUserId = res.data.user_id;
+    updateTokenDisplay();
+    showToast('Logged in' + (res.data.is_new_user ? ' (new user)' : ''));
+  } else {
+    showToast('Login failed', true);
+  }
+}
+
+async function authRefresh() {
+  if (!refreshToken) { showToast('No refresh token', true); return; }
+  const res = await apiCall('POST', '/api/v1/auth/refresh', { refresh_token: refreshToken });
+  renderApiResult('authRefreshResult', res);
+
+  if (res.status === 200 && res.data) {
+    accessToken = res.data.access_token;
+    refreshToken = res.data.refresh_token;
+    updateTokenDisplay();
+    showToast('Token refreshed');
+  }
+}
+
+function authLogout() {
+  accessToken = null;
+  refreshToken = null;
+  currentUserId = null;
+  updateTokenDisplay();
+  showToast('Logged out');
+}
+
+function updateTokenDisplay() {
+  const el = document.getElementById('tokenInfo');
+  if (!accessToken) {
+    el.innerHTML = '<span style="color:#f85149;">Not logged in</span>';
+    return;
+  }
+  // Decode JWT payload for display
+  let payload = {};
+  try {
+    const parts = accessToken.split('.');
+    payload = JSON.parse(atob(parts[1]));
+  } catch(e) {}
+
+  const exp = payload.exp ? new Date(payload.exp * 1000).toLocaleString('zh-CN') : '?';
+  el.innerHTML = `
+    <div style="margin-bottom:6px;"><strong style="color:#3fb950;">Logged in</strong></div>
+    <div>user_id: <code style="color:#58a6ff;">${currentUserId || '?'}</code></div>
+    <div>access_token: <code style="color:#d2a8ff;word-break:break-all;font-size:11px;">${accessToken.slice(0, 40)}...</code></div>
+    <div>refresh_token: <code style="color:#d2a8ff;word-break:break-all;font-size:11px;">${refreshToken ? refreshToken.slice(0, 40) + '...' : '-'}</code></div>
+    <div>expires: <code>${exp}</code></div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Panel 2: User / Agent
+// ═══════════════════════════════════════════════════════════
+async function loadUserInfo() {
+  if (!accessToken) { showToast('Please login first', true); return; }
+  const res = await apiCall('GET', '/api/v1/users/me');
+  renderApiResult('userInfoResult', res);
+
+  if (res.status === 200 && res.data) {
+    const d = res.data;
+    document.getElementById('userNameInput').value = d.name || '';
+    document.getElementById('userGenderInput').value = d.gender || '';
+    document.getElementById('userBirthInput').value = d.birth_year || '';
+    document.getElementById('userCityInput').value = d.city || '';
+    document.getElementById('userInterestsInput').value = (d.interests || []).join(', ');
+    document.getElementById('userBioInput').value = d.bio || '';
+  }
+}
+
+async function updateUserInfo() {
+  if (!accessToken) { showToast('Please login first', true); return; }
+  const body = {};
+  const name = document.getElementById('userNameInput').value.trim();
+  const gender = document.getElementById('userGenderInput').value;
+  const birth = document.getElementById('userBirthInput').value;
+  const city = document.getElementById('userCityInput').value.trim();
+  const interests = document.getElementById('userInterestsInput').value.trim();
+  const bio = document.getElementById('userBioInput').value.trim();
+
+  if (name) body.name = name;
+  if (gender) body.gender = gender;
+  if (birth) body.birth_year = parseInt(birth);
+  if (city) body.city = city;
+  if (interests) body.interests = interests.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+  if (bio) body.bio = bio;
+
+  const res = await apiCall('PUT', '/api/v1/users/me', body);
+  renderApiResult('userInfoResult', res);
+  if (res.status === 200) showToast('User updated');
+}
+
+async function loadAgentInfo() {
+  if (!accessToken) { showToast('Please login first', true); return; }
+  const res = await apiCall('GET', '/api/v1/agents/me');
+  renderApiResult('agentInfoResult', res);
+
+  if (res.status === 200 && res.data) {
+    const d = res.data;
+    document.getElementById('agentNameInput').value = d.name || '';
+    document.getElementById('agentEmojiInput').value = d.emoji || '';
+    document.getElementById('agentPersonalityInput').value = d.personality || '';
+  }
+}
+
+async function updateAgentInfo() {
+  if (!accessToken) { showToast('Please login first', true); return; }
+  const body = {};
+  const name = document.getElementById('agentNameInput').value.trim();
+  const emoji = document.getElementById('agentEmojiInput').value.trim();
+  const personality = document.getElementById('agentPersonalityInput').value.trim();
+
+  if (name) body.name = name;
+  if (emoji) body.emoji = emoji;
+  if (personality) body.personality = personality;
+
+  const res = await apiCall('PUT', '/api/v1/agents/me', body);
+  renderApiResult('agentInfoResult', res);
+  if (res.status === 200) showToast('Agent updated');
+}
+
+async function loadMemories() {
+  if (!accessToken) { showToast('Please login first', true); return; }
+  const res = await apiCall('GET', '/api/v1/agents/me/memories');
+
+  const el = document.getElementById('memoriesContent');
+  if (res.status === 200 && res.data && res.data.length > 0) {
+    let html = '<table><tr><th>Type</th><th>Content</th><th>Confidence</th><th>Source</th></tr>';
+    for (const m of res.data) {
+      const typeClass = { preference: 'mem-preference', constraint: 'mem-constraint', behavior: 'mem-behavior', feedback: 'mem-feedback' };
+      html += `<tr>
+        <td><span class="mem-tag ${typeClass[m.type] || ''}" style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;">${m.type}</span></td>
+        <td>${m.content}</td>
+        <td>${m.confidence.toFixed(2)}</td>
+        <td style="color:#8b949e;">${m.source}</td>
+      </tr>`;
+    }
+    html += '</table>';
+    el.innerHTML = html;
+  } else if (res.status === 200) {
+    el.innerHTML = '<div style="color:#8b949e;text-align:center;padding:20px;">No memories yet</div>';
+  } else {
+    el.innerHTML = `<div style="color:#f85149;padding:10px;">Error: ${res.data?.detail || res.status}</div>`;
+  }
+
+  // Also show API result below the card
+  const parent = el.closest('.card-body');
+  let resultDiv = parent.querySelector('.api-result-container');
+  if (!resultDiv) {
+    resultDiv = document.createElement('div');
+    resultDiv.className = 'api-result-container';
+    parent.appendChild(resultDiv);
+  }
+  resultDiv.id = 'memoriesApiResult';
+  renderApiResult('memoriesApiResult', res);
+}
+
+// Memory tag styles (inline for table)
+const memTagStyles = `
+.mem-preference { background: #1f3d2e; color: #3fb950; }
+.mem-constraint { background: #3d1f1f; color: #f85149; }
+.mem-behavior { background: #1f2d3d; color: #58a6ff; }
+.mem-feedback { background: #2d1f3d; color: #bc8cff; }
+`;
+const styleTag = document.createElement('style');
+styleTag.textContent = memTagStyles;
+document.head.appendChild(styleTag);
+
+// ═══════════════════════════════════════════════════════════
+// Panel 3: Agent Chat
+// ═══════════════════════════════════════════════════════════
+function appendBubble(role, content, time) {
+  const el = document.getElementById('chatMessages');
+  const cls = role === 'user' ? 'msg-user' : 'msg-assistant';
+  const timeStr = time ? new Date(time).toLocaleTimeString('zh-CN') : new Date().toLocaleTimeString('zh-CN');
+  el.innerHTML += `
+    <div style="display:flex;flex-direction:column;${role === 'user' ? 'align-items:flex-end' : 'align-items:flex-start'};">
+      <div class="msg-bubble ${cls}">${escapeHtml(content)}</div>
+      <div class="msg-time">${timeStr}</div>
+    </div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function escapeTextarea(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function updateChatStatus(data) {
+  const er = data.event_ready || false;
+  const dp = data.event_draft_pending || false;
+  const eid = data.event_id || null;
+
+  document.getElementById('dotEventReady').className = 'dot ' + (er ? 'dot-green' : 'dot-grey');
+  document.getElementById('valEventReady').textContent = String(er);
+  document.getElementById('dotDraftPending').className = 'dot ' + (dp ? 'dot-yellow' : 'dot-grey');
+  document.getElementById('valDraftPending').textContent = String(dp);
+  document.getElementById('dotEventId').className = 'dot ' + (eid ? 'dot-green' : 'dot-grey');
+  document.getElementById('valEventId').textContent = eid || '-';
+
+  const banner = document.getElementById('eventCreatedBanner');
+  if (er && eid) {
+    banner.style.display = 'block';
+    banner.textContent = 'Event Created! ID: ' + eid;
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function updateChatJson(result) {
+  const el = document.getElementById('chatLastJson');
+  el.innerHTML = `
+    <div style="margin-bottom:6px;color:#8b949e;font-size:11px;">REQUEST:</div>
+    <pre style="font-family:'SF Mono',Monaco,Menlo,monospace;font-size:12px;">${syntaxHighlight(result.body)}</pre>
+    <div style="margin:12px 0 6px;color:#8b949e;font-size:11px;">RESPONSE (${result.status} / ${result.elapsed}ms):</div>
+    <pre style="font-family:'SF Mono',Monaco,Menlo,monospace;font-size:12px;">${syntaxHighlight(result.data)}</pre>
+  `;
+}
+
+async function sendChat() {
+  if (!accessToken) { showToast('Please login first', true); return; }
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  appendBubble('user', msg);
+
+  const res = await apiCall('POST', '/api/v1/agent/chat', { message: msg });
+  if (res.status === 200 && res.data) {
+    appendBubble('assistant', res.data.reply);
+    updateChatStatus(res.data);
+  } else {
+    appendBubble('assistant', '[Error: ' + (res.data?.detail || res.status) + ']');
+  }
+  updateChatJson(res);
+}
+
+function sendQuick(text) {
+  document.getElementById('chatInput').value = text;
+  sendChat();
+}
+
+async function loadChatHistory() {
+  if (!accessToken) { showToast('Please login first', true); return; }
+  const res = await apiCall('GET', '/api/v1/agent/history');
+  if (res.status === 200 && res.data) {
+    document.getElementById('chatMessages').innerHTML = '';
+    for (const m of res.data) {
+      appendBubble(m.role, m.content, m.created_at);
+    }
+    showToast(`Loaded ${res.data.length} messages`);
+  }
+  updateChatJson(res);
+}
+
+async function clearChatHistory() {
+  if (!accessToken) { showToast('Please login first', true); return; }
+  const res = await apiCall('DELETE', '/api/v1/agent/history');
+  if (res.status === 200) {
+    document.getElementById('chatMessages').innerHTML = '';
+    showToast('History cleared');
+  }
+  updateChatJson(res);
+}
+
+// ═══════════════════════════════════════════════════════════
+// Panel 4: Events
+// ═══════════════════════════════════════════════════════════
+async function loadMyEvents() {
+  if (!accessToken) { showToast('Please login first', true); return; }
+  const res = await apiCall('GET', '/api/v1/events');
+
+  const el = document.getElementById('myEventsTable');
+  if (res.status === 200 && res.data && res.data.length > 0) {
+    let html = '<table><tr><th>Title</th><th>Type</th><th>Status</th><th>Time</th><th>City</th><th>Location</th><th>Score</th><th>Actions</th></tr>';
+    for (const e of res.data) {
+      const time = e.start_time ? new Date(e.start_time).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) : '-';
+      html += `<tr>
+        <td><strong>${e.title}</strong></td>
+        <td>${e.activity_type}</td>
+        <td>${statusBadge(e.status)}</td>
+        <td style="font-size:12px;">${time}</td>
+        <td>${e.city || '-'}</td>
+        <td>${e.location || '-'}</td>
+        <td>${e.match_score ? e.match_score.toFixed(2) : '-'}</td>
+        <td class="actions">
+          <button class="btn btn-sm" onclick="viewEventDetail('${e.id}')">Detail</button>
+          <button class="btn btn-sm" onclick="editEventInline('${e.id}')">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="cancelEvent('${e.id}')">Cancel</button>
+          <button class="btn btn-sm btn-primary" onclick="triggerMatch('${e.id}')">Match</button>
+        </td>
+      </tr>`;
+    }
+    html += '</table>';
+    el.innerHTML = html;
+  } else if (res.status === 200) {
+    el.innerHTML = '<div style="color:#8b949e;text-align:center;padding:20px;">No events yet</div>';
+  } else {
+    el.innerHTML = `<div style="color:#f85149;padding:10px;">Error: ${res.data?.detail || res.status}</div>`;
+  }
+}
+
+async function viewEventDetail(id) {
+  const res = await apiCall('GET', `/api/v1/events/${id}`);
+  const card = document.getElementById('eventDetailCard');
+  const body = document.getElementById('eventDetailBody');
+  card.style.display = 'block';
+
+  if (res.status === 200 && res.data) {
+    body.innerHTML = `<pre style="font-family:'SF Mono',Monaco,Menlo,monospace;font-size:12px;line-height:1.6;">${syntaxHighlight(res.data)}</pre>`;
+  } else {
+    body.innerHTML = `<div style="color:#f85149;">Failed to load event</div>`;
+  }
+}
+
+async function editEventInline(id) {
+  const res = await apiCall('GET', `/api/v1/events/${id}`);
+  if (res.status !== 200 || !res.data) { showToast('Failed to load event', true); return; }
+
+  const e = res.data;
+  const card = document.getElementById('eventDetailCard');
+  const body = document.getElementById('eventDetailBody');
+  card.style.display = 'block';
+
+  body.innerHTML = `
+    <div class="form-row">
+      <div class="form-group"><label>Title</label><input id="editEvtTitle" type="text" value="${e.title || ''}"></div>
+      <div class="form-group"><label>Activity Type</label><input id="editEvtType" type="text" value="${e.activity_type || ''}"></div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group"><label>City</label><input id="editEvtCity" type="text" value="${e.city || ''}"></div>
+      <div class="form-group"><label>Location</label><input id="editEvtLocation" type="text" value="${e.location || ''}"></div>
+      <div class="form-group"><label>Start Time</label><input id="editEvtStart" type="datetime-local" value="${e.start_time ? e.start_time.slice(0,16) : ''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Preferences</label><input id="editEvtPrefs" type="text" value="${(e.preferences||[]).join(', ')}"></div>
+      <div class="form-group"><label>Constraints</label><input id="editEvtCons" type="text" value="${(e.constraints||[]).join(', ')}"></div>
+    </div>
+    <div class="actions" style="margin-top:8px;">
+      <button class="btn btn-primary" onclick="saveEventEdit('${id}')">Save</button>
+    </div>
+    <div id="editEventResult"></div>
+  `;
+}
+
+async function saveEventEdit(id) {
+  const body = {};
+  const title = document.getElementById('editEvtTitle').value.trim();
+  const type = document.getElementById('editEvtType').value.trim();
+  const city = document.getElementById('editEvtCity').value.trim();
+  const loc = document.getElementById('editEvtLocation').value.trim();
+  const start = document.getElementById('editEvtStart').value;
+  const prefs = document.getElementById('editEvtPrefs').value.trim();
+  const cons = document.getElementById('editEvtCons').value.trim();
+
+  if (title) body.title = title;
+  if (type) body.activity_type = type;
+  if (city) body.city = city;
+  if (loc) body.location = loc;
+  if (start) body.start_time = new Date(start).toISOString();
+  if (prefs) body.preferences = prefs.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+  if (cons) body.constraints = cons.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+
+  const res = await apiCall('PUT', `/api/v1/events/${id}`, body);
+  renderApiResult('editEventResult', res);
+  if (res.status === 200) {
+    showToast('Event updated');
+    loadMyEvents();
+  }
+}
+
+async function cancelEvent(id) {
+  const res = await apiCall('DELETE', `/api/v1/events/${id}`);
+  if (res.status === 200) {
+    showToast('Event cancelled');
+    loadMyEvents();
+  } else {
+    showToast(res.data?.detail || 'Cancel failed', true);
+  }
+}
+
+async function triggerMatch(id) {
+  const res = await apiCall('POST', `/api/v1/events/${id}/match`);
+  if (res.status === 200) {
+    showToast('Matching triggered');
+  } else {
+    showToast(res.data?.detail || 'Match failed', true);
+  }
+}
+
+async function createEvent() {
+  if (!accessToken) { showToast('Please login first', true); return; }
+
+  const body = {
+    title: document.getElementById('evtTitle').value.trim() || 'Untitled',
+    activity_type: document.getElementById('evtType').value.trim() || 'other',
+  };
+  const city = document.getElementById('evtCity').value.trim();
+  const loc = document.getElementById('evtLocation').value.trim();
+  const start = document.getElementById('evtStartTime').value;
+  const prefs = document.getElementById('evtPrefs').value.trim();
+  const cons = document.getElementById('evtConstraints').value.trim();
+
+  if (city) body.city = city;
+  if (loc) body.location = loc;
+  if (start) body.start_time = new Date(start).toISOString();
+  if (prefs) body.preferences = prefs.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+  if (cons) body.constraints = cons.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+
+  const res = await apiCall('POST', '/api/v1/events', body);
+  renderApiResult('createEventResult', res);
+  if (res.status === 200) {
+    showToast('Event created');
+    loadMyEvents();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// E2E Test
+// ═══════════════════════════════════════════════════════════
+async function runE2E() {
+  showToast('Running E2E test...');
+  const log = [];
+  const ok = (s) => { log.push('[OK] ' + s); };
+  const fail = (s) => { log.push('[FAIL] ' + s); };
+
+  // 1. Send code
+  let res = await apiCall('POST', '/api/v1/auth/send-code', { phone: '13800138000' });
+  res.status === 200 ? ok('send-code') : fail('send-code: ' + res.status);
+
+  // 2. Login
+  const authCode = document.getElementById('authCode').value.trim();
+  res = await apiCall('POST', '/api/v1/auth/login', { phone: '13800138000', code: authCode });
+  if (res.status === 200 && res.data?.access_token) {
+    accessToken = res.data.access_token;
+    refreshToken = res.data.refresh_token;
+    currentUserId = res.data.user_id;
+    updateTokenDisplay();
+    ok('login');
+  } else {
+    fail('login: ' + res.status); showToast('E2E stopped at login', true); return;
+  }
+
+  // 3. Get user
+  res = await apiCall('GET', '/api/v1/users/me');
+  res.status === 200 ? ok('get user') : fail('get user: ' + res.status);
+
+  // 4. Update user
+  res = await apiCall('PUT', '/api/v1/users/me', { name: 'E2E Tester', city: 'Shanghai', interests: ['movies', 'hiking'] });
+  res.status === 200 ? ok('update user') : fail('update user: ' + res.status);
+
+  // 5. Get agent
+  res = await apiCall('GET', '/api/v1/agents/me');
+  res.status === 200 ? ok('get agent') : fail('get agent: ' + res.status);
+
+  // 6. Chat
+  res = await apiCall('POST', '/api/v1/agent/chat', { message: 'Hello!' });
+  res.status === 200 ? ok('agent chat') : fail('agent chat: ' + res.status);
+
+  // 7. Get history
+  res = await apiCall('GET', '/api/v1/agent/history');
+  res.status === 200 ? ok('chat history') : fail('chat history: ' + res.status);
+
+  // 8. Create event
+  res = await apiCall('POST', '/api/v1/events', { title: 'E2E Test Event', activity_type: 'test', city: 'Shanghai' });
+  let testEventId = null;
+  if (res.status === 200 && res.data) {
+    testEventId = res.data.id;
+    ok('create event');
+  } else {
+    fail('create event: ' + res.status);
+  }
+
+  // 9. List events
+  res = await apiCall('GET', '/api/v1/events');
+  res.status === 200 ? ok('list events') : fail('list events: ' + res.status);
+
+  // 10. Cancel event
+  if (testEventId) {
+    res = await apiCall('DELETE', `/api/v1/events/${testEventId}`);
+    res.status === 200 ? ok('cancel event') : fail('cancel event: ' + res.status);
+  }
+
+  // 11. Refresh token
+  res = await apiCall('POST', '/api/v1/auth/refresh', { refresh_token: refreshToken });
+  if (res.status === 200 && res.data?.access_token) {
+    accessToken = res.data.access_token;
+    refreshToken = res.data.refresh_token;
+    updateTokenDisplay();
+    ok('refresh token');
+  } else {
+    fail('refresh token: ' + res.status);
+  }
+
+  // Report
+  const passed = log.filter(l => l.startsWith('[OK]')).length;
+  const failed = log.filter(l => l.startsWith('[FAIL]')).length;
+  showToast(`E2E: ${passed} passed, ${failed} failed`);
+  alert('E2E Test Results:\n\n' + log.join('\n') + `\n\nTotal: ${passed} passed, ${failed} failed`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// Panel 5: Matching
+// ═══════════════════════════════════════════════════════════
+
+async function generateTestData() {
+  const res = await apiCall('POST', '/api/admin/test/generate?user_count=200&events_per_user=5', null, true);
+  renderApiResult('testDataResult', res);
+  if (res.status === 200) { showToast('测试数据生成完成'); loadTestStats(); }
+}
+
+async function cleanupTestData() {
+  if (!confirm('确认清理所有测试数据？')) return;
+  const res = await apiCall('DELETE', '/api/admin/test/cleanup', null, true);
+  renderApiResult('testDataResult', res);
+  if (res.status === 200) { showToast('测试数据已清理'); loadTestStats(); }
+}
+
+async function loadTestStats() {
+  const res = await apiCall('GET', '/api/admin/test/stats', null, true);
+  renderApiResult('testDataResult', res);
+  if (res.status === 200 && res.data) {
+    const d = res.data;
+    let html = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px">`;
+    html += `<div class="stat-card"><div class="num">${d.total_pending || 0}</div><div class="label">Pending</div></div>`;
+    // 活动类型分布
+    if (d.by_activity_type) {
+      html += `<div class="stat-card"><div style="font-size:12px;text-align:left">`;
+      for (const [k,v] of Object.entries(d.by_activity_type)) html += `${k}: <strong>${v}</strong><br>`;
+      html += `</div><div class="label">By Type</div></div>`;
+    }
+    // 城市分布
+    if (d.by_city) {
+      html += `<div class="stat-card"><div style="font-size:12px;text-align:left">`;
+      for (const [k,v] of Object.entries(d.by_city)) html += `${k}: <strong>${v}</strong><br>`;
+      html += `</div><div class="label">By City</div></div>`;
+    }
+    html += `</div>`;
+    document.getElementById('testStatsContent').innerHTML = html;
+  }
+}
+
+async function previewMatch() {
+  const eid = document.getElementById('previewEventId').value.trim();
+  if (!eid) { showToast('请输入事件 ID'); return; }
+  const res = await apiCall('GET', `/api/admin/match/preview/${eid}`, null, true);
+  renderApiResult('matchPreviewResult', res);
+  if (res.status === 200 && res.data) {
+    const d = res.data;
+    let html = `<h4 style="margin:12px 0 8px">源事件: ${d.source_event?.title || eid}</h4>`;
+    if (d.candidates && d.candidates.length > 0) {
+      html += `<table><tr><th>#</th><th>Title</th><th>Type</th><th>City</th><th>Similarity</th><th>Status</th></tr>`;
+      d.candidates.forEach((c, i) => {
+        const sim = (c.similarity * 100).toFixed(1);
+        const badge = c.pass ? 'badge-matched' : 'badge-cancelled';
+        const label = c.pass ? 'PASS' : (c.filter_reason || 'FILTERED');
+        html += `<tr><td>${i+1}</td><td>${c.title||''}</td><td>${c.activity_type||''}</td><td>${c.city||''}</td>
+                 <td><div class="progress-bar"><div style="width:${sim}%"></div></div>${sim}%</td>
+                 <td><span class="badge ${badge}">${label}</span></td></tr>`;
+      });
+      html += `</table>`;
+    } else {
+      html += `<div class="loading" style="padding:12px">无候选</div>`;
+    }
+    document.getElementById('matchPreviewDetail').innerHTML = html;
+  }
+}
+
+async function triggerMatchAll() {
+  showToast('全量匹配中...');
+  const res = await apiCall('POST', '/api/admin/match/all', null, true);
+  renderApiResult('matchOpResult', res);
+}
+
+async function triggerScheduledMatch() {
+  const res = await apiCall('POST', '/api/admin/match/run-all', null, true);
+  renderApiResult('matchOpResult', res);
+  showToast('定时匹配已触发(后台)');
+}
+
+async function resetAllEvents() {
+  if (!confirm('确认重置所有事件为 pending？')) return;
+  const res = await apiCall('POST', '/api/admin/events/reset-all', null, true);
+  renderApiResult('matchOpResult', res);
+}
+
+async function manualMatch() {
+  const a = document.getElementById('manualMatchA').value.trim();
+  const b = document.getElementById('manualMatchB').value.trim();
+  if (!a || !b) { showToast('请输入两个事件 ID'); return; }
+  const res = await apiCall('POST', `/api/admin/match/manual?event_id_a=${a}&event_id_b=${b}`, null, true);
+  renderApiResult('matchOpResult', res);
+}
+
+async function loadMatchLogs() {
+  const res = await apiCall('GET', '/api/admin/match-logs?limit=50', null, true);
+  renderApiResult('matchLogsContent', res);
+  if (res.status === 200 && Array.isArray(res.data)) {
+    let html = `<table><tr><th>Stage</th><th>Event A</th><th>Event B</th><th>Score</th><th>Result</th><th>Reasons</th></tr>`;
+    res.data.forEach(l => {
+      html += `<tr><td>${l.stage||''}</td><td style="font-size:11px">${l.event_a_id?.substring(0,8)||''}</td>
+               <td style="font-size:11px">${l.event_b_id?.substring(0,8)||''}</td>
+               <td>${l.score?.toFixed(2)||''}</td><td><span class="badge">${l.result||''}</span></td>
+               <td style="font-size:11px">${(l.reasons||[]).join(', ')}</td></tr>`;
+    });
+    html += `</table>`;
+    document.getElementById('matchLogsContent').innerHTML = html;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// Panel 6: Chat Rooms
+// ═══════════════════════════════════════════════════════════
+
+let currentRoomId = null;
+
+async function loadChatRooms() {
+  const res = await apiCall('GET', '/api/v1/chat/rooms');
+  renderApiResult('chatRoomsResult', res);
+  if (res.status === 200 && Array.isArray(res.data)) {
+    if (res.data.length === 0) {
+      document.getElementById('chatRoomsContent').innerHTML = '<div class="loading" style="padding:12px">暂无聊天室（匹配成功后自动创建）</div>';
+      return;
+    }
+    let html = `<table><tr><th>Event</th><th>Active</th><th>Members</th><th>Summary</th><th>Actions</th></tr>`;
+    res.data.forEach(r => {
+      const members = (r.members||[]).map(m => `${m.name}(${m.role})`).join(', ');
+      html += `<tr>
+        <td>${r.event_title||'N/A'}</td>
+        <td><span class="badge ${r.is_active?'badge-matched':'badge-cancelled'}">${r.is_active?'Active':'Closed'}</span></td>
+        <td style="font-size:11px">${members}</td>
+        <td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${r.match_summary||''}</td>
+        <td><button class="btn btn-sm" onclick="openChatRoom('${r.id}','${(r.event_title||'').replace(/'/g,"\\'")}')">打开</button></td>
+      </tr>`;
+    });
+    html += `</table>`;
+    document.getElementById('chatRoomsContent').innerHTML = html;
+  }
+}
+
+async function openChatRoom(roomId, title) {
+  currentRoomId = roomId;
+  document.getElementById('chatRoomTitle').textContent = `聊天室: ${title}`;
+  document.getElementById('chatRoomDetail').style.display = 'block';
+  await loadRoomMessages();
+}
+
+async function loadRoomMessages() {
+  if (!currentRoomId) return;
+  const res = await apiCall('GET', `/api/v1/chat/rooms/${currentRoomId}/messages?limit=50`);
+  if (res.status === 200 && Array.isArray(res.data)) {
+    let html = '';
+    res.data.forEach(m => {
+      const typeColor = m.sender_type === 'user' ? '#f0883e' : m.sender_type === 'agent' ? '#bc8cff' : '#8b949e';
+      html += `<div style="margin-bottom:8px;padding:8px 12px;border-radius:8px;background:#0d1117;border-left:3px solid ${typeColor}">
+        <div style="font-size:11px;color:#8b949e;margin-bottom:4px">[${m.sender_type}] ${m.created_at?.substring(11,19)||''}</div>
+        <div style="font-size:13px">${m.content||''}</div>
+      </div>`;
+    });
+    document.getElementById('roomMessagesContent').innerHTML = html || '<div class="loading" style="padding:12px">暂无消息</div>';
+    // 滚动到底部
+    const container = document.getElementById('roomMessagesContent');
+    container.scrollTop = container.scrollHeight;
+  }
+  renderApiResult('roomMsgResult', res);
+}
+
+async function sendRoomMessage() {
+  if (!currentRoomId) return;
+  const content = document.getElementById('roomMsgInput').value.trim();
+  if (!content) return;
+  const mentionsStr = document.getElementById('roomMentionsInput').value.trim();
+  const mentions = mentionsStr ? mentionsStr.split(',').map(s => s.trim()) : [];
+  const res = await apiCall('POST', `/api/v1/chat/rooms/${currentRoomId}/messages`, { content, mentions });
+  renderApiResult('roomMsgResult', res);
+  if (res.status === 200) {
+    document.getElementById('roomMsgInput').value = '';
+    document.getElementById('roomMentionsInput').value = '';
+    setTimeout(loadRoomMessages, 500);
+    if (mentions.length > 0) {
+      showToast('@Agent 已触发，等待回复...');
+      setTimeout(loadRoomMessages, 5000);
+    }
+  }
+}
+
+async function closeRoom() {
+  if (!currentRoomId || !confirm('确认关闭聊天室？')) return;
+  const res = await apiCall('POST', `/api/v1/chat/rooms/${currentRoomId}/close`);
+  renderApiResult('roomMsgResult', res);
+  if (res.status === 200) showToast('聊天室已关闭');
+}
+
+// ═══════════════════════════════════════════════════════════
+// Panel 7: WebSocket
+// ═══════════════════════════════════════════════════════════
+
+let wsConnection = null;
+
+function wsLog(direction, msg) {
+  const el = document.getElementById('wsLog');
+  const time = new Date().toLocaleTimeString();
+  const color = direction === 'send' ? '#3fb950' : direction === 'recv' ? '#58a6ff' : '#f0883e';
+  const prefix = direction === 'send' ? '→' : direction === 'recv' ? '←' : '●';
+  const text = typeof msg === 'object' ? JSON.stringify(msg) : msg;
+  el.innerHTML += `<div style="color:${color};margin-bottom:4px"><span style="color:#8b949e">${time}</span> ${prefix} ${text}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function wsConnect() {
+  if (!accessToken) { showToast('请先登录'); return; }
+  if (wsConnection) wsDisconnect();
+
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const url = `${protocol}//${location.host}/ws?token=${accessToken}`;
+  wsLog('info', `连接 ${url.substring(0, 60)}...`);
+
+  wsConnection = new WebSocket(url);
+
+  wsConnection.onopen = () => {
+    document.getElementById('wsStatus').className = 'badge badge-matched';
+    document.getElementById('wsStatus').textContent = '已连接';
+    wsLog('info', '连接已建立');
+  };
+
+  wsConnection.onmessage = (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      wsLog('recv', data);
+    } catch {
+      wsLog('recv', e.data);
+    }
+  };
+
+  wsConnection.onclose = (e) => {
+    document.getElementById('wsStatus').className = 'badge badge-cancelled';
+    document.getElementById('wsStatus').textContent = '未连接';
+    wsLog('info', `连接关闭 (code=${e.code})`);
+    wsConnection = null;
+  };
+
+  wsConnection.onerror = (e) => {
+    wsLog('info', '连接错误');
+  };
+}
+
+function wsDisconnect() {
+  if (wsConnection) {
+    wsConnection.close();
+    wsConnection = null;
+  }
+}
+
+function wsSendPing() {
+  if (!wsConnection) { showToast('未连接'); return; }
+  const msg = {type: 'ping'};
+  wsConnection.send(JSON.stringify(msg));
+  wsLog('send', msg);
+}
+
+// ═══════════════════════════════════════════════════════════
+// Panel 8: Prompts
+// ═══════════════════════════════════════════════════════════
+
+async function loadPrompts() {
+  const res = await apiCall('GET', '/api/admin/prompts', null, true);
+  renderApiResult('promptsResult', res);
+  if (res.status === 200 && Array.isArray(res.data)) {
+    let html = '';
+    res.data.forEach((p, idx) => {
+      const overriddenBadge = p.is_overridden
+        ? '<span class="badge badge-pending" style="margin-left:8px;">OVERRIDDEN</span>'
+        : '';
+      const vars = (p.variables || []).map(v => `<code style="color:#79c0ff;">{${v}}</code>`).join(', ');
+      // 显示当前生效的模板：有 override 则显示 override，否则显示 default
+      const currentTemplate = p.override || p.default_template || '';
+      html += `
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-header" style="cursor:pointer;" onclick="document.getElementById('promptBody_${idx}').style.display=document.getElementById('promptBody_${idx}').style.display==='none'?'block':'none'">
+          <h3 style="font-size:13px;">
+            <span style="color:#bc8cff;">${p.name}</span>${overriddenBadge}
+            <span style="font-weight:400;color:#8b949e;margin-left:8px;font-size:12px;">${p.description || ''}</span>
+          </h3>
+          <span style="color:#8b949e;font-size:11px;">click to expand</span>
+        </div>
+        <div class="card-body" id="promptBody_${idx}" style="display:none;">
+          <div style="font-size:11px;color:#8b949e;margin-bottom:8px;">Variables: ${vars || '<em>none</em>'}</div>
+          ${p.is_overridden ? '<div style="font-size:11px;color:#d29922;margin-bottom:8px;">&#9888; 当前使用覆盖版本。点击 Reset 恢复默认。</div>' : ''}
+          <div class="form-group">
+            <textarea id="promptText_${idx}" rows="20" style="font-family:'SF Mono',Monaco,Menlo,monospace;font-size:12px;line-height:1.5;white-space:pre-wrap;tab-size:2;">${escapeTextarea(currentTemplate)}</textarea>
+          </div>
+          <div class="actions" style="margin-top:8px;">
+            <button class="btn btn-primary btn-sm" onclick="applyPrompt('${p.name}', ${idx})">Apply (Save & Activate)</button>
+            <button class="btn btn-danger btn-sm" onclick="resetPrompt('${p.name}')">Reset to Default</button>
+            ${p.is_overridden ? `<button class="btn btn-sm" onclick="showDefaultPrompt('${p.name}', ${idx})">View Default</button>` : ''}
+          </div>
+          <div id="promptDefaultView_${idx}" style="display:none;margin-top:12px;">
+            <div style="font-size:11px;color:#8b949e;margin-bottom:4px;">DEFAULT TEMPLATE (read-only):</div>
+            <pre style="background:#0d1117;padding:12px;border-radius:6px;border:1px solid #30363d;font-size:11px;line-height:1.5;max-height:400px;overflow-y:auto;white-space:pre-wrap;">${escapeTextarea(p.default_template || '')}</pre>
+          </div>
+        </div>
+      </div>`;
+    });
+    document.getElementById('promptsListContent').innerHTML = html;
+  }
+}
+
+function showDefaultPrompt(name, idx) {
+  const el = document.getElementById('promptDefaultView_' + idx);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function applyPrompt(name, idx) {
+  const content = document.getElementById('promptText_' + idx).value;
+  if (!content.trim()) { showToast('Prompt 内容不能为空', true); return; }
+  const res = await apiCall('PUT', `/api/admin/prompts/${name}`, { content }, true);
+  renderApiResult('promptsResult', res);
+  if (res.status === 200) {
+    showToast(`Prompt "${name}" 已更新并生效`);
+    loadPrompts();
+  } else {
+    showToast(res.data?.detail || '保存失败', true);
+  }
+}
+
+async function resetPrompt(name) {
+  if (!confirm(`确认将 "${name}" 重置为默认模板？`)) return;
+  const res = await apiCall('DELETE', `/api/admin/prompts/${name}`, null, true);
+  renderApiResult('promptsResult', res);
+  if (res.status === 200) {
+    showToast(`Prompt "${name}" 已重置`);
+    loadPrompts();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// Panel 9: System
+// ═══════════════════════════════════════════════════════════
+
+async function loadSystemStatus() {
+  const res = await apiCall('GET', '/api/admin/status', null, true);
+  renderApiResult('systemStatusResult', res);
+  if (res.status === 200 && res.data) {
+    const d = res.data;
+    let html = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">`;
+    html += `<div class="stat-card"><div class="num">${d.users||0}</div><div class="label">Users</div></div>`;
+    html += `<div class="stat-card"><div class="num">${d.agents||0}</div><div class="label">Agents</div></div>`;
+    html += `<div class="stat-card"><div class="num">${d.events?.total||0}</div><div class="label">Events</div></div>`;
+    html += `<div class="stat-card"><div class="num">${d.events?.pending||0}</div><div class="label">Pending</div></div>`;
+    html += `<div class="stat-card"><div class="num">${d.events?.matched||0}</div><div class="label">Matched</div></div>`;
+    html += `<div class="stat-card"><div class="num">${d.chat_rooms||0}</div><div class="label">Rooms</div></div>`;
+    html += `<div class="stat-card"><div class="num">${d.memories||0}</div><div class="label">Memories</div></div>`;
+    html += `<div class="stat-card"><div class="num">${d.agent_chat_messages||0}</div><div class="label">Chat Msgs</div></div>`;
+    html += `</div>`;
+    document.getElementById('systemStatsContent').innerHTML = html;
+  }
+}
+
+async function loadAppLogs() {
+  const level = document.getElementById('logLevelFilter').value;
+  const url = `/api/admin/logs?limit=200${level ? '&level='+level : ''}`;
+  const res = await apiCall('GET', url, null, true);
+  if (res.status === 200 && Array.isArray(res.data)) {
+    let html = '';
+    res.data.forEach(l => {
+      const color = l.includes('[ERROR]') ? '#f85149' : l.includes('[WARNING]') ? '#d29922' : '#8b949e';
+      html += `<div style="color:${color};margin-bottom:2px;white-space:pre-wrap;word-break:break-all">${l}</div>`;
+    });
+    document.getElementById('appLogsContent').innerHTML = html || '<div class="loading">无日志</div>';
+  }
+}
+
+async function clearAppLogs() {
+  const res = await apiCall('DELETE', '/api/admin/logs', null, true);
+  if (res.status === 200) { showToast('日志已清空'); loadAppLogs(); }
+}
+</script>
+</body>
+</html>

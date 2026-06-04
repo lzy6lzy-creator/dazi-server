@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I搭不搭 - 统一后台</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0e1116;
+  --panel: #151a21;
+  --panel-2: #1a2029;
+  --panel-3: #0b0f14;
+  --line: #2b3441;
+  --muted: #9099a8;
+  --text: #e7edf5;
+  --blue: #5aa7ff;
+  --green: #4bc47b;
+  --amber: #e0a83d;
+  --red: #ef6461;
+  --cyan: #53c6d6;
+  --violet: #a78bfa;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+button {
+  border: 1px solid var(--line);
+  background: #202733;
+  color: var(--text);
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button:hover { background: #283241; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+
+input, select, textarea {
+  border: 1px solid var(--line);
+  background: #0b0f14;
+  color: var(--text);
+  border-radius: 6px;
+  padding: 7px 9px;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(90, 167, 255, .12);
+}
+textarea {
+  resize: vertical;
+  min-height: 300px;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+  font-size: 12px;
+}
+
+.app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  grid-template-rows: 52px minmax(0, 1fr);
+}
+
+.topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--line);
+  background: #12171e;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 210px;
+}
+.brand strong { font-size: 16px; }
+.brand span { color: var(--muted); font-size: 12px; }
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.token-field {
+  width: min(260px, 36vw);
+}
+
+.status-pill, .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #10151c;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.dot.ok { background: var(--green); }
+.dot.bad { background: var(--red); }
+.dot.warn { background: var(--amber); }
+
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: #12171e;
+  padding: 12px 10px;
+  overflow-y: auto;
+}
+.nav-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  min-height: 34px;
+  padding: 0 10px;
+  margin-bottom: 4px;
+  text-align: left;
+}
+.nav-item:hover { color: var(--text); background: #1b222d; }
+.nav-item.active {
+  color: var(--blue);
+  background: rgba(90, 167, 255, .10);
+  box-shadow: inset 2px 0 0 var(--blue);
+}
+.nav-count {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.main {
+  min-width: 0;
+  overflow-y: auto;
+  padding: 18px;
+}
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.panel-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+h1, h2, h3 {
+  margin: 0;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+h1 { font-size: 18px; }
+h2 { font-size: 15px; }
+h3 { font-size: 13px; }
+.subtle { color: var(--muted); }
+
+.grid {
+  display: grid;
+  gap: 12px;
+}
+.stats {
+  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
+  margin-bottom: 14px;
+}
+.stat {
+  min-height: 78px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 12px;
+}
+.stat .value {
+  font-size: 24px;
+  font-weight: 720;
+  color: var(--blue);
+  line-height: 1.15;
+}
+.stat .label { color: var(--muted); margin-top: 6px; }
+
+.section {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+.section-head {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.section-body { padding: 12px; }
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.toolbar .grow { flex: 1 1 220px; }
+.danger { border-color: rgba(239, 100, 97, .65); color: #ffb3b1; }
+.primary { border-color: rgba(75, 196, 123, .55); background: #173424; color: #d8ffe5; }
+.primary:hover { background: #1e422e; }
+.blue { border-color: rgba(90, 167, 255, .55); color: #d8ebff; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+th {
+  color: var(--muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line);
+  background: #11161d;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #202832;
+  vertical-align: top;
+}
+tr:hover td { background: #171e27; }
+.table-wrap {
+  overflow: auto;
+  max-height: 62vh;
+}
+.cell-strong { font-weight: 650; }
+.mono {
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+  font-size: 12px;
+}
+.nowrap { white-space: nowrap; }
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #11161d;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.badge-pending { color: #ffe0a3; border-color: rgba(224, 168, 61, .45); }
+.badge-matching { color: #cce6ff; border-color: rgba(90, 167, 255, .45); }
+.badge-matched, .badge-a2a_round_1, .badge-a2a_round_2 { color: #cbffd9; border-color: rgba(75, 196, 123, .45); }
+.badge-active { color: #d7caff; border-color: rgba(167, 139, 250, .45); }
+.badge-completed { color: #d6dde8; }
+.badge-cancelled, .badge-hard_filtered, .badge-location_filtered, .badge-blocklisted { color: #ffc2c0; border-color: rgba(239, 100, 97, .45); }
+.badge-below_threshold, .badge-standby { color: #ffe0a3; border-color: rgba(224, 168, 61, .45); }
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 1px 7px;
+  border-radius: 5px;
+  background: #10151c;
+  border: 1px solid #243040;
+  color: #c9d3df;
+  font-size: 12px;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 440px);
+  gap: 14px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+label.field {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+}
+
+.preview-list {
+  display: grid;
+  gap: 10px;
+}
+.preview-card {
+  border: 1px solid var(--line);
+  background: #11161d;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.preview-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #202832;
+}
+.preview-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--muted);
+}
+.preview-body { padding: 10px 12px; }
+.score {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 96px;
+}
+.score-track {
+  width: 54px;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #273140;
+}
+.score-fill {
+  height: 100%;
+  width: 0;
+  background: var(--blue);
+}
+.score-val {
+  min-width: 38px;
+  text-align: right;
+  font-weight: 650;
+}
+
+.empty, .loading, .error-box {
+  min-height: 88px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  text-align: center;
+  padding: 18px;
+}
+.error-box { color: #ffc2c0; }
+.result-box, .log-box {
+  border: 1px solid #202832;
+  background: var(--panel-3);
+  border-radius: 8px;
+  padding: 10px;
+  overflow: auto;
+}
+.result-box pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.log-box {
+  max-height: 52vh;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+  font-size: 12px;
+}
+.log-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 4px;
+  color: var(--muted);
+}
+.log-line.ERROR { color: #ff9f9c; }
+.log-line.WARNING { color: #ffd78a; }
+.log-line.INFO { color: #aab4c2; }
+
+.toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 20;
+  max-width: min(460px, calc(100vw - 36px));
+  border: 1px solid rgba(75, 196, 123, .35);
+  background: #123020;
+  color: #d8ffe5;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: none;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, .28);
+}
+.toast.error {
+  border-color: rgba(239, 100, 97, .45);
+  background: #351817;
+  color: #ffd6d5;
+}
+
+@media (max-width: 920px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  .topbar {
+    position: static;
+    align-items: flex-start;
+    padding: 12px;
+  }
+  .sidebar {
+    display: flex;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-item {
+    width: auto;
+    white-space: nowrap;
+  }
+  .main { padding: 12px; }
+  .split { grid-template-columns: 1fr; }
+  .preview-top { grid-template-columns: 1fr; }
+  .token-field { width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <strong>I搭不搭</strong>
+      <span>统一后台</span>
+    </div>
+    <div class="top-actions">
+      <input id="adminToken" class="token-field" type="password" autocomplete="off" placeholder="Admin token">
+      <span id="authStatus" class="status-pill"><span class="dot warn"></span>未验证</span>
+      <button class="blue" onclick="refreshActivePanel()">刷新</button>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <button class="nav-item active" data-panel="overview">概览 <span id="count-overview" class="nav-count"></span></button>
+    <button class="nav-item" data-panel="events">事件 <span id="count-events" class="nav-count"></span></button>
+    <button class="nav-item" data-panel="users">用户 <span id="count-users" class="nav-count"></span></button>
+    <button class="nav-item" data-panel="matching">匹配 <span id="count-matching" class="nav-count"></span></button>
+    <button class="nav-item" data-panel="testlab">测试实验 <span id="count-testlab" class="nav-count"></span></button>
+    <button class="nav-item" data-panel="prompts">Prompts <span id="count-prompts" class="nav-count"></span></button>
+    <button class="nav-item" data-panel="rooms">聊天室 <span id="count-rooms" class="nav-count"></span></button>
+    <button class="nav-item" data-panel="logs">日志 <span id="count-logs" class="nav-count"></span></button>
+  </aside>
+
+  <main class="main">
+    <section id="panel-overview" class="panel active">
+      <div class="panel-head">
+        <div class="panel-title"><h1>概览</h1><span class="subtle" id="overviewUpdated"></span></div>
+        <div class="toolbar">
+          <button class="primary" onclick="loadOverview()">刷新状态</button>
+          <button class="blue" onclick="openPanel('testlab')">测试实验</button>
+        </div>
+      </div>
+      <div id="statsGrid" class="grid stats"></div>
+      <div class="section">
+        <div class="section-head"><h2>快捷操作</h2></div>
+        <div class="section-body toolbar">
+          <button class="primary" onclick="matchAll()">匹配全部 pending</button>
+          <button onclick="resetAllEvents()">重置全部事件</button>
+          <button onclick="openPanel('matching')">查看匹配预览</button>
+          <button onclick="openPanel('logs')">查看日志</button>
+        </div>
+      </div>
+      <div class="split">
+        <div class="section">
+          <div class="section-head"><h2>最近事件</h2><button onclick="loadEvents()">刷新</button></div>
+          <div class="section-body" id="recentEvents"><div class="loading">加载中</div></div>
+        </div>
+        <div class="section">
+          <div class="section-head"><h2>最近日志</h2><button onclick="loadLogs('overviewLogs', 30)">刷新</button></div>
+          <div class="section-body"><div id="overviewLogs" class="log-box"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-events" class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><h1>事件</h1><span class="subtle" id="eventsSummary"></span></div>
+        <div class="toolbar">
+          <button class="primary" onclick="loadEvents()">刷新事件</button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head">
+          <h2>事件列表</h2>
+          <div class="toolbar">
+            <select id="eventFilter" onchange="loadEvents()">
+              <option value="">全部状态</option>
+              <option value="pending">pending</option>
+              <option value="matching">matching</option>
+              <option value="matched">matched</option>
+              <option value="active">active</option>
+              <option value="completed">completed</option>
+              <option value="cancelled">cancelled</option>
+            </select>
+            <input id="eventSearch" class="grow" placeholder="搜索标题、用户、活动、地点" oninput="renderEventsTable()">
+          </div>
+        </div>
+        <div class="table-wrap" id="eventsContent"><div class="loading">加载中</div></div>
+      </div>
+    </section>
+
+    <section id="panel-users" class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><h1>用户</h1><span class="subtle" id="usersSummary"></span></div>
+        <div class="toolbar"><button class="primary" onclick="loadUsers()">刷新用户</button></div>
+      </div>
+      <div class="section">
+        <div class="section-head">
+          <h2>用户与 Agent</h2>
+          <input id="userSearch" class="grow" placeholder="搜索姓名、城市、兴趣" oninput="renderUsersTable()">
+        </div>
+        <div class="table-wrap" id="usersContent"><div class="loading">加载中</div></div>
+      </div>
+    </section>
+
+    <section id="panel-matching" class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><h1>匹配</h1><span class="subtle">向量召回、地点过滤、A2A 精排</span></div>
+        <div class="toolbar">
+          <button class="primary" onclick="loadMatchingPanel()">刷新匹配</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>匹配控制</h2></div>
+        <div class="section-body">
+          <div class="toolbar">
+            <button class="primary" onclick="matchAll()">匹配全部 pending</button>
+            <button onclick="resetAllEvents()">重置全部事件</button>
+            <button onclick="runScheduledMatch()">后台执行全量匹配</button>
+          </div>
+          <div id="matchResult" class="result-box" style="display:none;margin-top:10px;"><pre></pre></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>单事件预览</h2>
+          <div class="toolbar">
+            <select id="previewEventSelect" class="grow"></select>
+            <button class="blue" onclick="loadMatchPreview()">预览</button>
+          </div>
+        </div>
+        <div class="section-body" id="previewContent"><div class="empty">选择事件后预览候选</div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>手动匹配</h2></div>
+        <div class="section-body">
+          <div class="toolbar">
+            <select id="manualEventA" class="grow"></select>
+            <select id="manualEventB" class="grow"></select>
+            <button class="primary" onclick="manualMatch()" id="manualMatchBtn">强制匹配</button>
+          </div>
+          <div id="manualMatchResult" class="result-box" style="display:none;margin-top:10px;"><pre></pre></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>匹配日志</h2>
+          <button onclick="loadMatchLogs()">刷新</button>
+        </div>
+        <div class="table-wrap" id="matchLogsContent"><div class="loading">加载中</div></div>
+      </div>
+    </section>
+
+    <section id="panel-testlab" class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><h1>测试实验</h1><span class="subtle" id="testSummary"></span></div>
+        <div class="toolbar"><button class="primary" onclick="loadTestLab()">刷新实验</button></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>测试数据</h2></div>
+        <div class="section-body">
+          <div class="form-grid">
+            <label class="field">用户数<input id="testUserCount" type="number" min="1" max="1000" value="200"></label>
+            <label class="field">每人事件数<input id="testEventsPerUser" type="number" min="1" max="20" value="5"></label>
+            <label class="field">活动类型
+              <select id="testTypeFilter" onchange="loadTestPreview()">
+                <option value="">全部</option>
+                <option>电影</option><option>徒步</option><option>美食</option><option>看展</option><option>咖啡</option>
+                <option>桌游</option><option>摄影</option><option>演出</option><option>运动</option>
+              </select>
+            </label>
+            <label class="field">城市
+              <select id="testCityFilter" onchange="loadTestPreview()">
+                <option value="">全部</option>
+                <option>上海</option><option>北京</option><option>深圳</option><option>广州</option>
+                <option>杭州</option><option>成都</option><option>南京</option><option>武汉</option>
+              </select>
+            </label>
+            <label class="field">显示数量<input id="testLimit" type="number" min="1" max="200" value="30" onchange="loadTestPreview()"></label>
+          </div>
+          <div class="toolbar" style="margin-top:12px;">
+            <button class="primary" onclick="generateTestData()">生成测试事件</button>
+            <button class="blue" onclick="loadTestPreview()">加载匹配预览</button>
+            <button class="danger" onclick="cleanupTestData()">清理测试数据</button>
+          </div>
+          <div id="testStatsGrid" class="grid stats" style="margin-top:12px;"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2>批量预览</h2><span id="testPreviewMeta" class="subtle"></span></div>
+        <div class="section-body" id="testPreviewContent"><div class="empty">加载后展示候选详情</div></div>
+      </div>
+    </section>
+
+    <section id="panel-prompts" class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><h1>Prompts</h1><span class="subtle" id="promptsSummary"></span></div>
+        <div class="toolbar"><button class="primary" onclick="loadPrompts()">刷新 Prompts</button></div>
+      </div>
+      <div class="split">
+        <div class="section">
+          <div class="section-head"><h2>模板列表</h2></div>
+          <div class="table-wrap" id="promptsList"><div class="loading">加载中</div></div>
+        </div>
+        <div class="section">
+          <div class="section-head">
+            <h2 id="promptEditorTitle">模板编辑</h2>
+            <div class="toolbar">
+              <button class="primary" onclick="savePrompt()">保存</button>
+              <button class="danger" onclick="resetPrompt()">恢复默认</button>
+            </div>
+          </div>
+          <div class="section-body">
+            <textarea id="promptContent" spellcheck="false"></textarea>
+            <div id="promptDetail" class="result-box" style="margin-top:10px;"><pre>请选择模板</pre></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-rooms" class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><h1>聊天室</h1><span class="subtle" id="roomsSummary"></span></div>
+        <div class="toolbar"><button class="primary" onclick="loadRooms()">刷新聊天室</button></div>
+      </div>
+      <div class="section">
+        <div class="section-head"><h2>房间列表</h2></div>
+        <div class="table-wrap" id="roomsContent"><div class="loading">加载中</div></div>
+      </div>
+    </section>
+
+    <section id="panel-logs" class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><h1>日志</h1><span class="subtle" id="logsSummary"></span></div>
+        <div class="toolbar">
+          <select id="logLevel" onchange="loadLogs()">
+            <option value="">全部</option>
+            <option value="ERROR">ERROR</option>
+            <option value="WARNING">WARNING</option>
+            <option value="INFO">INFO</option>
+          </select>
+          <input id="logLimit" type="number" min="20" max="500" value="200" onchange="loadLogs()">
+          <button class="primary" onclick="loadLogs()">刷新日志</button>
+          <button class="danger" onclick="clearLogs()">清空日志</button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-body"><div id="logsContent" class="log-box"></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const TOKEN_KEY = 'dazi.admin.token';
+const state = {
+  activePanel: 'overview',
+  status: null,
+  events: [],
+  users: [],
+  prompts: [],
+  selectedPrompt: null,
+  busy: false,
+};
+
+const $ = selector => document.querySelector(selector);
+const $$ = selector => Array.from(document.querySelectorAll(selector));
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replace(/`/g, '&#96;');
+}
+
+function fmtTime(iso) {
+  if (!iso) return '-';
+  try {
+    return new Date(iso).toLocaleString('zh-CN', {
+      timeZone: 'Asia/Shanghai',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch (_) {
+    return iso;
+  }
+}
+
+function fmtNum(value) {
+  return Number(value || 0).toLocaleString('zh-CN');
+}
+
+function shortId(value) {
+  if (!value) return '-';
+  return String(value).slice(0, 8);
+}
+
+function showToast(message, isError = false) {
+  const toast = $('#toast');
+  toast.textContent = message;
+  toast.className = 'toast' + (isError ? ' error' : '');
+  toast.style.display = 'block';
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.style.display = 'none', 3200);
+}
+
+function setAuthStatus(kind, text) {
+  const dotClass = kind === 'ok' ? 'ok' : kind === 'bad' ? 'bad' : 'warn';
+  $('#authStatus').innerHTML = `<span class="dot ${dotClass}"></span>${escapeHtml(text)}`;
+}
+
+function confirmAction(message) {
+  return window.confirm(message);
+}
+
+async function requestAdmin(path, options = {}) {
+  const token = $('#adminToken').value.trim();
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  }
+  const headers = Object.assign({}, options.headers || {});
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (options.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+
+  const response = await fetch(path, Object.assign({}, options, { headers }));
+  if (response.status === 403) {
+    setAuthStatus('bad', 'Token 无效');
+    throw new Error('Admin token 无效或缺失');
+  }
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(text || `HTTP ${response.status}`);
+  }
+  setAuthStatus('ok', '已连接');
+  if (response.status === 204) return {};
+  return response.json().catch(() => ({}));
+}
+
+async function guarded(target, fn) {
+  try {
+    if (target) target.innerHTML = '<div class="loading">加载中</div>';
+    return await fn();
+  } catch (error) {
+    if (target) target.innerHTML = `<div class="error-box">${escapeHtml(error.message)}</div>`;
+    showToast(error.message, true);
+    return null;
+  }
+}
+
+function statusBadge(status) {
+  const safe = escapeAttr(status || 'unknown');
+  return `<span class="badge badge-${safe}">${escapeHtml(status || '-')}</span>`;
+}
+
+function tags(values) {
+  const arr = Array.isArray(values) ? values : [];
+  if (!arr.length) return '<span class="subtle">-</span>';
+  return `<div class="tags">${arr.map(v => `<span class="tag">${escapeHtml(v)}</span>`).join('')}</div>`;
+}
+
+function scoreHTML(score) {
+  const n = Number(score || 0);
+  const pct = Math.max(0, Math.min(100, Math.round(n * 100)));
+  const color = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+  return `<span class="score">
+    <span class="score-track"><span class="score-fill" style="width:${pct}%;background:${color}"></span></span>
+    <span class="score-val" style="color:${color}">${n.toFixed(4)}</span>
+  </span>`;
+}
+
+function renderJsonBox(id, data) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = 'block';
+  el.querySelector('pre').textContent = JSON.stringify(data, null, 2);
+}
+
+function setNavCount(name, value) {
+  const el = document.getElementById(`count-${name}`);
+  if (el) el.textContent = value ? fmtNum(value) : '';
+}
+
+function openPanel(name, updateHash = true) {
+  state.activePanel = name;
+  $$('.panel').forEach(panel => panel.classList.toggle('active', panel.id === `panel-${name}`));
+  $$('.nav-item').forEach(btn => btn.classList.toggle('active', btn.dataset.panel === name));
+  if (updateHash) history.replaceState(null, '', `#${name}`);
+  loadPanel(name);
+}
+
+function refreshActivePanel() {
+  loadPanel(state.activePanel, true);
+}
+
+function loadPanel(name, force = false) {
+  if (name === 'overview') return loadOverview(force);
+  if (name === 'events') return loadEvents(force);
+  if (name === 'users') return loadUsers(force);
+  if (name === 'matching') return loadMatchingPanel(force);
+  if (name === 'testlab') return loadTestLab(force);
+  if (name === 'prompts') return loadPrompts(force);
+  if (name === 'rooms') return loadRooms(force);
+  if (name === 'logs') return loadLogs();
+}
+
+async function loadOverview() {
+  const statsGrid = $('#statsGrid');
+  await guarded(statsGrid, async () => {
+    const data = await requestAdmin('/api/admin/status');
+    state.status = data;
+    setNavCount('events', data.events?.total);
+    setNavCount('users', data.users);
+    setNavCount('rooms', data.chat_rooms);
+    $('#overviewUpdated').textContent = `更新于 ${new Date().toLocaleTimeString('zh-CN')}`;
+    statsGrid.innerHTML = [
+      ['用户', data.users],
+      ['Agent', data.agents],
+      ['事件总数', data.events?.total],
+      ['Pending', data.events?.pending],
+      ['Matching', data.events?.matching],
+      ['Matched', data.events?.matched],
+      ['记忆', data.memories],
+      ['聊天室', data.chat_rooms],
+    ].map(([label, value]) => `<div class="stat"><div class="value">${fmtNum(value)}</div><div class="label">${label}</div></div>`).join('');
+    await loadEvents(false, true);
+    await loadLogs('overviewLogs', 30);
+  });
+}
+
+async function loadEvents(_force = false, renderRecentOnly = false) {
+  const status = $('#eventFilter')?.value || '';
+  const url = status ? `/api/admin/events?status=${encodeURIComponent(status)}` : '/api/admin/events';
+  const data = await guarded(renderRecentOnly ? null : $('#eventsContent'), async () => requestAdmin(url));
+  if (!data) return;
+  state.events = data;
+  setNavCount('events', data.length);
+  fillEventSelects();
+  if (renderRecentOnly) {
+    renderRecentEvents();
+  } else {
+    renderEventsTable();
+  }
+}
+
+function renderRecentEvents() {
+  const rows = state.events.slice(0, 8);
+  if (!rows.length) {
+    $('#recentEvents').innerHTML = '<div class="empty">暂无事件</div>';
+    return;
+  }
+  $('#recentEvents').innerHTML = `<div class="table-wrap" style="max-height:320px;">${eventsTableHTML(rows, true)}</div>`;
+}
+
+function renderEventsTable() {
+  const query = ($('#eventSearch')?.value || '').trim().toLowerCase();
+  const rows = state.events.filter(event => {
+    if (!query) return true;
+    return [
+      event.title,
+      event.user_name,
+      event.activity_type,
+      event.city,
+      event.location,
+      event.status,
+    ].some(v => String(v || '').toLowerCase().includes(query));
+  });
+  $('#eventsSummary').textContent = `${rows.length} / ${state.events.length}`;
+  $('#eventsContent').innerHTML = rows.length ? eventsTableHTML(rows) : '<div class="empty">没有符合条件的事件</div>';
+}
+
+function eventsTableHTML(rows, compact = false) {
+  return `<table>
+    <thead><tr>
+      <th style="width:24%;">事件</th>
+      <th style="width:10%;">用户</th>
+      <th style="width:9%;">活动</th>
+      <th style="width:12%;">时间</th>
+      <th style="width:14%;">地点</th>
+      <th style="width:9%;">状态</th>
+      <th style="width:8%;">分数</th>
+      ${compact ? '' : '<th style="width:14%;">操作</th>'}
+    </tr></thead>
+    <tbody>${rows.map(event => `
+      <tr>
+        <td><div class="cell-strong truncate">${escapeHtml(event.title)}</div><div class="subtle truncate">${escapeHtml((event.preferences || []).join(', ') || '-')}</div></td>
+        <td class="truncate">${escapeHtml(event.user_name || shortId(event.user_id))}</td>
+        <td>${escapeHtml(event.activity_type || '-')}</td>
+        <td class="nowrap">${fmtTime(event.start_time)}</td>
+        <td><div class="truncate">${escapeHtml(event.city || '-')} / ${escapeHtml(event.location || '-')}</div></td>
+        <td>${statusBadge(event.status)}</td>
+        <td>${event.match_score == null ? '-' : Number(event.match_score).toFixed(2)}</td>
+        ${compact ? '' : `<td><div class="toolbar">
+          <button onclick="previewEvent('${escapeAttr(event.id)}')">预览</button>
+          <button onclick="resetEvent('${escapeAttr(event.id)}')">重置</button>
+          ${event.status === 'pending' ? `<button class="primary" onclick="matchSingle('${escapeAttr(event.id)}')">匹配</button>` : ''}
+        </div></td>`}
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function fillEventSelects() {
+  const opts = state.events.map(event =>
+    `<option value="${escapeAttr(event.id)}">[${escapeHtml(event.status)}] ${escapeHtml(event.title)} - ${escapeHtml(event.user_name || shortId(event.user_id))}</option>`
+  ).join('');
+  ['previewEventSelect', 'manualEventA', 'manualEventB'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts || '<option value="">无事件</option>';
+  });
+}
+
+async function loadUsers() {
+  const data = await guarded($('#usersContent'), async () => requestAdmin('/api/admin/users'));
+  if (!data) return;
+  state.users = data;
+  setNavCount('users', data.length);
+  renderUsersTable();
+}
+
+function renderUsersTable() {
+  const query = ($('#userSearch')?.value || '').trim().toLowerCase();
+  const rows = state.users.filter(user => {
+    if (!query) return true;
+    return [user.name, user.city, (user.interests || []).join(',')].some(v => String(v || '').toLowerCase().includes(query));
+  });
+  $('#usersSummary').textContent = `${rows.length} / ${state.users.length}`;
+  if (!rows.length) {
+    $('#usersContent').innerHTML = '<div class="empty">没有符合条件的用户</div>';
+    return;
+  }
+  $('#usersContent').innerHTML = `<table>
+    <thead><tr><th>用户</th><th>城市</th><th>兴趣</th><th>Agent</th><th>事件</th><th>记忆</th></tr></thead>
+    <tbody>${rows.map(user => `
+      <tr>
+        <td><div class="cell-strong">${escapeHtml(user.name)}</div><div class="subtle mono">${escapeHtml(user.phone || '-')}</div></td>
+        <td>${escapeHtml(user.city || '-')}</td>
+        <td>${tags(user.interests)}</td>
+        <td>${escapeHtml(user.agent?.name || '-')}</td>
+        <td>${fmtNum((user.events || []).length)}</td>
+        <td>${fmtNum((user.memories || []).length)}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+async function loadMatchingPanel() {
+  if (!state.events.length) await loadEvents(false, true);
+  await loadMatchLogs();
+}
+
+async function matchAll() {
+  if (!confirmAction('确定要对所有 pending 事件执行匹配吗？')) return;
+  showToast('开始匹配');
+  const data = await guarded(null, async () => requestAdmin('/api/admin/match/all', { method: 'POST' }));
+  if (!data) return;
+  renderJsonBox('matchResult', data);
+  await loadOverview();
+}
+
+async function matchSingle(id) {
+  if (!confirmAction('确定要匹配这个事件吗？')) return;
+  const data = await guarded(null, async () => requestAdmin(`/api/admin/match/event/${encodeURIComponent(id)}`, { method: 'POST' }));
+  if (!data) return;
+  showToast(data.success ? `匹配成功，score=${Number(data.score || 0).toFixed(2)}` : (data.message || data.error || '未匹配'));
+  await loadEvents();
+}
+
+async function resetEvent(id) {
+  if (!confirmAction('确定要重置这个事件为 pending 吗？')) return;
+  const data = await guarded(null, async () => requestAdmin(`/api/admin/events/${encodeURIComponent(id)}/reset`, { method: 'POST' }));
+  if (!data) return;
+  showToast(data.message || '已重置');
+  await loadEvents();
+}
+
+async function resetAllEvents() {
+  if (!confirmAction('确定要重置所有非 cancelled 事件吗？')) return;
+  const data = await guarded(null, async () => requestAdmin('/api/admin/events/reset-all', { method: 'POST' }));
+  if (!data) return;
+  showToast(data.message || '已重置');
+  await loadOverview();
+}
+
+async function runScheduledMatch() {
+  if (!confirmAction('确定要触发后台全量匹配任务吗？')) return;
+  const data = await guarded(null, async () => requestAdmin('/api/admin/match/run-all', { method: 'POST' }));
+  if (data) renderJsonBox('matchResult', data);
+}
+
+async function manualMatch() {
+  const a = $('#manualEventA').value;
+  const b = $('#manualEventB').value;
+  if (!a || !b) return showToast('请选择两个事件', true);
+  if (a === b) return showToast('不能选择同一个事件', true);
+  if (!confirmAction('确定要强制匹配这两个事件吗？')) return;
+  const btn = $('#manualMatchBtn');
+  btn.disabled = true;
+  btn.textContent = 'A2A 中';
+  const data = await guarded(null, async () => requestAdmin(`/api/admin/match/manual?event_id_a=${encodeURIComponent(a)}&event_id_b=${encodeURIComponent(b)}`, { method: 'POST' }));
+  btn.disabled = false;
+  btn.textContent = '强制匹配';
+  if (data) renderJsonBox('manualMatchResult', data);
+}
+
+function previewEvent(eventId) {
+  openPanel('matching');
+  setTimeout(() => {
+    $('#previewEventSelect').value = eventId;
+    loadMatchPreview();
+  }, 0);
+}
+
+async function loadMatchPreview() {
+  const eventId = $('#previewEventSelect').value;
+  if (!eventId) return showToast('请选择事件', true);
+  const target = $('#previewContent');
+  const data = await guarded(target, async () => requestAdmin(`/api/admin/match/preview/${encodeURIComponent(eventId)}`));
+  if (!data) return;
+  target.innerHTML = renderSinglePreview(data);
+}
+
+function renderSinglePreview(data) {
+  const event = data.event || {};
+  const candidates = data.candidates || [];
+  return `<div class="preview-list">
+    <div class="preview-card">
+      <div class="preview-top">
+        <div>
+          <div class="cell-strong">${escapeHtml(event.title || '-')}</div>
+          <div class="preview-meta">
+            <span>${escapeHtml(event.activity_type || '-')}</span>
+            <span>${escapeHtml(event.city || '-')} / ${escapeHtml(event.city_normalized || data.city_normalized || '-')}</span>
+            <span>${escapeHtml(event.location || '-')}</span>
+            <span>${fmtTime(event.start_time)}</span>
+          </div>
+        </div>
+        ${statusBadge(event.status)}
+        <span class="chip">阈值 ${escapeHtml(data.threshold ?? '-')}</span>
+      </div>
+      <div class="preview-body">
+        <div class="toolbar">
+          <span class="chip">召回 ${fmtNum(data.total_recalled)}</span>
+          <span class="chip">进入 A2A ${fmtNum(data.total_passed)}</span>
+          <span class="chip">偏好 ${(event.preferences || []).length}</span>
+          <span class="chip">约束 ${(event.constraints || []).length}</span>
+        </div>
+      </div>
+    </div>
+    ${renderCandidateTable(candidates)}
+  </div>`;
+}
+
+function renderPreviewCards(previews) {
+  if (!previews || !previews.length) return '<div class="empty">没有预览结果</div>';
+  return `<div class="preview-list">${previews.map(preview => {
+    const event = preview.event || {};
+    const candidates = preview.candidates || [];
+    const best = candidates[0]?.similarity || 0;
+    return `<div class="preview-card">
+      <div class="preview-top">
+        <div>
+          <div class="cell-strong">${escapeHtml(event.title || '-')}</div>
+          <div class="preview-meta">
+            <span>${escapeHtml(event.activity_type || '-')}</span>
+            <span>${escapeHtml(event.city || '-')} / ${escapeHtml(preview.city_normalized || event.city_normalized || '-')}</span>
+            <span>${escapeHtml(event.location || '-')}</span>
+            <span>${fmtTime(event.start_time)}</span>
+          </div>
+        </div>
+        ${scoreHTML(best)}
+        <span class="chip">${fmtNum(preview.total_recalled)} 召回 / ${fmtNum(preview.total_passed)} A2A</span>
+      </div>
+      <div class="preview-body">${renderCandidateTable(candidates)}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function renderCandidateTable(candidates) {
+  if (!candidates || !candidates.length) return '<div class="empty">无候选</div>';
+  return `<div class="table-wrap" style="max-height:360px;"><table>
+    <thead><tr>
+      <th style="width:48px;">#</th>
+      <th style="width:24%;">候选事件</th>
+      <th style="width:10%;">活动</th>
+      <th style="width:14%;">城市/地点</th>
+      <th style="width:12%;">时间</th>
+      <th style="width:12%;">相似度</th>
+      <th style="width:12%;">状态</th>
+      <th>原因</th>
+    </tr></thead>
+    <tbody>${candidates.map((candidate, index) => {
+      const event = candidate.event || {};
+      return `<tr>
+        <td class="mono">${index + 1}</td>
+        <td><div class="cell-strong truncate">${escapeHtml(event.title || '-')}</div><div class="subtle mono">${shortId(event.id)}</div></td>
+        <td>${escapeHtml(event.activity_type || '-')}</td>
+        <td><div class="truncate">${escapeHtml(event.city || '-')} / ${escapeHtml(event.location || '-')}</div></td>
+        <td class="nowrap">${fmtTime(event.start_time)}</td>
+        <td>${scoreHTML(candidate.similarity)}</td>
+        <td>${statusBadge(candidate.status || (candidate.passed ? 'passed' : 'filtered'))}</td>
+        <td>${escapeHtml(candidate.filter_reason || '-')}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+async function loadMatchLogs() {
+  const data = await guarded($('#matchLogsContent'), async () => requestAdmin('/api/admin/match-logs?limit=50'));
+  if (!data) return;
+  setNavCount('matching', data.length);
+  $('#matchLogsContent').innerHTML = data.length ? `<table>
+    <thead><tr><th>阶段</th><th>事件 A</th><th>事件 B</th><th>分数</th><th>结果</th><th>原因</th><th>时间</th></tr></thead>
+    <tbody>${data.map(log => `<tr>
+      <td>${statusBadge(log.stage)}</td>
+      <td class="mono">${shortId(log.event_a_id)}</td>
+      <td class="mono">${shortId(log.event_b_id)}</td>
+      <td>${Number(log.score || 0).toFixed(2)}</td>
+      <td>${escapeHtml(log.result || '-')}</td>
+      <td>${escapeHtml((log.reasons || []).join('; ') || '-')}</td>
+      <td class="nowrap">${fmtTime(log.created_at)}</td>
+    </tr>`).join('')}</tbody>
+  </table>` : '<div class="empty">暂无匹配日志</div>';
+}
+
+async function loadTestLab() {
+  await loadTestStats();
+}
+
+async function generateTestData() {
+  if (!confirmAction('确定要生成测试用户和事件吗？')) return;
+  const userCount = Number($('#testUserCount').value || 200);
+  const eventsPerUser = Number($('#testEventsPerUser').value || 5);
+  const path = `/api/admin/test/generate?user_count=${encodeURIComponent(userCount)}&events_per_user=${encodeURIComponent(eventsPerUser)}`;
+  const data = await guarded($('#testPreviewContent'), async () => requestAdmin(path, { method: 'POST' }));
+  if (!data) return;
+  showToast(data.message || '测试数据已生成');
+  await loadTestStats();
+  await loadTestPreview();
+}
+
+async function cleanupTestData() {
+  if (!confirmAction('确定要清理 phone 以 test_ 开头的测试数据吗？')) return;
+  const data = await guarded(null, async () => requestAdmin('/api/admin/test/cleanup', { method: 'DELETE' }));
+  if (!data) return;
+  showToast(data.message || '测试数据已清理');
+  $('#testPreviewContent').innerHTML = '<div class="empty">测试数据已清理</div>';
+  await loadTestStats();
+}
+
+async function loadTestStats() {
+  const data = await guarded($('#testStatsGrid'), async () => requestAdmin('/api/admin/test/stats'));
+  if (!data) return;
+  setNavCount('testlab', data.total_pending);
+  $('#testSummary').textContent = `pending ${fmtNum(data.total_pending)}`;
+  $('#testStatsGrid').innerHTML = `
+    <div class="stat"><div class="value">${fmtNum(data.total_pending)}</div><div class="label">Pending 事件</div></div>
+    <div class="stat"><div class="label">活动类型</div><div class="tags" style="margin-top:8px;">${statTags(data.by_activity_type, 'type')}</div></div>
+    <div class="stat"><div class="label">城市</div><div class="tags" style="margin-top:8px;">${statTags(data.by_city, 'city')}</div></div>
+  `;
+}
+
+function statTags(rows, key) {
+  if (!Array.isArray(rows) || !rows.length) return '<span class="subtle">-</span>';
+  return rows.map(row => `<span class="tag">${escapeHtml(row[key] || '-')} ${fmtNum(row.count)}</span>`).join('');
+}
+
+async function loadTestPreview() {
+  const params = new URLSearchParams();
+  params.set('limit', $('#testLimit').value || '30');
+  if ($('#testTypeFilter').value) params.set('activity_type', $('#testTypeFilter').value);
+  if ($('#testCityFilter').value) params.set('city', $('#testCityFilter').value);
+  const data = await guarded($('#testPreviewContent'), async () => requestAdmin(`/api/admin/test/match-preview-all?${params.toString()}`));
+  if (!data) return;
+  $('#testPreviewMeta').textContent = `${fmtNum(data.total_events)} 个事件`;
+  $('#testPreviewContent').innerHTML = renderPreviewCards(data.previews || []);
+  await loadTestStats();
+}
+
+async function loadPrompts() {
+  const data = await guarded($('#promptsList'), async () => requestAdmin('/api/admin/prompts'));
+  if (!data) return;
+  state.prompts = data;
+  setNavCount('prompts', data.length);
+  $('#promptsSummary').textContent = `${data.filter(p => p.is_overridden).length} 个覆盖`;
+  $('#promptsList').innerHTML = data.length ? `<table>
+    <thead><tr><th>名称</th><th>状态</th><th>变量</th></tr></thead>
+    <tbody>${data.map(prompt => `<tr onclick="selectPrompt('${escapeAttr(prompt.name)}')" style="cursor:pointer;">
+      <td class="cell-strong">${escapeHtml(prompt.name)}</td>
+      <td>${prompt.is_overridden ? '<span class="badge badge-active">overridden</span>' : '<span class="badge">default</span>'}</td>
+      <td>${tags(prompt.variables || [])}</td>
+    </tr>`).join('')}</tbody>
+  </table>` : '<div class="empty">暂无模板</div>';
+  if (!state.selectedPrompt && data.length) selectPrompt(data[0].name);
+}
+
+function selectPrompt(name) {
+  const prompt = state.prompts.find(item => item.name === name);
+  if (!prompt) return;
+  state.selectedPrompt = prompt;
+  $('#promptEditorTitle').textContent = prompt.name;
+  $('#promptContent').value = prompt.override || prompt.default_template || '';
+  $('#promptDetail pre').textContent = JSON.stringify({
+    description: prompt.description,
+    variables: prompt.variables,
+    is_overridden: prompt.is_overridden,
+    updated_at: prompt.updated_at,
+  }, null, 2);
+}
+
+async function savePrompt() {
+  if (!state.selectedPrompt) return showToast('请选择模板', true);
+  const content = $('#promptContent').value;
+  const data = await guarded(null, async () => requestAdmin(`/api/admin/prompts/${encodeURIComponent(state.selectedPrompt.name)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ content }),
+  }));
+  if (!data) return;
+  showToast(data.message || '已保存');
+  await loadPrompts(true);
+}
+
+async function resetPrompt() {
+  if (!state.selectedPrompt) return showToast('请选择模板', true);
+  if (!confirmAction(`确定要恢复 ${state.selectedPrompt.name} 为默认模板吗？`)) return;
+  const data = await guarded(null, async () => requestAdmin(`/api/admin/prompts/${encodeURIComponent(state.selectedPrompt.name)}`, { method: 'DELETE' }));
+  if (!data) return;
+  showToast(data.message || '已恢复默认');
+  state.selectedPrompt = null;
+  await loadPrompts(true);
+}
+
+async function loadRooms() {
+  const data = await guarded($('#roomsContent'), async () => requestAdmin('/api/admin/rooms'));
+  if (!data) return;
+  setNavCount('rooms', data.length);
+  $('#roomsSummary').textContent = `${data.length} 个聊天室`;
+  $('#roomsContent').innerHTML = data.length ? `<table>
+    <thead><tr><th>房间</th><th>状态</th><th>成员</th><th>消息</th><th>摘要</th><th>创建时间</th></tr></thead>
+    <tbody>${data.map(room => `<tr>
+      <td class="mono">${shortId(room.id)}</td>
+      <td>${room.is_active ? '<span class="status-pill"><span class="dot ok"></span>active</span>' : '<span class="status-pill"><span class="dot bad"></span>closed</span>'}</td>
+      <td>${fmtNum(room.member_count)}</td>
+      <td>${fmtNum(room.message_count)}</td>
+      <td>${escapeHtml(room.match_summary || '-')}</td>
+      <td class="nowrap">${fmtTime(room.created_at)}</td>
+    </tr>`).join('')}</tbody>
+  </table>` : '<div class="empty">暂无聊天室</div>';
+}
+
+async function loadLogs(containerId = 'logsContent', fixedLimit = null) {
+  const level = containerId === 'logsContent' ? ($('#logLevel')?.value || '') : '';
+  const limit = fixedLimit || Number($('#logLimit')?.value || 200);
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (level) params.set('level', level);
+  const container = document.getElementById(containerId);
+  const data = await guarded(container, async () => requestAdmin(`/api/admin/logs?${params.toString()}`));
+  if (!data) return;
+  if (containerId === 'logsContent') {
+    setNavCount('logs', data.length);
+    $('#logsSummary').textContent = `${data.length} 行`;
+  }
+  container.innerHTML = renderLogs(data);
+  container.scrollTop = container.scrollHeight;
+}
+
+function renderLogs(logs) {
+  if (!logs || !logs.length) return '<div class="empty">暂无日志</div>';
+  return logs.map(item => {
+    const level = typeof item === 'string' ? (item.includes('[ERROR]') ? 'ERROR' : item.includes('[WARNING]') ? 'WARNING' : 'INFO') : item.level;
+    const message = typeof item === 'string' ? item : item.message;
+    return `<div class="log-line ${escapeAttr(level || 'INFO')}">${escapeHtml(message || '')}</div>`;
+  }).join('');
+}
+
+async function clearLogs() {
+  if (!confirmAction('确定要清空内存日志吗？')) return;
+  const data = await guarded(null, async () => requestAdmin('/api/admin/logs', { method: 'DELETE' }));
+  if (!data) return;
+  showToast(data.message || '日志已清空');
+  await loadLogs();
+}
+
+function init() {
+  const token = localStorage.getItem(TOKEN_KEY) || '';
+  $('#adminToken').value = token;
+  $('#adminToken').addEventListener('input', event => {
+    localStorage.setItem(TOKEN_KEY, event.target.value.trim());
+    setAuthStatus(event.target.value.trim() ? 'warn' : 'bad', event.target.value.trim() ? '待验证' : '未设置');
+  });
+  $$('.nav-item').forEach(btn => btn.addEventListener('click', () => openPanel(btn.dataset.panel)));
+  const initialPanel = location.pathname.includes('/match-test')
+    ? 'testlab'
+    : (location.hash || '').replace('#', '') || 'overview';
+  openPanel(document.getElementById(`panel-${initialPanel}`) ? initialPanel : 'overview', false);
+}
+
+init();
+</script>
+</body>
+</html>

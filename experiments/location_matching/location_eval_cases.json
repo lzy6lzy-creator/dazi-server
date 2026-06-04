@@ -1,0 +1,358 @@
+{
+  "parse_cases": [
+    {
+      "id": "parse_001",
+      "activity_type": "咖啡",
+      "city": "上海市",
+      "location": "浦东新区",
+      "expected": {"place_kind": "neighborhood", "place_normalized": "浦东", "admin_city": "上海", "admin_region": "长三角", "geo_scope": "local"}
+    },
+    {
+      "id": "parse_002",
+      "activity_type": "吃饭",
+      "city": "魔都",
+      "location": "武康路",
+      "expected": {"place_kind": "landmark", "place_normalized": "武康路", "admin_city": "上海", "admin_region": "长三角", "geo_scope": "local"}
+    },
+    {
+      "id": "parse_003",
+      "activity_type": "看展",
+      "city": "北京",
+      "location": "朝阳区",
+      "expected": {"place_kind": "neighborhood", "place_normalized": "朝阳", "admin_city": "北京", "admin_region": "京津冀", "geo_scope": "local"}
+    },
+    {
+      "id": "parse_004",
+      "activity_type": "徒步",
+      "city": "成都",
+      "location": "川西",
+      "expected": {"place_kind": "region", "place_normalized": "川西", "admin_city": null, "admin_region": "四川", "geo_scope": "travel"}
+    },
+    {
+      "id": "parse_005",
+      "activity_type": "自驾",
+      "city": null,
+      "location": "四姑娘山",
+      "expected": {"place_kind": "landmark", "place_normalized": "四姑娘山", "admin_city": null, "admin_region": "四川", "geo_scope": "travel"}
+    },
+    {
+      "id": "parse_006",
+      "activity_type": "旅行",
+      "city": null,
+      "location": "稻城亚丁",
+      "expected": {"place_kind": "landmark", "place_normalized": "稻城亚丁", "admin_city": null, "admin_region": "四川", "geo_scope": "travel"}
+    },
+    {
+      "id": "parse_007",
+      "activity_type": "周边游",
+      "city": "上海",
+      "location": "江浙沪",
+      "expected": {"place_kind": "region", "place_normalized": "江浙沪", "admin_city": null, "admin_region": "江浙沪", "geo_scope": "cross_city"}
+    },
+    {
+      "id": "parse_008",
+      "activity_type": "city walk",
+      "city": null,
+      "location": "长三角",
+      "expected": {"place_kind": "region", "place_normalized": "长三角", "admin_city": null, "admin_region": "长三角", "geo_scope": "cross_city"}
+    },
+    {
+      "id": "parse_009",
+      "activity_type": "喝茶",
+      "city": "广州",
+      "location": "珠三角",
+      "expected": {"place_kind": "region", "place_normalized": "珠三角", "admin_city": null, "admin_region": "珠三角", "geo_scope": "cross_city"}
+    },
+    {
+      "id": "parse_010",
+      "activity_type": "旅行",
+      "city": null,
+      "location": "东京周边",
+      "expected": {"place_kind": "region", "place_normalized": "东京周边", "admin_city": "东京", "admin_region": "关东", "geo_scope": "travel"}
+    },
+    {
+      "id": "parse_011",
+      "activity_type": "泡温泉",
+      "city": null,
+      "location": "箱根",
+      "expected": {"place_kind": "landmark", "place_normalized": "箱根", "admin_city": null, "admin_region": "关东", "geo_scope": "travel"}
+    },
+    {
+      "id": "parse_012",
+      "activity_type": "线上聊天",
+      "city": null,
+      "location": "线上",
+      "expected": {"place_kind": "online", "place_normalized": "线上", "admin_city": null, "admin_region": null, "geo_scope": "none"}
+    },
+    {
+      "id": "parse_013",
+      "activity_type": "闲聊",
+      "city": null,
+      "location": "不限地点",
+      "expected": {"place_kind": "flexible", "place_normalized": "不限地点", "admin_city": null, "admin_region": null, "geo_scope": "none"}
+    },
+    {
+      "id": "parse_014",
+      "activity_type": "看电影",
+      "city": "北京",
+      "location": "环球影城",
+      "expected": {"place_kind": "venue", "place_normalized": "北京环球影城", "admin_city": "北京", "admin_region": "京津冀", "geo_scope": "local"}
+    },
+    {
+      "id": "parse_015",
+      "activity_type": "散步",
+      "city": "杭州",
+      "location": "西湖",
+      "expected": {"place_kind": "landmark", "place_normalized": "西湖", "admin_city": "杭州", "admin_region": "长三角", "geo_scope": "local"}
+    },
+    {
+      "id": "parse_016",
+      "activity_type": "逛街",
+      "city": "南京",
+      "location": "新街口",
+      "expected": {"place_kind": "neighborhood", "place_normalized": "新街口", "admin_city": "南京", "admin_region": "长三角", "geo_scope": "local"}
+    },
+    {
+      "id": "parse_017",
+      "activity_type": "健身",
+      "city": "深圳",
+      "location": "南山区",
+      "expected": {"place_kind": "neighborhood", "place_normalized": "南山", "admin_city": "深圳", "admin_region": "珠三角", "geo_scope": "local"}
+    },
+    {
+      "id": "parse_018",
+      "activity_type": "酒吧",
+      "city": "香港",
+      "location": "中环",
+      "expected": {"place_kind": "neighborhood", "place_normalized": "中环", "admin_city": "香港", "admin_region": "港澳", "geo_scope": "local"}
+    },
+    {
+      "id": "parse_019",
+      "activity_type": "桌游",
+      "city": "台北市",
+      "location": null,
+      "expected": {"place_kind": "city", "place_normalized": "台北", "admin_city": "台北", "admin_region": "台湾", "geo_scope": "city"}
+    },
+    {
+      "id": "parse_020",
+      "activity_type": "吃饭",
+      "city": "新加坡",
+      "location": "牛车水",
+      "expected": {"place_kind": "neighborhood", "place_normalized": "牛车水", "admin_city": "新加坡", "admin_region": "新加坡", "geo_scope": "local"}
+    },
+    {
+      "id": "parse_021",
+      "activity_type": "旅行",
+      "city": "厦门",
+      "location": "鼓浪屿",
+      "expected": {"place_kind": "landmark", "place_normalized": "鼓浪屿", "admin_city": "厦门", "admin_region": "福建", "geo_scope": "local"}
+    },
+    {
+      "id": "parse_022",
+      "activity_type": "露营",
+      "city": "北京",
+      "location": "京津冀",
+      "expected": {"place_kind": "region", "place_normalized": "京津冀", "admin_city": null, "admin_region": "京津冀", "geo_scope": "cross_city"}
+    },
+    {
+      "id": "parse_023",
+      "activity_type": "旅行",
+      "city": "成都",
+      "location": "成都周边山里",
+      "expected": {"place_kind": "region", "place_normalized": "成都周边", "admin_city": "成都", "admin_region": "四川", "geo_scope": "travel"}
+    },
+    {
+      "id": "parse_024",
+      "activity_type": "自驾",
+      "city": "上海",
+      "location": "上海周边",
+      "expected": {"place_kind": "region", "place_normalized": "上海周边", "admin_city": "上海", "admin_region": "长三角", "geo_scope": "cross_city"}
+    },
+    {
+      "id": "parse_025",
+      "activity_type": "旅行",
+      "city": null,
+      "location": "大理洱海",
+      "expected": {"place_kind": "landmark", "place_normalized": "洱海", "admin_city": "大理", "admin_region": "云南", "geo_scope": "travel"}
+    },
+    {
+      "id": "parse_026",
+      "activity_type": "喝咖啡",
+      "city": "蓉城",
+      "location": "太古里",
+      "expected": {"place_kind": "neighborhood", "place_normalized": "太古里", "admin_city": "成都", "admin_region": "四川", "geo_scope": "local"}
+    },
+    {
+      "id": "parse_027",
+      "activity_type": "自驾",
+      "city": null,
+      "location": "粤港澳大湾区",
+      "expected": {"place_kind": "region", "place_normalized": "粤港澳大湾区", "admin_city": null, "admin_region": "珠三角", "geo_scope": "cross_city"}
+    },
+    {
+      "id": "parse_028",
+      "activity_type": "旅行",
+      "city": "京都",
+      "location": "岚山",
+      "expected": {"place_kind": "landmark", "place_normalized": "岚山", "admin_city": "京都", "admin_region": "关西", "geo_scope": "local"}
+    }
+  ],
+  "match_cases": [
+    {
+      "id": "match_001",
+      "source": {"activity_type": "咖啡", "city": "上海", "location": "浦东"},
+      "target": {"activity_type": "咖啡", "city": "上海市", "location": "陆家嘴"},
+      "expected": {"should_pass": true, "relation": "same_city"}
+    },
+    {
+      "id": "match_002",
+      "source": {"activity_type": "咖啡", "city": "上海", "location": "武康路"},
+      "target": {"activity_type": "咖啡", "city": "北京", "location": "朝阳"},
+      "expected": {"should_pass": false, "relation": "conflict"}
+    },
+    {
+      "id": "match_003",
+      "source": {"activity_type": "徒步", "city": "成都", "location": "川西"},
+      "target": {"activity_type": "徒步", "city": null, "location": "四姑娘山"},
+      "expected": {"should_pass": true, "relation": "region_contains_place"}
+    },
+    {
+      "id": "match_004",
+      "source": {"activity_type": "自驾", "city": null, "location": "川西"},
+      "target": {"activity_type": "旅行", "city": null, "location": "稻城亚丁"},
+      "expected": {"should_pass": true, "relation": "region_contains_place"}
+    },
+    {
+      "id": "match_005",
+      "source": {"activity_type": "吃饭", "city": "成都", "location": "太古里"},
+      "target": {"activity_type": "吃饭", "city": null, "location": "川西"},
+      "expected": {"should_pass": false, "relation": "conflict"}
+    },
+    {
+      "id": "match_006",
+      "source": {"activity_type": "周边游", "city": "上海", "location": "江浙沪"},
+      "target": {"activity_type": "旅行", "city": "杭州", "location": "西湖"},
+      "expected": {"should_pass": true, "relation": "city_in_region"}
+    },
+    {
+      "id": "match_007",
+      "source": {"activity_type": "咖啡", "city": "上海", "location": "江浙沪"},
+      "target": {"activity_type": "咖啡", "city": "杭州", "location": "西湖"},
+      "expected": {"should_pass": false, "relation": "strict_cross_city"}
+    },
+    {
+      "id": "match_008",
+      "source": {"activity_type": "自驾", "city": "杭州", "location": "长三角"},
+      "target": {"activity_type": "周边游", "city": "苏州", "location": "苏州园林"},
+      "expected": {"should_pass": true, "relation": "same_region"}
+    },
+    {
+      "id": "match_009",
+      "source": {"activity_type": "喝茶", "city": "广州", "location": "天河"},
+      "target": {"activity_type": "喝茶", "city": "佛山", "location": "岭南天地"},
+      "expected": {"should_pass": false, "relation": "strict_cross_city"}
+    },
+    {
+      "id": "match_010",
+      "source": {"activity_type": "自驾", "city": "广州", "location": "珠三角"},
+      "target": {"activity_type": "露营", "city": "深圳", "location": "大鹏"},
+      "expected": {"should_pass": true, "relation": "same_region"}
+    },
+    {
+      "id": "match_011",
+      "source": {"activity_type": "露营", "city": "北京", "location": "京津冀"},
+      "target": {"activity_type": "爬山", "city": "天津", "location": "蓟州"},
+      "expected": {"should_pass": true, "relation": "same_region"}
+    },
+    {
+      "id": "match_012",
+      "source": {"activity_type": "看展", "city": "北京", "location": "朝阳"},
+      "target": {"activity_type": "看展", "city": "天津", "location": "滨海"},
+      "expected": {"should_pass": false, "relation": "strict_cross_city"}
+    },
+    {
+      "id": "match_013",
+      "source": {"activity_type": "线上聊天", "city": null, "location": "线上"},
+      "target": {"activity_type": "闲聊", "city": "北京", "location": "朝阳"},
+      "expected": {"should_pass": true, "relation": "online"}
+    },
+    {
+      "id": "match_014",
+      "source": {"activity_type": "桌游", "city": null, "location": "不限地点"},
+      "target": {"activity_type": "桌游", "city": "上海", "location": "静安"},
+      "expected": {"should_pass": true, "relation": "flexible"}
+    },
+    {
+      "id": "match_015",
+      "source": {"activity_type": "旅行", "city": null, "location": "东京周边"},
+      "target": {"activity_type": "泡温泉", "city": null, "location": "箱根"},
+      "expected": {"should_pass": true, "relation": "region_contains_place"}
+    },
+    {
+      "id": "match_016",
+      "source": {"activity_type": "吃饭", "city": "东京", "location": "新宿"},
+      "target": {"activity_type": "吃饭", "city": null, "location": "箱根"},
+      "expected": {"should_pass": false, "relation": "strict_travel_conflict"}
+    },
+    {
+      "id": "match_017",
+      "source": {"activity_type": "旅行", "city": "厦门", "location": "鼓浪屿"},
+      "target": {"activity_type": "旅行", "city": "厦门市", "location": "曾厝垵"},
+      "expected": {"should_pass": true, "relation": "same_city"}
+    },
+    {
+      "id": "match_018",
+      "source": {"activity_type": "旅行", "city": null, "location": "大理洱海"},
+      "target": {"activity_type": "旅行", "city": "大理", "location": "洱海"},
+      "expected": {"should_pass": true, "relation": "same_place"}
+    },
+    {
+      "id": "match_019",
+      "source": {"activity_type": "健身", "city": "深圳", "location": "南山"},
+      "target": {"activity_type": "健身", "city": "广州", "location": "天河"},
+      "expected": {"should_pass": false, "relation": "conflict"}
+    },
+    {
+      "id": "match_020",
+      "source": {"activity_type": "逛街", "city": "香港", "location": "中环"},
+      "target": {"activity_type": "逛街", "city": "香港", "location": "铜锣湾"},
+      "expected": {"should_pass": true, "relation": "same_city"}
+    },
+    {
+      "id": "match_021",
+      "source": {"activity_type": "周边游", "city": "上海", "location": "上海周边"},
+      "target": {"activity_type": "旅行", "city": "苏州", "location": "苏州园林"},
+      "expected": {"should_pass": true, "relation": "same_region"}
+    },
+    {
+      "id": "match_022",
+      "source": {"activity_type": "咖啡", "city": "上海", "location": "上海周边"},
+      "target": {"activity_type": "咖啡", "city": "苏州", "location": "苏州园林"},
+      "expected": {"should_pass": false, "relation": "strict_cross_city"}
+    },
+    {
+      "id": "match_023",
+      "source": {"activity_type": "看电影", "city": "北京", "location": "环球影城"},
+      "target": {"activity_type": "看电影", "city": "北京", "location": "通州"},
+      "expected": {"should_pass": true, "relation": "same_city"}
+    },
+    {
+      "id": "match_024",
+      "source": {"activity_type": "旅行", "city": "京都", "location": "岚山"},
+      "target": {"activity_type": "旅行", "city": null, "location": "关西"},
+      "expected": {"should_pass": true, "relation": "city_in_region"}
+    },
+    {
+      "id": "match_025",
+      "source": {"activity_type": "吃饭", "city": "新加坡", "location": "牛车水"},
+      "target": {"activity_type": "吃饭", "city": "新加坡", "location": "乌节路"},
+      "expected": {"should_pass": true, "relation": "same_city"}
+    },
+    {
+      "id": "match_026",
+      "source": {"activity_type": "旅行", "city": "新加坡", "location": "牛车水"},
+      "target": {"activity_type": "旅行", "city": "香港", "location": "中环"},
+      "expected": {"should_pass": false, "relation": "conflict"}
+    }
+  ]
+}

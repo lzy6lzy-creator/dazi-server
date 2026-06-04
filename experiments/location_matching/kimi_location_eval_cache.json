@@ -1,0 +1,9 @@
+{
+  "parse_001": {
+    "place_kind": "neighborhood",
+    "place_normalized": "浦东",
+    "admin_city": "上海",
+    "admin_region": null,
+    "geo_scope": "local"
+  }
+}

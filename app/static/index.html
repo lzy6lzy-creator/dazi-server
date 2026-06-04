@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I搭不搭 - 找到合适的活动搭子</title>
+<meta name="description" content="I搭不搭是一个 AI 活动搭子匹配服务。告诉 AI 你想做什么，它帮你找到时间、地点和兴趣都合适的人。">
+<style>
+:root {
+  --ink: #20272d;
+  --ink-soft: #4f5b65;
+  --muted: #6d7882;
+  --paper: #fbf8f3;
+  --paper-strong: #fffdf9;
+  --line: #eadfd2;
+  --sage: #5f7d66;
+  --sage-soft: #eef6f1;
+  --coral: #d9795f;
+  --coral-soft: #fbefe9;
+  --blue-soft: #eef4f8;
+  --shadow: 0 24px 70px rgba(63, 54, 45, .10);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+}
+
+a { color: inherit; text-decoration: none; }
+button, a.button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0 20px;
+  border: 1px solid rgba(32, 39, 45, .16);
+  background: rgba(255, 255, 255, .78);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+a.button.primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+a.button:hover { transform: translateY(-1px); }
+
+.page {
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.hero {
+  min-height: 88vh;
+  position: relative;
+  display: grid;
+  align-items: stretch;
+  border-bottom: 1px solid rgba(234, 223, 210, .75);
+  background: #fbf4ec;
+}
+
+.hero-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+}
+
+.hero-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(252, 247, 240, .99) 0%, rgba(252, 247, 240, .92) 36%, rgba(252, 247, 240, .36) 68%, rgba(252, 247, 240, 0) 100%),
+    linear-gradient(180deg, rgba(252, 247, 240, .20), rgba(252, 247, 240, .82));
+}
+
+.nav {
+  position: relative;
+  z-index: 2;
+  width: min(1160px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.nav-links a:hover { color: var(--ink); }
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  width: min(1160px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 64px 0 96px;
+  display: grid;
+  grid-template-columns: minmax(0, 520px) 1fr;
+  align-items: center;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  min-height: 30px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(95, 125, 102, .22);
+  background: rgba(255, 255, 255, .72);
+  color: var(--sage);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+h1 {
+  margin: 22px 0 0;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.hero-title {
+  margin: 12px 0 0;
+  max-width: 520px;
+  font-size: 58px;
+  line-height: 1.04;
+  letter-spacing: 0;
+  font-weight: 880;
+}
+
+.hero-copy {
+  margin: 22px 0 0;
+  max-width: 510px;
+  color: var(--ink-soft);
+  font-size: 18px;
+  line-height: 1.85;
+}
+
+.hero-actions {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.hero-chips {
+  margin-top: 26px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.chip {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(234, 223, 210, .86);
+  background: rgba(255, 255, 255, .70);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.next-peek {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  z-index: 2;
+  transform: translateX(-50%);
+  color: rgba(32, 39, 45, .45);
+  font-size: 13px;
+}
+
+.section {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 82px 0;
+}
+
+.section.compact { padding-top: 62px; }
+
+.section-head {
+  max-width: 660px;
+  margin: 0 auto 34px;
+  text-align: center;
+}
+
+.section-kicker {
+  color: var(--sage);
+  font-size: 13px;
+  font-weight: 760;
+  margin-bottom: 8px;
+}
+
+h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 34px;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+.section-head p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.step-card, .trust-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--paper-strong);
+  box-shadow: 0 12px 34px rgba(63, 54, 45, .06);
+}
+
+.step-card {
+  min-height: 220px;
+  padding: 22px;
+}
+
+.step-num {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 800;
+}
+
+.step-card:nth-child(2) .step-num { background: var(--sage); }
+.step-card:nth-child(3) .step-num { background: var(--coral); }
+
+h3 {
+  margin: 18px 0 0;
+  color: var(--ink);
+  font-size: 19px;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.step-card p, .trust-card p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.trust-band {
+  background: #f5faf6;
+  border-top: 1px solid #e7efe8;
+  border-bottom: 1px solid #e7efe8;
+}
+
+.trust-layout {
+  display: grid;
+  grid-template-columns: .9fr 1.1fr;
+  gap: 34px;
+  align-items: center;
+}
+
+.trust-copy {
+  max-width: 440px;
+}
+
+.trust-copy p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.trust-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.trust-card {
+  padding: 18px;
+  background: #fff;
+}
+
+.trust-card strong {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.trust-card span {
+  color: var(--sage);
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.activity-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 11px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.activity {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 8px 16px;
+  color: var(--ink-soft);
+  border: 1px solid rgba(234, 223, 210, .95);
+  background: #fffaf5;
+  font-weight: 650;
+}
+
+.activity:nth-child(2n) {
+  background: var(--sage-soft);
+  border-color: #dbe9df;
+}
+
+.activity:nth-child(3n) {
+  background: var(--blue-soft);
+  border-color: #dce8ee;
+}
+
+.closing {
+  width: min(1040px, calc(100% - 40px));
+  margin: 0 auto 84px;
+  border-radius: 26px;
+  padding: 56px 28px;
+  text-align: center;
+  color: #fff;
+  background: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.closing h2 {
+  color: #fff;
+}
+
+.closing p {
+  margin: 12px auto 24px;
+  max-width: 500px;
+  color: #c8d0d6;
+}
+
+.closing .button.primary {
+  background: #fff;
+  border-color: #fff;
+  color: var(--ink);
+}
+
+footer {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 28px 0 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.utility-links {
+  display: flex;
+  gap: 14px;
+}
+
+.utility-links a {
+  color: var(--muted);
+}
+
+.utility-links a:hover {
+  color: var(--ink);
+}
+
+@media (max-width: 900px) {
+  .hero {
+    min-height: auto;
+  }
+
+  .hero-art {
+    opacity: .58;
+    object-position: 62% center;
+  }
+
+  .hero-shade {
+    background:
+      linear-gradient(90deg, rgba(252, 247, 240, .98), rgba(252, 247, 240, .82)),
+      linear-gradient(180deg, rgba(252, 247, 240, .18), rgba(252, 247, 240, .88));
+  }
+
+  .hero-inner {
+    grid-template-columns: 1fr;
+    padding: 46px 0 84px;
+  }
+
+  .hero-title {
+    font-size: 46px;
+  }
+
+  .steps, .trust-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .trust-copy {
+    max-width: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .nav {
+    width: min(100% - 28px, 1120px);
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .hero-inner, .section, .closing, footer {
+    width: min(100% - 28px, 1120px);
+  }
+
+  .hero-title {
+    font-size: 38px;
+  }
+
+  .hero-copy {
+    font-size: 16px;
+  }
+
+  h2 {
+    font-size: 28px;
+  }
+
+  .section {
+    padding: 60px 0;
+  }
+
+  .section.compact {
+    padding-top: 46px;
+  }
+
+  .step-card {
+    min-height: auto;
+  }
+
+  .closing {
+    margin-bottom: 56px;
+    border-radius: 20px;
+    padding: 42px 20px;
+  }
+
+  footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <section class="hero" aria-labelledby="home-title">
+    <img class="hero-art" src="/static/assets/hero-activity-cards.png" alt="由咖啡、看展、运动、日历和地图等活动卡片组成的温暖插画">
+    <div class="hero-shade"></div>
+
+    <nav class="nav" aria-label="主导航">
+      <a class="brand" href="/">I搭不搭</a>
+      <div class="nav-links">
+        <a href="#how">怎么用</a>
+        <a href="#trust">为什么靠谱</a>
+        <a href="#activities">适合做什么</a>
+      </div>
+    </nav>
+
+    <div class="hero-inner">
+      <div>
+        <div class="eyebrow">AI 活动搭子匹配</div>
+        <h1 id="home-title">I搭不搭</h1>
+        <div class="hero-title">想做的事，终于有人一起。</div>
+        <p class="hero-copy">想看展、打球、徒步、喝咖啡？告诉你的 AI 经纪人，它会帮你找到时间、地点和兴趣都合适的活动搭子。</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#join">加入内测</a>
+          <a class="button" href="#how">看看怎么匹配</a>
+        </div>
+        <div class="hero-chips" aria-label="产品特点">
+          <span class="chip">不用刷人</span>
+          <span class="chip">不用尬聊</span>
+          <span class="chip">围绕具体活动匹配</span>
+        </div>
+      </div>
+    </div>
+    <div class="next-peek">向下了解</div>
+  </section>
+
+  <section class="section compact" id="how">
+    <div class="section-head">
+      <div class="section-kicker">怎么用</div>
+      <h2>和 AI 说一句，就能开始找搭子</h2>
+      <p>不用先认识人，也不用从一堆资料里筛。你只要说出想做的事。</p>
+    </div>
+
+    <div class="steps">
+      <article class="step-card">
+        <div class="step-num">1</div>
+        <h3>说出活动</h3>
+        <p>比如“周六下午想找人去看展，地点别太远”。自然聊天就能创建活动需求。</p>
+      </article>
+      <article class="step-card">
+        <div class="step-num">2</div>
+        <h3>AI 先筛一轮</h3>
+        <p>系统会先看时间、地点、活动偏好，减少不合适的人互相打扰。</p>
+      </article>
+      <article class="step-card">
+        <div class="step-num">3</div>
+        <h3>匹配后进群</h3>
+        <p>双方都有共同活动目标后，再进入聊天室敲定细节，社交压力更小。</p>
+      </article>
+    </div>
+  </section>
+
+  <div class="trust-band" id="trust">
+    <section class="section">
+      <div class="trust-layout">
+        <div class="trust-copy">
+          <div class="section-kicker">为什么靠谱</div>
+          <h2>它不是随机推荐，而是先判断合不合适。</h2>
+          <p>I搭不搭会把活动需求拆成时间、地点、活动类型和偏好，再让双方 AI 先聊一轮。你看到的不是一堆陌生人，而是更可能一起成行的人。</p>
+        </div>
+
+        <div class="trust-grid">
+          <article class="trust-card">
+            <strong>时间合得上 <span>优先</span></strong>
+            <p>不把根本碰不上的人推给你，活动时间先过一遍。</p>
+          </article>
+          <article class="trust-card">
+            <strong>地点不折腾 <span>优先</span></strong>
+            <p>附近、同城、区域表达都会被理解，尽量少走冤枉路。</p>
+          </article>
+          <article class="trust-card">
+            <strong>活动偏好接近 <span>优先</span></strong>
+            <p>比如安静看展、轻松徒步、不尬聊，细节也会被纳入判断。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="section" id="activities">
+    <div class="section-head">
+      <div class="section-kicker">适合做什么</div>
+      <h2>那些“想去但缺个人”的时刻</h2>
+      <p>越具体的活动，越容易找到真正合拍的人。</p>
+    </div>
+    <div class="activity-cloud">
+      <span class="activity">看展</span>
+      <span class="activity">咖啡</span>
+      <span class="activity">羽毛球</span>
+      <span class="activity">徒步</span>
+      <span class="activity">电影</span>
+      <span class="activity">桌游</span>
+      <span class="activity">演出</span>
+      <span class="activity">城市散步</span>
+    </div>
+  </section>
+
+  <section class="closing" id="join">
+    <h2>下次想出门，先问 I搭不搭</h2>
+    <p>加入内测，让 AI 先帮你找到合适的人。</p>
+    <a class="button primary" href="#home-title">加入内测</a>
+  </section>
+
+  <footer>
+    <div>I搭不搭 · AI 活动搭子匹配</div>
+    <div class="utility-links">
+      <a href="/docs">API 文档</a>
+      <a href="/admin">管理后台</a>
+    </div>
+  </footer>
+</div>
+</body>
+</html>

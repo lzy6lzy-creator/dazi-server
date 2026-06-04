@@ -1,0 +1,58 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: dazi-db
+    environment:
+      POSTGRES_USER: dazi
+      POSTGRES_PASSWORD: dazi_dev_2024
+      POSTGRES_DB: dazi
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dazi"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: dazi-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build: .
+    container_name: dazi-api
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://dazi:dazi_dev_2024@db:5432/dazi
+      REDIS_URL: redis://redis:6379/0
+      LLM_API_KEY: ${LLM_API_KEY:?LLM_API_KEY is required}
+      LLM_BASE_URL: https://api.moonshot.cn/v1
+      LLM_MODEL: kimi-k2.5
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?ADMIN_TOKEN is required}
+      INTERNAL_TEST_MODE: ${INTERNAL_TEST_MODE:-false}
+      INTERNAL_TEST_CODE: ${INTERNAL_TEST_CODE:-}
+      INTERNAL_TEST_PHONES: ${INTERNAL_TEST_PHONES:-}
+      INTERNAL_TEST_PHONES_FILE: /code/runtime-config/internal_test_phones.txt
+    volumes:
+      - ./app:/code/app
+      - .:/code/runtime-config:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  pgdata:

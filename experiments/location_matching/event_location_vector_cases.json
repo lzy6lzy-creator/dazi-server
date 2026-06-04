@@ -1,0 +1,402 @@
+{
+  "events": [
+    {
+      "id": "evt_001",
+      "utterance": "我周五下班想在上海浦东找个人喝咖啡",
+      "expected_activity_type": "咖啡",
+      "expected_location": "上海 浦东",
+      "location_aliases": ["浦东", "上海浦东", "浦东新区"]
+    },
+    {
+      "id": "evt_002",
+      "utterance": "今晚陆家嘴附近来杯咖啡，有人吗",
+      "expected_activity_type": "咖啡",
+      "expected_location": "上海 陆家嘴",
+      "location_aliases": ["陆家嘴", "上海浦东"]
+    },
+    {
+      "id": "evt_003",
+      "utterance": "周末想去武康路 city walk 顺便 brunch",
+      "expected_activity_type": "city walk",
+      "expected_location": "上海 武康路",
+      "location_aliases": ["武康路"]
+    },
+    {
+      "id": "evt_004",
+      "utterance": "北京朝阳周六看展，有没有同去的",
+      "expected_activity_type": "看展",
+      "expected_location": "北京 朝阳",
+      "location_aliases": ["朝阳", "朝阳区"]
+    },
+    {
+      "id": "evt_005",
+      "utterance": "北京环球影城想约人看电影",
+      "expected_activity_type": "看电影",
+      "expected_location": "北京 环球影城",
+      "location_aliases": ["环球影城", "北京环球影城"]
+    },
+    {
+      "id": "evt_006",
+      "utterance": "杭州西湖边散步拍照，周末下午",
+      "expected_activity_type": "散步",
+      "expected_location": "杭州 西湖",
+      "location_aliases": ["西湖"]
+    },
+    {
+      "id": "evt_007",
+      "utterance": "南京新街口附近吃饭，有人搭吗",
+      "expected_activity_type": "吃饭",
+      "expected_location": "南京 新街口",
+      "location_aliases": ["新街口"]
+    },
+    {
+      "id": "evt_008",
+      "utterance": "深圳南山健身搭子，晚上下班后",
+      "expected_activity_type": "健身",
+      "expected_location": "深圳 南山",
+      "location_aliases": ["南山", "南山区"]
+    },
+    {
+      "id": "evt_009",
+      "utterance": "广州天河喝茶聊天，周日下午",
+      "expected_activity_type": "喝茶",
+      "expected_location": "广州 天河",
+      "location_aliases": ["天河", "天河区"]
+    },
+    {
+      "id": "evt_010",
+      "utterance": "香港中环下班后去酒吧坐坐",
+      "expected_activity_type": "酒吧",
+      "expected_location": "香港 中环",
+      "location_aliases": ["中环"]
+    },
+    {
+      "id": "evt_011",
+      "utterance": "台北周末桌游，地点可以再约",
+      "expected_activity_type": "桌游",
+      "expected_location": "台北",
+      "location_aliases": ["台北市"]
+    },
+    {
+      "id": "evt_012",
+      "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子",
+      "expected_activity_type": "吃饭",
+      "expected_location": "新加坡 牛车水",
+      "location_aliases": ["牛车水"]
+    },
+    {
+      "id": "evt_013",
+      "utterance": "成都太古里吃火锅，今晚有人吗",
+      "expected_activity_type": "吃饭",
+      "expected_location": "成都 太古里",
+      "location_aliases": ["太古里", "成都太古里"]
+    },
+    {
+      "id": "evt_014",
+      "utterance": "厦门鼓浪屿旅行，想慢慢逛一天",
+      "expected_activity_type": "旅行",
+      "expected_location": "厦门 鼓浪屿",
+      "location_aliases": ["鼓浪屿"]
+    },
+    {
+      "id": "evt_015",
+      "utterance": "大理洱海边发呆旅行，随缘拼个搭子",
+      "expected_activity_type": "旅行",
+      "expected_location": "大理 洱海",
+      "location_aliases": ["洱海", "大理洱海"]
+    },
+    {
+      "id": "evt_016",
+      "utterance": "东京新宿附近吃拉面，今晚",
+      "expected_activity_type": "吃饭",
+      "expected_location": "东京 新宿",
+      "location_aliases": ["新宿"]
+    },
+    {
+      "id": "evt_017",
+      "utterance": "京都岚山旅行拍照，周末出发",
+      "expected_activity_type": "旅行",
+      "expected_location": "京都 岚山",
+      "location_aliases": ["岚山"]
+    },
+    {
+      "id": "evt_018",
+      "utterance": "上海静安看电影，想看文艺片",
+      "expected_activity_type": "看电影",
+      "expected_location": "上海 静安",
+      "location_aliases": ["静安", "静安区"]
+    },
+    {
+      "id": "evt_019",
+      "utterance": "香港铜锣湾逛街，周六下午",
+      "expected_activity_type": "逛街",
+      "expected_location": "香港 铜锣湾",
+      "location_aliases": ["铜锣湾"]
+    },
+    {
+      "id": "evt_020",
+      "utterance": "新加坡乌节路逛街，想买点东西",
+      "expected_activity_type": "逛街",
+      "expected_location": "新加坡 乌节路",
+      "location_aliases": ["乌节路"]
+    },
+    {
+      "id": "evt_021",
+      "utterance": "想找人去川西徒步，成都出发也行",
+      "expected_activity_type": "徒步",
+      "expected_location": "川西",
+      "location_aliases": ["成都周边", "四川川西"]
+    },
+    {
+      "id": "evt_022",
+      "utterance": "四姑娘山自驾搭子，最好会开车",
+      "expected_activity_type": "自驾",
+      "expected_location": "四姑娘山",
+      "location_aliases": ["四川四姑娘山"]
+    },
+    {
+      "id": "evt_023",
+      "utterance": "稻城亚丁旅行，想拼个摄影搭子",
+      "expected_activity_type": "旅行",
+      "expected_location": "稻城亚丁",
+      "location_aliases": ["四川稻城亚丁"]
+    },
+    {
+      "id": "evt_024",
+      "utterance": "上海出发江浙沪周边游，周末两天",
+      "expected_activity_type": "周边游",
+      "expected_location": "江浙沪",
+      "location_aliases": ["长三角", "上海周边"]
+    },
+    {
+      "id": "evt_025",
+      "utterance": "长三角周末自驾都可以，别太累",
+      "expected_activity_type": "自驾",
+      "expected_location": "长三角",
+      "location_aliases": ["江浙沪"]
+    },
+    {
+      "id": "evt_026",
+      "utterance": "上海周边露营，苏杭方向都行",
+      "expected_activity_type": "露营",
+      "expected_location": "上海周边",
+      "location_aliases": ["江浙沪", "长三角"]
+    },
+    {
+      "id": "evt_027",
+      "utterance": "广州出发珠三角自驾，有车更好",
+      "expected_activity_type": "自驾",
+      "expected_location": "珠三角",
+      "location_aliases": ["大湾区", "粤港澳大湾区"]
+    },
+    {
+      "id": "evt_028",
+      "utterance": "大湾区周末露营，深圳广州都方便",
+      "expected_activity_type": "露营",
+      "expected_location": "粤港澳大湾区",
+      "location_aliases": ["大湾区", "珠三角"]
+    },
+    {
+      "id": "evt_029",
+      "utterance": "京津冀周边爬山露营，想找搭子",
+      "expected_activity_type": "爬山",
+      "expected_location": "京津冀",
+      "location_aliases": ["北京周边", "天津周边"]
+    },
+    {
+      "id": "evt_030",
+      "utterance": "天津蓟州爬山，周六一天往返",
+      "expected_activity_type": "爬山",
+      "expected_location": "天津 蓟州",
+      "location_aliases": ["蓟州"]
+    },
+    {
+      "id": "evt_031",
+      "utterance": "东京周边泡温泉，周末出发",
+      "expected_activity_type": "泡温泉",
+      "expected_location": "东京周边",
+      "location_aliases": ["关东"]
+    },
+    {
+      "id": "evt_032",
+      "utterance": "箱根温泉搭子，想住一晚",
+      "expected_activity_type": "泡温泉",
+      "expected_location": "箱根",
+      "location_aliases": ["日本箱根"]
+    },
+    {
+      "id": "evt_033",
+      "utterance": "关西旅行，京都大阪都行",
+      "expected_activity_type": "旅行",
+      "expected_location": "关西",
+      "location_aliases": ["京都周边", "大阪周边"]
+    },
+    {
+      "id": "evt_034",
+      "utterance": "线上聊天，随便聊聊电影",
+      "expected_activity_type": "线上聊天",
+      "expected_location": "线上",
+      "location_aliases": ["远程", "视频"]
+    },
+    {
+      "id": "evt_035",
+      "utterance": "地点不限，找桌游搭子",
+      "expected_activity_type": "桌游",
+      "expected_location": "不限地点",
+      "location_aliases": ["地点不限", "不限"]
+    },
+    {
+      "id": "evt_036",
+      "utterance": "杭州附近西湖走走，顺便拍照",
+      "expected_activity_type": "散步",
+      "expected_location": "杭州 西湖",
+      "location_aliases": ["西湖"]
+    },
+    {
+      "id": "evt_037",
+      "utterance": "苏州园林拍照，周末找人同行",
+      "expected_activity_type": "拍照",
+      "expected_location": "苏州 苏州园林",
+      "location_aliases": ["苏州园林"]
+    },
+    {
+      "id": "evt_038",
+      "utterance": "佛山岭南天地喝茶，下午慢慢坐",
+      "expected_activity_type": "喝茶",
+      "expected_location": "佛山 岭南天地",
+      "location_aliases": ["岭南天地"]
+    },
+    {
+      "id": "evt_039",
+      "utterance": "深圳大鹏露营，看海也行",
+      "expected_activity_type": "露营",
+      "expected_location": "深圳 大鹏",
+      "location_aliases": ["大鹏"]
+    },
+    {
+      "id": "evt_040",
+      "utterance": "北京通州看电影，晚上场",
+      "expected_activity_type": "看电影",
+      "expected_location": "北京 通州",
+      "location_aliases": ["通州", "通州区"]
+    },
+    {
+      "id": "evt_041",
+      "utterance": "厦门曾厝垵逛吃，想找搭子",
+      "expected_activity_type": "逛吃",
+      "expected_location": "厦门 曾厝垵",
+      "location_aliases": ["曾厝垵"]
+    },
+    {
+      "id": "evt_042",
+      "utterance": "成都周边山里吸氧，周末一天",
+      "expected_activity_type": "周边游",
+      "expected_location": "成都周边",
+      "location_aliases": ["川西", "成都周边山里"]
+    },
+    {
+      "id": "evt_043",
+      "utterance": "魔都今晚咖啡，市区都可以",
+      "expected_activity_type": "咖啡",
+      "expected_location": "上海",
+      "location_aliases": ["魔都", "上海市"]
+    },
+    {
+      "id": "evt_044",
+      "utterance": "蓉城太古里咖啡，下午三点左右",
+      "expected_activity_type": "咖啡",
+      "expected_location": "成都 太古里",
+      "location_aliases": ["太古里", "蓉城太古里"]
+    },
+    {
+      "id": "evt_045",
+      "utterance": "江浙沪咖啡，但不想跑太远",
+      "expected_activity_type": "咖啡",
+      "expected_location": "江浙沪",
+      "location_aliases": ["长三角"]
+    },
+    {
+      "id": "evt_046",
+      "utterance": "广州吃饭，位置天河最好",
+      "expected_activity_type": "吃饭",
+      "expected_location": "广州 天河",
+      "location_aliases": ["天河"]
+    },
+    {
+      "id": "evt_047",
+      "utterance": "北京周边京津冀自驾，想找人拼车",
+      "expected_activity_type": "自驾",
+      "expected_location": "京津冀",
+      "location_aliases": ["北京周边", "天津周边"]
+    },
+    {
+      "id": "evt_048",
+      "utterance": "新宿附近拉面，有人一起吗",
+      "expected_activity_type": "吃饭",
+      "expected_location": "东京 新宿",
+      "location_aliases": ["新宿"]
+    }
+  ],
+  "pairs": [
+    {"id": "pair_001", "source_id": "evt_001", "target_id": "evt_002", "expected_should_match": true, "note": "上海浦东/陆家嘴同城同片区咖啡"},
+    {"id": "pair_002", "source_id": "evt_001", "target_id": "evt_004", "expected_should_match": false, "note": "上海咖啡 vs 北京看展"},
+    {"id": "pair_003", "source_id": "evt_003", "target_id": "evt_018", "expected_should_match": true, "note": "上海市内活动"},
+    {"id": "pair_004", "source_id": "evt_006", "target_id": "evt_024", "expected_should_match": true, "note": "杭州西湖在江浙沪覆盖范围内"},
+    {"id": "pair_005", "source_id": "evt_045", "target_id": "evt_006", "expected_should_match": false, "note": "咖啡类对跨城区域不放行"},
+    {"id": "pair_006", "source_id": "evt_021", "target_id": "evt_022", "expected_should_match": true, "note": "川西包含四姑娘山"},
+    {"id": "pair_007", "source_id": "evt_021", "target_id": "evt_023", "expected_should_match": true, "note": "川西包含稻城亚丁"},
+    {"id": "pair_008", "source_id": "evt_013", "target_id": "evt_021", "expected_should_match": false, "note": "成都吃饭不应匹配川西徒步"},
+    {"id": "pair_009", "source_id": "evt_024", "target_id": "evt_006", "expected_should_match": true, "note": "江浙沪覆盖杭州西湖"},
+    {"id": "pair_010", "source_id": "evt_024", "target_id": "evt_037", "expected_should_match": true, "note": "江浙沪覆盖苏州园林"},
+    {"id": "pair_011", "source_id": "evt_026", "target_id": "evt_037", "expected_should_match": true, "note": "上海周边到苏州可接受"},
+    {"id": "pair_012", "source_id": "evt_045", "target_id": "evt_037", "expected_should_match": false, "note": "咖啡类跨城区域不放行"},
+    {"id": "pair_013", "source_id": "evt_027", "target_id": "evt_039", "expected_should_match": true, "note": "珠三角覆盖深圳大鹏"},
+    {"id": "pair_014", "source_id": "evt_028", "target_id": "evt_038", "expected_should_match": true, "note": "大湾区覆盖佛山"},
+    {"id": "pair_015", "source_id": "evt_009", "target_id": "evt_038", "expected_should_match": false, "note": "喝茶类广州天河 vs 佛山岭南天地跨城"},
+    {"id": "pair_016", "source_id": "evt_009", "target_id": "evt_046", "expected_should_match": true, "note": "广州天河同地点"},
+    {"id": "pair_017", "source_id": "evt_029", "target_id": "evt_030", "expected_should_match": true, "note": "京津冀覆盖天津蓟州"},
+    {"id": "pair_018", "source_id": "evt_004", "target_id": "evt_030", "expected_should_match": false, "note": "北京看展 vs 天津爬山"},
+    {"id": "pair_019", "source_id": "evt_031", "target_id": "evt_032", "expected_should_match": true, "note": "东京周边覆盖箱根"},
+    {"id": "pair_020", "source_id": "evt_016", "target_id": "evt_032", "expected_should_match": false, "note": "东京新宿吃饭 vs 箱根温泉"},
+    {"id": "pair_021", "source_id": "evt_033", "target_id": "evt_017", "expected_should_match": true, "note": "关西覆盖京都岚山"},
+    {"id": "pair_022", "source_id": "evt_014", "target_id": "evt_041", "expected_should_match": true, "note": "厦门市内旅行"},
+    {"id": "pair_023", "source_id": "evt_015", "target_id": "evt_014", "expected_should_match": false, "note": "大理 vs 厦门"},
+    {"id": "pair_024", "source_id": "evt_010", "target_id": "evt_019", "expected_should_match": true, "note": "香港市内"},
+    {"id": "pair_025", "source_id": "evt_012", "target_id": "evt_020", "expected_should_match": true, "note": "新加坡市内"},
+    {"id": "pair_026", "source_id": "evt_012", "target_id": "evt_010", "expected_should_match": false, "note": "新加坡 vs 香港"},
+    {"id": "pair_027", "source_id": "evt_034", "target_id": "evt_004", "expected_should_match": true, "note": "线上活动地点放行"},
+    {"id": "pair_028", "source_id": "evt_035", "target_id": "evt_001", "expected_should_match": true, "note": "不限地点放行"},
+    {"id": "pair_029", "source_id": "evt_011", "target_id": "evt_035", "expected_should_match": true, "note": "不限地点放行"},
+    {"id": "pair_030", "source_id": "evt_005", "target_id": "evt_040", "expected_should_match": true, "note": "北京环球影城/通州同城电影"},
+    {"id": "pair_031", "source_id": "evt_008", "target_id": "evt_009", "expected_should_match": false, "note": "深圳健身 vs 广州喝茶"},
+    {"id": "pair_032", "source_id": "evt_027", "target_id": "evt_009", "expected_should_match": false, "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"},
+    {"id": "pair_033", "source_id": "evt_027", "target_id": "evt_038", "expected_should_match": true, "note": "珠三角覆盖佛山"},
+    {"id": "pair_034", "source_id": "evt_028", "target_id": "evt_010", "expected_should_match": false, "note": "大湾区露营 vs 香港中环酒吧，严格活动不跨区域"},
+    {"id": "pair_035", "source_id": "evt_029", "target_id": "evt_004", "expected_should_match": false, "note": "京津冀爬山 vs 北京朝阳看展"},
+    {"id": "pair_036", "source_id": "evt_047", "target_id": "evt_030", "expected_should_match": true, "note": "京津冀自驾覆盖天津蓟州"},
+    {"id": "pair_037", "source_id": "evt_043", "target_id": "evt_001", "expected_should_match": true, "note": "上海 city-only 咖啡 vs 上海浦东咖啡"},
+    {"id": "pair_038", "source_id": "evt_043", "target_id": "evt_006", "expected_should_match": false, "note": "上海咖啡 vs 杭州西湖"},
+    {"id": "pair_039", "source_id": "evt_044", "target_id": "evt_013", "expected_should_match": true, "note": "成都太古里"},
+    {"id": "pair_040", "source_id": "evt_042", "target_id": "evt_021", "expected_should_match": true, "note": "成都周边山里与川西接近"},
+    {"id": "pair_041", "source_id": "evt_042", "target_id": "evt_013", "expected_should_match": false, "note": "成都周边山里 vs 成都太古里吃饭"},
+    {"id": "pair_042", "source_id": "evt_023", "target_id": "evt_032", "expected_should_match": false, "note": "稻城亚丁 vs 箱根"},
+    {"id": "pair_043", "source_id": "evt_017", "target_id": "evt_032", "expected_should_match": false, "note": "京都岚山 vs 箱根"},
+    {"id": "pair_044", "source_id": "evt_031", "target_id": "evt_016", "expected_should_match": false, "note": "东京周边温泉 vs 东京新宿吃饭"},
+    {"id": "pair_045", "source_id": "evt_020", "target_id": "evt_012", "expected_should_match": true, "note": "新加坡市内"},
+    {"id": "pair_046", "source_id": "evt_020", "target_id": "evt_010", "expected_should_match": false, "note": "新加坡 vs 香港"},
+    {"id": "pair_047", "source_id": "evt_036", "target_id": "evt_006", "expected_should_match": true, "note": "同为杭州西湖"},
+    {"id": "pair_048", "source_id": "evt_036", "target_id": "evt_024", "expected_should_match": true, "note": "杭州西湖在江浙沪范围内"},
+    {"id": "pair_049", "source_id": "evt_002", "target_id": "evt_003", "expected_should_match": true, "note": "上海市内咖啡/city walk"},
+    {"id": "pair_050", "source_id": "evt_002", "target_id": "evt_018", "expected_should_match": true, "note": "上海市内咖啡/电影"},
+    {"id": "pair_051", "source_id": "evt_007", "target_id": "evt_037", "expected_should_match": false, "note": "南京吃饭 vs 苏州拍照，严格跨城不放行"},
+    {"id": "pair_052", "source_id": "evt_025", "target_id": "evt_037", "expected_should_match": true, "note": "长三角覆盖苏州园林"},
+    {"id": "pair_053", "source_id": "evt_025", "target_id": "evt_006", "expected_should_match": true, "note": "长三角覆盖杭州西湖"},
+    {"id": "pair_054", "source_id": "evt_025", "target_id": "evt_001", "expected_should_match": false, "note": "长三角自驾 vs 上海浦东咖啡，严格活动不跨区域"},
+    {"id": "pair_055", "source_id": "evt_022", "target_id": "evt_023", "expected_should_match": true, "note": "四姑娘山/稻城亚丁同属川西旅行圈"},
+    {"id": "pair_056", "source_id": "evt_039", "target_id": "evt_038", "expected_should_match": false, "note": "深圳大鹏露营 vs 佛山喝茶，严格活动不跨城"},
+    {"id": "pair_057", "source_id": "evt_039", "target_id": "evt_027", "expected_should_match": true, "note": "深圳大鹏在珠三角范围内"},
+    {"id": "pair_058", "source_id": "evt_039", "target_id": "evt_009", "expected_should_match": false, "note": "深圳大鹏露营 vs 广州天河喝茶"},
+    {"id": "pair_059", "source_id": "evt_040", "target_id": "evt_004", "expected_should_match": true, "note": "北京同城电影/看展"},
+    {"id": "pair_060", "source_id": "evt_040", "target_id": "evt_030", "expected_should_match": false, "note": "北京通州电影 vs 天津蓟州爬山"}
+  ]
+}

@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+internal_test_phones.txt
+.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+certbot/conf/
+certbot/www/

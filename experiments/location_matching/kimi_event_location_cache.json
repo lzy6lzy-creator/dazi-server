@@ -1,0 +1,2554 @@
+{
+  "default": {
+    "evt_001": {
+      "ok": true,
+      "parsed": {
+        "title": "周五下班喝咖啡",
+        "activity_type": "社交/咖啡",
+        "city": "上海",
+        "start_time": "周五下班",
+        "end_time": null,
+        "location": "浦东",
+        "preferences": [
+          "找人一起"
+        ],
+        "constraints": [
+          "周五下班后"
+        ]
+      },
+      "raw": "```json\n{\n  \"title\": \"周五下班喝咖啡\",\n  \"activity_type\": \"社交/咖啡\",\n  \"city\": \"上海\",\n  \"start_time\": \"周五下班\",\n  \"end_time\": null,\n  \"location\": \"浦东\",\n  \"preferences\": [\"找人一起\"],\n  \"constraints\": [\"周五下班后\"]\n}\n```"
+    },
+    "evt_002": {
+      "ok": true,
+      "parsed": {
+        "title": "今晚陆家嘴附近喝咖啡",
+        "activity_type": "咖啡/社交",
+        "city": "上海",
+        "start_time": "今晚",
+        "end_time": null,
+        "location": "陆家嘴",
+        "preferences": null,
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"今晚陆家嘴附近喝咖啡\",\n  \"activity_type\": \"咖啡/社交\",\n  \"city\": \"上海\",\n  \"start_time\": \"今晚\",\n  \"end_time\": null,\n  \"location\": \"陆家嘴\",\n  \"preferences\": null,\n  \"constraints\": null\n}\n```"
+    },
+    "evt_003": {
+      "ok": true,
+      "parsed": {
+        "title": "武康路 City Walk + Brunch",
+        "activity_type": "city_walk",
+        "city": "上海",
+        "start_time": null,
+        "end_time": null,
+        "location": "武康路",
+        "preferences": [
+          "brunch",
+          "city_walk"
+        ],
+        "constraints": [
+          "周末"
+        ]
+      },
+      "raw": "```json\n{\n  \"title\": \"武康路 City Walk + Brunch\",\n  \"activity_type\": \"city_walk\",\n  \"city\": \"上海\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"武康路\",\n  \"preferences\": [\"brunch\", \"city_walk\"],\n  \"constraints\": [\"周末\"]\n}\n```"
+    },
+    "evt_004": {
+      "ok": true,
+      "parsed": {
+        "title": "周六看展",
+        "activity_type": "看展",
+        "city": "北京",
+        "start_time": null,
+        "end_time": null,
+        "location": "朝阳",
+        "preferences": null,
+        "constraints": "周六"
+      },
+      "raw": "```json\n{\n  \"title\": \"周六看展\",\n  \"activity_type\": \"看展\",\n  \"city\": \"北京\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"朝阳\",\n  \"preferences\": null,\n  \"constraints\": \"周六\"\n}\n```"
+    },
+    "evt_005": {
+      "ok": true,
+      "parsed": {
+        "title": "北京环球影城看电影",
+        "activity_type": "看电影",
+        "city": "北京",
+        "start_time": null,
+        "end_time": null,
+        "location": "北京环球影城",
+        "preferences": null,
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"北京环球影城看电影\",\n  \"activity_type\": \"看电影\",\n  \"city\": \"北京\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"北京环球影城\",\n  \"preferences\": null,\n  \"constraints\": null\n}\n```"
+    },
+    "evt_006": {
+      "ok": true,
+      "parsed": {
+        "title": "西湖边散步拍照",
+        "activity_type": "散步、摄影",
+        "city": "杭州",
+        "start_time": "周末下午",
+        "end_time": null,
+        "location": "西湖边",
+        "preferences": null,
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"西湖边散步拍照\",\n  \"activity_type\": \"散步、摄影\",\n  \"city\": \"杭州\",\n  \"start_time\": \"周末下午\",\n  \"end_time\": null,\n  \"location\": \"西湖边\",\n  \"preferences\": null,\n  \"constraints\": null\n}\n```"
+    },
+    "evt_007": {
+      "ok": true,
+      "parsed": {
+        "title": "南京新街口附近吃饭",
+        "activity_type": "聚餐",
+        "city": "南京",
+        "start_time": null,
+        "end_time": null,
+        "location": "新街口附近",
+        "preferences": null,
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"南京新街口附近吃饭\",\n  \"activity_type\": \"聚餐\",\n  \"city\": \"南京\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"新街口附近\",\n  \"preferences\": null,\n  \"constraints\": null\n}\n```"
+    },
+    "evt_008": {
+      "ok": true,
+      "parsed": {
+        "title": "深圳南山健身搭子",
+        "activity_type": "健身",
+        "city": "深圳",
+        "start_time": null,
+        "end_time": null,
+        "location": "南山",
+        "preferences": "晚上下班后",
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"深圳南山健身搭子\",\n  \"activity_type\": \"健身\",\n  \"city\": \"深圳\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"南山\",\n  \"preferences\": \"晚上下班后\",\n  \"constraints\": null\n}\n```"
+    },
+    "evt_009": {
+      "ok": true,
+      "parsed": {
+        "title": "喝茶聊天",
+        "activity_type": "社交聚会",
+        "city": "广州",
+        "start_time": "周日14:00",
+        "end_time": "周日18:00",
+        "location": "天河",
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\n  \"title\": \"喝茶聊天\",\n  \"activity_type\": \"社交聚会\",\n  \"city\": \"广州\",\n  \"start_time\": \"周日14:00\",\n  \"end_time\": \"周日18:00\",\n  \"location\": \"天河\",\n  \"preferences\": [],\n  \"constraints\": []\n}\n```"
+    },
+    "evt_010": {
+      "ok": true,
+      "parsed": {
+        "title": "中环酒吧小坐",
+        "activity_type": "酒吧/夜生活",
+        "city": "香港",
+        "start_time": null,
+        "end_time": null,
+        "location": "中环",
+        "preferences": [],
+        "constraints": [
+          "下班后"
+        ]
+      },
+      "raw": "```json\n{\n  \"title\": \"中环酒吧小坐\",\n  \"activity_type\": \"酒吧/夜生活\",\n  \"city\": \"香港\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"中环\",\n  \"preferences\": [],\n  \"constraints\": [\"下班后\"]\n}\n```"
+    },
+    "evt_011": {
+      "ok": true,
+      "parsed": {
+        "title": "台北周末桌游",
+        "activity_type": "桌游",
+        "city": "台北",
+        "start_time": null,
+        "end_time": null,
+        "location": null,
+        "preferences": null,
+        "constraints": "地点可以再约"
+      },
+      "raw": "```json\n{\n  \"title\": \"台北周末桌游\",\n  \"activity_type\": \"桌游\",\n  \"city\": \"台北\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": null,\n  \"preferences\": null,\n  \"constraints\": \"地点可以再约\"\n}\n```"
+    },
+    "evt_012": {
+      "ok": true,
+      "parsed": {
+        "title": "牛车水吃饭",
+        "activity_type": "聚餐",
+        "city": "新加坡",
+        "start_time": null,
+        "end_time": null,
+        "location": "牛车水",
+        "preferences": "不赶时间",
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"牛车水吃饭\",\n  \"activity_type\": \"聚餐\",\n  \"city\": \"新加坡\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"牛车水\",\n  \"preferences\": \"不赶时间\",\n  \"constraints\": null\n}\n```"
+    },
+    "evt_013": {
+      "ok": true,
+      "parsed": {
+        "title": "成都太古里吃火锅",
+        "activity_type": "聚餐",
+        "city": "成都",
+        "start_time": "今晚",
+        "end_time": null,
+        "location": "太古里",
+        "preferences": null,
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"成都太古里吃火锅\",\n  \"activity_type\": \"聚餐\",\n  \"city\": \"成都\",\n  \"start_time\": \"今晚\",\n  \"end_time\": null,\n  \"location\": \"太古里\",\n  \"preferences\": null,\n  \"constraints\": null\n}\n```"
+    },
+    "evt_014": {
+      "ok": true,
+      "parsed": {
+        "title": "厦门鼓浪屿一日游",
+        "activity_type": "旅行/观光",
+        "city": "厦门",
+        "start_time": null,
+        "end_time": null,
+        "location": "鼓浪屿",
+        "preferences": "慢节奏游览、深度体验",
+        "constraints": "一天时间"
+      },
+      "raw": "```json\n{\n  \"title\": \"厦门鼓浪屿一日游\",\n  \"activity_type\": \"旅行/观光\",\n  \"city\": \"厦门\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"鼓浪屿\",\n  \"preferences\": \"慢节奏游览、深度体验\",\n  \"constraints\": \"一天时间\"\n}\n```"
+    },
+    "evt_015": {
+      "ok": true,
+      "parsed": {
+        "title": "大理洱海边发呆旅行",
+        "activity_type": "旅行",
+        "city": "大理",
+        "start_time": null,
+        "end_time": null,
+        "location": "洱海边",
+        "preferences": "发呆、随缘拼搭子",
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"大理洱海边发呆旅行\",\n  \"activity_type\": \"旅行\",\n  \"city\": \"大理\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"洱海边\",\n  \"preferences\": \"发呆、随缘拼搭子\",\n  \"constraints\": null\n}\n```"
+    },
+    "evt_016": {
+      "ok": true,
+      "parsed": {
+        "title": "新宿附近吃拉面",
+        "activity_type": "餐饮",
+        "city": "东京",
+        "start_time": "今晚",
+        "end_time": null,
+        "location": "新宿",
+        "preferences": [
+          "拉面"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\n  \"title\": \"新宿附近吃拉面\",\n  \"activity_type\": \"餐饮\",\n  \"city\": \"东京\",\n  \"start_time\": \"今晚\",\n  \"end_time\": null,\n  \"location\": \"新宿\",\n  \"preferences\": [\"拉面\"],\n  \"constraints\": []\n}\n```"
+    },
+    "evt_017": {
+      "ok": true,
+      "parsed": {
+        "title": "京都岚山旅行拍照",
+        "activity_type": "旅行摄影",
+        "city": "京都",
+        "start_time": null,
+        "end_time": null,
+        "location": "岚山",
+        "preferences": [
+          "摄影",
+          "观光"
+        ],
+        "constraints": [
+          "周末出发"
+        ]
+      },
+      "raw": "```json\n{\n  \"title\": \"京都岚山旅行拍照\",\n  \"activity_type\": \"旅行摄影\",\n  \"city\": \"京都\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"岚山\",\n  \"preferences\": [\"摄影\", \"观光\"],\n  \"constraints\": [\"周末出发\"]\n}\n```"
+    },
+    "evt_018": {
+      "ok": true,
+      "parsed": {
+        "title": "看电影",
+        "activity_type": "观影",
+        "city": "上海",
+        "start_time": null,
+        "end_time": null,
+        "location": "静安",
+        "preferences": "文艺片",
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"看电影\",\n  \"activity_type\": \"观影\",\n  \"city\": \"上海\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"静安\",\n  \"preferences\": \"文艺片\",\n  \"constraints\": null\n}\n```"
+    },
+    "evt_019": {
+      "ok": true,
+      "parsed": {
+        "title": "铜锣湾逛街",
+        "activity_type": "购物",
+        "city": "香港",
+        "start_time": "周六下午",
+        "end_time": null,
+        "location": "铜锣湾",
+        "preferences": null,
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"铜锣湾逛街\",\n  \"activity_type\": \"购物\",\n  \"city\": \"香港\",\n  \"start_time\": \"周六下午\",\n  \"end_time\": null,\n  \"location\": \"铜锣湾\",\n  \"preferences\": null,\n  \"constraints\": null\n}\n```"
+    },
+    "evt_020": {
+      "ok": true,
+      "parsed": {
+        "title": "乌节路逛街购物",
+        "activity_type": "购物",
+        "city": "新加坡",
+        "start_time": null,
+        "end_time": null,
+        "location": "乌节路",
+        "preferences": "购物",
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"乌节路逛街购物\",\n  \"activity_type\": \"购物\",\n  \"city\": \"新加坡\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"乌节路\",\n  \"preferences\": \"购物\",\n  \"constraints\": null\n}\n```"
+    },
+    "evt_021": {
+      "ok": true,
+      "parsed": {
+        "title": "川西徒步",
+        "activity_type": "徒步",
+        "city": "成都",
+        "start_time": null,
+        "end_time": null,
+        "location": "川西",
+        "preferences": null,
+        "constraints": "成都出发"
+      },
+      "raw": "```json\n{\n  \"title\": \"川西徒步\",\n  \"activity_type\": \"徒步\",\n  \"city\": \"成都\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"川西\",\n  \"preferences\": null,\n  \"constraints\": \"成都出发\"\n}\n```"
+    },
+    "evt_022": {
+      "ok": true,
+      "parsed": {
+        "title": "四姑娘山自驾搭子",
+        "activity_type": "自驾游",
+        "city": "阿坝藏族羌族自治州",
+        "start_time": null,
+        "end_time": null,
+        "location": "四姑娘山",
+        "preferences": [
+          "会开车"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\n  \"title\": \"四姑娘山自驾搭子\",\n  \"activity_type\": \"自驾游\",\n  \"city\": \"阿坝藏族羌族自治州\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"四姑娘山\",\n  \"preferences\": [\"会开车\"],\n  \"constraints\": []\n}\n```"
+    },
+    "evt_023": {
+      "ok": true,
+      "parsed": {
+        "title": "稻城亚丁摄影旅行拼车",
+        "activity_type": "摄影旅行",
+        "city": "甘孜藏族自治州",
+        "start_time": null,
+        "end_time": null,
+        "location": "稻城亚丁",
+        "preferences": "摄影搭子",
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"稻城亚丁摄影旅行拼车\",\n  \"activity_type\": \"摄影旅行\",\n  \"city\": \"甘孜藏族自治州\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"稻城亚丁\",\n  \"preferences\": \"摄影搭子\",\n  \"constraints\": null\n}\n```"
+    },
+    "evt_024": {
+      "ok": true,
+      "parsed": {
+        "title": "江浙沪周边游",
+        "activity_type": "周边游",
+        "city": "上海",
+        "start_time": "周末",
+        "end_time": "周末两天",
+        "location": "江浙沪",
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\n  \"title\": \"江浙沪周边游\",\n  \"activity_type\": \"周边游\",\n  \"city\": \"上海\",\n  \"start_time\": \"周末\",\n  \"end_time\": \"周末两天\",\n  \"location\": \"江浙沪\",\n  \"preferences\": [],\n  \"constraints\": []\n}\n```"
+    },
+    "evt_025": {
+      "ok": true,
+      "parsed": {
+        "title": "长三角周末自驾",
+        "activity_type": "自驾游",
+        "city": null,
+        "start_time": null,
+        "end_time": null,
+        "location": "长三角",
+        "preferences": [
+          "自驾",
+          "周末出行"
+        ],
+        "constraints": [
+          "别太劳累"
+        ]
+      },
+      "raw": "```json\n{\n  \"title\": \"长三角周末自驾\",\n  \"activity_type\": \"自驾游\",\n  \"city\": null,\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"长三角\",\n  \"preferences\": [\"自驾\", \"周末出行\"],\n  \"constraints\": [\"别太劳累\"]\n}\n```"
+    },
+    "evt_026": {
+      "ok": true,
+      "parsed": {
+        "title": "上海周边露营",
+        "activity_type": "露营",
+        "city": "",
+        "start_time": "",
+        "end_time": "",
+        "location": "苏州、杭州方向",
+        "preferences": "上海周边，苏杭方向",
+        "constraints": ""
+      },
+      "raw": "```json\n{\n  \"title\": \"上海周边露营\",\n  \"activity_type\": \"露营\",\n  \"city\": \"\",\n  \"start_time\": \"\",\n  \"end_time\": \"\",\n  \"location\": \"苏州、杭州方向\",\n  \"preferences\": \"上海周边，苏杭方向\",\n  \"constraints\": \"\"\n}\n```"
+    },
+    "evt_027": {
+      "ok": true,
+      "parsed": {
+        "title": "珠三角自驾",
+        "activity_type": "自驾",
+        "city": "广州",
+        "start_time": null,
+        "end_time": null,
+        "location": "珠三角",
+        "preferences": [
+          "有车更好"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\n  \"title\": \"珠三角自驾\",\n  \"activity_type\": \"自驾\",\n  \"city\": \"广州\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"珠三角\",\n  \"preferences\": [\"有车更好\"],\n  \"constraints\": []\n}\n```"
+    },
+    "evt_028": {
+      "ok": true,
+      "parsed": {
+        "title": "大湾区周末露营",
+        "activity_type": "露营",
+        "city": "",
+        "start_time": "",
+        "end_time": "",
+        "location": "大湾区",
+        "preferences": [
+          "深圳广州都方便"
+        ],
+        "constraints": [
+          "周末"
+        ]
+      },
+      "raw": "```json\n{\n  \"title\": \"大湾区周末露营\",\n  \"activity_type\": \"露营\",\n  \"city\": \"\",\n  \"start_time\": \"\",\n  \"end_time\": \"\",\n  \"location\": \"大湾区\",\n  \"preferences\": [\"深圳广州都方便\"],\n  \"constraints\": [\"周末\"]\n}\n```"
+    },
+    "evt_029": {
+      "ok": true,
+      "parsed": {
+        "title": "京津冀周边爬山露营",
+        "activity_type": "爬山露营",
+        "city": "",
+        "start_time": "",
+        "end_time": "",
+        "location": "京津冀周边",
+        "preferences": "找搭子",
+        "constraints": ""
+      },
+      "raw": "```json\n{\n  \"title\": \"京津冀周边爬山露营\",\n  \"activity_type\": \"爬山露营\",\n  \"city\": \"\",\n  \"start_time\": \"\",\n  \"end_time\": \"\",\n  \"location\": \"京津冀周边\",\n  \"preferences\": \"找搭子\",\n  \"constraints\": \"\"\n}\n```"
+    },
+    "evt_030": {
+      "ok": true,
+      "parsed": {
+        "title": "天津蓟州爬山",
+        "activity_type": "爬山",
+        "city": "天津市",
+        "start_time": "本周六",
+        "end_time": "本周六",
+        "location": "蓟州区",
+        "preferences": "一日游",
+        "constraints": "当天往返"
+      },
+      "raw": "```json\n{\n  \"title\": \"天津蓟州爬山\",\n  \"activity_type\": \"爬山\",\n  \"city\": \"天津市\",\n  \"start_time\": \"本周六\",\n  \"end_time\": \"本周六\",\n  \"location\": \"蓟州区\",\n  \"preferences\": \"一日游\",\n  \"constraints\": \"当天往返\"\n}\n```"
+    },
+    "evt_031": {
+      "ok": true,
+      "parsed": {
+        "title": "东京周边泡温泉",
+        "activity_type": "温泉",
+        "city": "东京",
+        "start_time": "周末",
+        "end_time": null,
+        "location": "东京周边",
+        "preferences": null,
+        "constraints": "周末出发"
+      },
+      "raw": "```json\n{\n  \"title\": \"东京周边泡温泉\",\n  \"activity_type\": \"温泉\",\n  \"city\": \"东京\",\n  \"start_time\": \"周末\",\n  \"end_time\": null,\n  \"location\": \"东京周边\",\n  \"preferences\": null,\n  \"constraints\": \"周末出发\"\n}\n```"
+    },
+    "evt_032": {
+      "ok": true,
+      "parsed": {
+        "title": "箱根温泉搭子",
+        "activity_type": "温泉住宿",
+        "city": "箱根町",
+        "start_time": null,
+        "end_time": null,
+        "location": "箱根",
+        "preferences": [
+          "温泉",
+          "住宿一晚"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\n  \"title\": \"箱根温泉搭子\",\n  \"activity_type\": \"温泉住宿\",\n  \"city\": \"箱根町\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"箱根\",\n  \"preferences\": [\"温泉\", \"住宿一晚\"],\n  \"constraints\": []\n}\n```"
+    },
+    "evt_033": {
+      "ok": true,
+      "parsed": {
+        "title": "关西旅行",
+        "activity_type": "旅行",
+        "city": null,
+        "start_time": null,
+        "end_time": null,
+        "location": "京都、大阪",
+        "preferences": null,
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"关西旅行\",\n  \"activity_type\": \"旅行\",\n  \"city\": null,\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"京都、大阪\",\n  \"preferences\": null,\n  \"constraints\": null\n}\n```"
+    },
+    "evt_034": {
+      "ok": true,
+      "parsed": {
+        "title": "线上电影闲聊",
+        "activity_type": "线上聊天",
+        "city": null,
+        "start_time": null,
+        "end_time": null,
+        "location": "线上",
+        "preferences": [
+          "电影"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\n  \"title\": \"线上电影闲聊\",\n  \"activity_type\": \"线上聊天\",\n  \"city\": null,\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"线上\",\n  \"preferences\": [\"电影\"],\n  \"constraints\": []\n}\n```"
+    },
+    "evt_035": {
+      "ok": true,
+      "parsed": {
+        "title": "找桌游搭子",
+        "activity_type": "桌游",
+        "city": null,
+        "start_time": null,
+        "end_time": null,
+        "location": null,
+        "preferences": [
+          "桌游"
+        ],
+        "constraints": [
+          "地点不限"
+        ]
+      },
+      "raw": "```json\n{\n  \"title\": \"找桌游搭子\",\n  \"activity_type\": \"桌游\",\n  \"city\": null,\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": null,\n  \"preferences\": [\"桌游\"],\n  \"constraints\": [\"地点不限\"]\n}\n```"
+    },
+    "evt_036": {
+      "ok": true,
+      "parsed": {
+        "title": "西湖漫步拍照",
+        "activity_type": "散步、摄影",
+        "city": "杭州",
+        "start_time": null,
+        "end_time": null,
+        "location": "西湖",
+        "preferences": "拍照",
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"西湖漫步拍照\",\n  \"activity_type\": \"散步、摄影\",\n  \"city\": \"杭州\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"西湖\",\n  \"preferences\": \"拍照\",\n  \"constraints\": null\n}\n```"
+    },
+    "evt_037": {
+      "ok": true,
+      "parsed": {
+        "title": "苏州园林拍照",
+        "activity_type": "摄影/结伴出行",
+        "city": "苏州",
+        "start_time": "周末",
+        "end_time": "周末",
+        "location": "苏州园林",
+        "preferences": [
+          "摄影",
+          "结伴同行"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\n  \"title\": \"苏州园林拍照\",\n  \"activity_type\": \"摄影/结伴出行\",\n  \"city\": \"苏州\",\n  \"start_time\": \"周末\",\n  \"end_time\": \"周末\",\n  \"location\": \"苏州园林\",\n  \"preferences\": [\"摄影\", \"结伴同行\"],\n  \"constraints\": []\n}\n```"
+    },
+    "evt_038": {
+      "ok": true,
+      "parsed": {
+        "title": "佛山岭南天地喝茶",
+        "activity_type": "餐饮/休闲",
+        "city": "佛山",
+        "start_time": "下午",
+        "end_time": null,
+        "location": "岭南天地",
+        "preferences": "慢节奏、休闲放松",
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"佛山岭南天地喝茶\",\n  \"activity_type\": \"餐饮/休闲\",\n  \"city\": \"佛山\",\n  \"start_time\": \"下午\",\n  \"end_time\": null,\n  \"location\": \"岭南天地\",\n  \"preferences\": \"慢节奏、休闲放松\",\n  \"constraints\": null\n}\n```"
+    },
+    "evt_039": {
+      "ok": true,
+      "parsed": {
+        "title": "深圳大鹏露营看海",
+        "activity_type": "露营",
+        "city": "深圳市",
+        "start_time": null,
+        "end_time": null,
+        "location": "大鹏",
+        "preferences": "看海",
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"深圳大鹏露营看海\",\n  \"activity_type\": \"露营\",\n  \"city\": \"深圳市\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"大鹏\",\n  \"preferences\": \"看海\",\n  \"constraints\": null\n}\n```"
+    },
+    "evt_040": {
+      "ok": true,
+      "parsed": {
+        "title": "看电影",
+        "activity_type": "观影",
+        "city": "北京",
+        "start_time": "18:00",
+        "end_time": "23:00",
+        "location": "通州",
+        "preferences": "晚上场次",
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"看电影\",\n  \"activity_type\": \"观影\",\n  \"city\": \"北京\",\n  \"start_time\": \"18:00\",\n  \"end_time\": \"23:00\",\n  \"location\": \"通州\",\n  \"preferences\": \"晚上场次\",\n  \"constraints\": null\n}\n```"
+    },
+    "evt_041": {
+      "ok": true,
+      "parsed": {
+        "title": "厦门曾厝垵逛吃",
+        "activity_type": "美食探店/逛街",
+        "city": "厦门",
+        "start_time": null,
+        "end_time": null,
+        "location": "曾厝垵",
+        "preferences": [
+          "找搭子"
+        ],
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"厦门曾厝垵逛吃\",\n  \"activity_type\": \"美食探店/逛街\",\n  \"city\": \"厦门\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"曾厝垵\",\n  \"preferences\": [\"找搭子\"],\n  \"constraints\": null\n}\n```"
+    },
+    "evt_042": {
+      "ok": true,
+      "parsed": {
+        "title": "成都周边山里吸氧",
+        "activity_type": "户外/徒步/休闲",
+        "city": "成都",
+        "start_time": "周末",
+        "end_time": "周末",
+        "location": "成都周边山区",
+        "preferences": [
+          "自然",
+          "清新空气",
+          "放松",
+          "短途"
+        ],
+        "constraints": [
+          "一天时间",
+          "周末"
+        ]
+      },
+      "raw": "```json\n{\n  \"title\": \"成都周边山里吸氧\",\n  \"activity_type\": \"户外/徒步/休闲\",\n  \"city\": \"成都\",\n  \"start_time\": \"周末\",\n  \"end_time\": \"周末\",\n  \"location\": \"成都周边山区\",\n  \"preferences\": [\"自然\", \"清新空气\", \"放松\", \"短途\"],\n  \"constraints\": [\"一天时间\", \"周末\"]\n}\n```"
+    },
+    "evt_043": {
+      "ok": true,
+      "parsed": {
+        "title": "咖啡",
+        "activity_type": "咖啡",
+        "city": "上海",
+        "start_time": "今晚",
+        "end_time": null,
+        "location": "市区",
+        "preferences": null,
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"咖啡\",\n  \"activity_type\": \"咖啡\",\n  \"city\": \"上海\",\n  \"start_time\": \"今晚\",\n  \"end_time\": null,\n  \"location\": \"市区\",\n  \"preferences\": null,\n  \"constraints\": null\n}\n```"
+    },
+    "evt_044": {
+      "ok": true,
+      "parsed": {
+        "title": "太古里咖啡",
+        "activity_type": "餐饮/咖啡",
+        "city": "成都",
+        "start_time": "15:00",
+        "end_time": null,
+        "location": "太古里",
+        "preferences": null,
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"太古里咖啡\",\n  \"activity_type\": \"餐饮/咖啡\",\n  \"city\": \"成都\",\n  \"start_time\": \"15:00\",\n  \"end_time\": null,\n  \"location\": \"太古里\",\n  \"preferences\": null,\n  \"constraints\": null\n}\n```"
+    },
+    "evt_045": {
+      "ok": true,
+      "parsed": {
+        "title": null,
+        "activity_type": "咖啡探店",
+        "city": null,
+        "start_time": null,
+        "end_time": null,
+        "location": "江浙沪",
+        "preferences": "咖啡",
+        "constraints": "距离近，不想跑太远"
+      },
+      "raw": "```json\n{\n  \"title\": null,\n  \"activity_type\": \"咖啡探店\",\n  \"city\": null,\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"江浙沪\",\n  \"preferences\": \"咖啡\",\n  \"constraints\": \"距离近，不想跑太远\"\n}\n```"
+    },
+    "evt_046": {
+      "ok": true,
+      "parsed": {
+        "title": "广州聚餐",
+        "activity_type": "餐饮",
+        "city": "广州",
+        "start_time": null,
+        "end_time": null,
+        "location": "天河",
+        "preferences": [
+          "天河区"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\n  \"title\": \"广州聚餐\",\n  \"activity_type\": \"餐饮\",\n  \"city\": \"广州\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"天河\",\n  \"preferences\": [\"天河区\"],\n  \"constraints\": []\n}\n```"
+    },
+    "evt_047": {
+      "ok": true,
+      "parsed": {
+        "title": "北京周边京津冀自驾拼车",
+        "activity_type": "自驾拼车",
+        "city": "北京",
+        "start_time": null,
+        "end_time": null,
+        "location": "京津冀",
+        "preferences": [
+          "自驾",
+          "拼车"
+        ],
+        "constraints": null
+      },
+      "raw": "```json\n{\n  \"title\": \"北京周边京津冀自驾拼车\",\n  \"activity_type\": \"自驾拼车\",\n  \"city\": \"北京\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"京津冀\",\n  \"preferences\": [\"自驾\", \"拼车\"],\n  \"constraints\": null\n}\n```"
+    },
+    "evt_048": {
+      "ok": true,
+      "parsed": {
+        "title": "新宿附近拉面约饭",
+        "activity_type": "餐饮约伴",
+        "city": "东京",
+        "start_time": null,
+        "end_time": null,
+        "location": "新宿",
+        "preferences": [
+          "拉面"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\n  \"title\": \"新宿附近拉面约饭\",\n  \"activity_type\": \"餐饮约伴\",\n  \"city\": \"东京\",\n  \"start_time\": null,\n  \"end_time\": null,\n  \"location\": \"新宿\",\n  \"preferences\": [\"拉面\"],\n  \"constraints\": []\n}\n```"
+    }
+  },
+  "single_location_fewshot": {
+    "evt_001": {
+      "ok": true,
+      "parsed": {
+        "title": "上海浦东咖啡",
+        "activity_type": "咖啡",
+        "city": "上海",
+        "location": "上海 浦东",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"上海浦东咖啡\",\"activity_type\":\"咖啡\",\"city\":\"上海\",\"location\":\"上海 浦东\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_002": {
+      "ok": true,
+      "parsed": {
+        "title": "陆家嘴附近咖啡",
+        "activity_type": "咖啡",
+        "city": "上海",
+        "location": "上海 陆家嘴",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"陆家嘴附近咖啡\",\"activity_type\":\"咖啡\",\"city\":\"上海\",\"location\":\"上海 陆家嘴\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_003": {
+      "ok": true,
+      "parsed": {
+        "title": "武康路 city walk + brunch",
+        "activity_type": "city walk",
+        "city": "上海",
+        "location": "上海 武康路",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "brunch"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"武康路 city walk + brunch\",\"activity_type\":\"city walk\",\"city\":\"上海\",\"location\":\"上海 武康路\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"brunch\"],\"constraints\":[]}"
+    },
+    "evt_004": {
+      "ok": true,
+      "parsed": {
+        "title": "北京朝阳看展",
+        "activity_type": "看展",
+        "city": "北京",
+        "location": "北京 朝阳",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"北京朝阳看展\",\"activity_type\":\"看展\",\"city\":\"北京\",\"location\":\"北京 朝阳\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_005": {
+      "ok": true,
+      "parsed": {
+        "title": "北京环球影城看电影",
+        "activity_type": "看电影",
+        "city": "北京",
+        "location": "北京环球影城",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"北京环球影城看电影\",\"activity_type\":\"看电影\",\"city\":\"北京\",\"location\":\"北京环球影城\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_006": {
+      "ok": true,
+      "parsed": {
+        "title": "西湖边散步拍照",
+        "activity_type": "散步拍照",
+        "city": "杭州",
+        "location": "杭州 西湖",
+        "start_time": "周末下午",
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"西湖边散步拍照\",\"activity_type\":\"散步拍照\",\"city\":\"杭州\",\"location\":\"杭州 西湖\",\"start_time\":\"周末下午\",\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_007": {
+      "ok": true,
+      "parsed": {
+        "title": "南京新街口附近吃饭",
+        "activity_type": "吃饭",
+        "city": "南京",
+        "location": "南京 新街口",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"南京新街口附近吃饭\",\"activity_type\":\"吃饭\",\"city\":\"南京\",\"location\":\"南京 新街口\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_008": {
+      "ok": true,
+      "parsed": {
+        "title": "深圳南山健身",
+        "activity_type": "健身",
+        "city": "深圳",
+        "location": "深圳 南山",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "晚上下班后"
+        ]
+      },
+      "raw": "```json\n{\"title\":\"深圳南山健身\",\"activity_type\":\"健身\",\"city\":\"深圳\",\"location\":\"深圳 南山\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"晚上下班后\"]}\n```"
+    },
+    "evt_009": {
+      "ok": true,
+      "parsed": {
+        "title": "广州天河喝茶聊天",
+        "activity_type": "喝茶聊天",
+        "city": "广州",
+        "location": "广州 天河",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"广州天河喝茶聊天\",\"activity_type\":\"喝茶聊天\",\"city\":\"广州\",\"location\":\"广州 天河\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_010": {
+      "ok": true,
+      "parsed": {
+        "title": "香港中环酒吧",
+        "activity_type": "酒吧",
+        "city": "香港",
+        "location": "香港 中环",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"香港中环酒吧\",\"activity_type\":\"酒吧\",\"city\":\"香港\",\"location\":\"香港 中环\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_011": {
+      "ok": true,
+      "parsed": {
+        "title": "台北周末桌游",
+        "activity_type": "桌游",
+        "city": "台北",
+        "location": "台北",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"台北周末桌游\",\"activity_type\":\"桌游\",\"city\":\"台北\",\"location\":\"台北\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_012": {
+      "ok": true,
+      "parsed": {
+        "title": "新加坡牛车水吃饭",
+        "activity_type": "吃饭",
+        "city": "新加坡",
+        "location": "新加坡 牛车水",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "不赶时间"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"新加坡牛车水吃饭\",\"activity_type\":\"吃饭\",\"city\":\"新加坡\",\"location\":\"新加坡 牛车水\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"不赶时间\"],\"constraints\":[]}"
+    },
+    "evt_013": {
+      "ok": true,
+      "parsed": {
+        "title": "成都太古里火锅",
+        "activity_type": "火锅",
+        "city": "成都",
+        "location": "成都 太古里",
+        "start_time": "今晚",
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"成都太古里火锅\",\"activity_type\":\"火锅\",\"city\":\"成都\",\"location\":\"成都 太古里\",\"start_time\":\"今晚\",\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_014": {
+      "ok": true,
+      "parsed": {
+        "title": "厦门鼓浪屿慢游",
+        "activity_type": "旅行",
+        "city": "厦门",
+        "location": "厦门 鼓浪屿",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "慢节奏",
+          "深度游览"
+        ],
+        "constraints": [
+          "一天时间"
+        ]
+      },
+      "raw": "```json\n{\"title\":\"厦门鼓浪屿慢游\",\"activity_type\":\"旅行\",\"city\":\"厦门\",\"location\":\"厦门 鼓浪屿\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"慢节奏\",\"深度游览\"],\"constraints\":[\"一天时间\"]}\n```"
+    },
+    "evt_015": {
+      "ok": true,
+      "parsed": {
+        "title": "大理洱海边发呆旅行",
+        "activity_type": "发呆旅行",
+        "city": "大理",
+        "location": "大理 洱海",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"大理洱海边发呆旅行\",\"activity_type\":\"发呆旅行\",\"city\":\"大理\",\"location\":\"大理 洱海\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_016": {
+      "ok": true,
+      "parsed": {
+        "title": "东京新宿拉面",
+        "activity_type": "餐饮",
+        "city": "东京",
+        "location": "东京 新宿",
+        "start_time": "今晚",
+        "end_time": null,
+        "preferences": [
+          "拉面"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"东京新宿拉面\",\"activity_type\":\"餐饮\",\"city\":\"东京\",\"location\":\"东京 新宿\",\"start_time\":\"今晚\",\"end_time\":null,\"preferences\":[\"拉面\"],\"constraints\":[]}"
+    },
+    "evt_017": {
+      "ok": true,
+      "parsed": {
+        "title": "京都岚山旅行拍照",
+        "activity_type": "旅行拍照",
+        "city": "京都",
+        "location": "京都 岚山",
+        "start_time": "周末",
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"京都岚山旅行拍照\",\"activity_type\":\"旅行拍照\",\"city\":\"京都\",\"location\":\"京都 岚山\",\"start_time\":\"周末\",\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_018": {
+      "ok": true,
+      "parsed": {
+        "title": "上海静安看电影",
+        "activity_type": "看电影",
+        "city": "上海",
+        "location": "上海 静安",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "文艺片"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"上海静安看电影\",\"activity_type\":\"看电影\",\"city\":\"上海\",\"location\":\"上海 静安\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"文艺片\"],\"constraints\":[]}"
+    },
+    "evt_019": {
+      "ok": true,
+      "parsed": {
+        "title": "香港铜锣湾逛街",
+        "activity_type": "逛街",
+        "city": "香港",
+        "location": "香港 铜锣湾",
+        "start_time": "周六下午",
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"香港铜锣湾逛街\",\"activity_type\":\"逛街\",\"city\":\"香港\",\"location\":\"香港 铜锣湾\",\"start_time\":\"周六下午\",\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_020": {
+      "ok": true,
+      "parsed": {
+        "title": "新加坡乌节路逛街购物",
+        "activity_type": "购物",
+        "city": "新加坡",
+        "location": "新加坡 乌节路",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"新加坡乌节路逛街购物\",\"activity_type\":\"购物\",\"city\":\"新加坡\",\"location\":\"新加坡 乌节路\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_021": {
+      "ok": true,
+      "parsed": {
+        "title": "川西徒步",
+        "activity_type": "徒步",
+        "city": "成都",
+        "location": "川西",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"川西徒步\",\"activity_type\":\"徒步\",\"city\":\"成都\",\"location\":\"川西\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_022": {
+      "ok": true,
+      "parsed": {
+        "title": "四姑娘山自驾搭子",
+        "activity_type": "自驾",
+        "city": null,
+        "location": "四姑娘山",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "会开车"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"四姑娘山自驾搭子\",\"activity_type\":\"自驾\",\"city\":null,\"location\":\"四姑娘山\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"会开车\"],\"constraints\":[]}"
+    },
+    "evt_023": {
+      "ok": true,
+      "parsed": {
+        "title": "稻城亚丁摄影旅行",
+        "activity_type": "旅行",
+        "city": null,
+        "location": "稻城亚丁",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "摄影",
+          "拼搭子"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"稻城亚丁摄影旅行\",\"activity_type\":\"旅行\",\"city\":null,\"location\":\"稻城亚丁\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"摄影\",\"拼搭子\"],\"constraints\":[]}"
+    },
+    "evt_024": {
+      "ok": true,
+      "parsed": {
+        "title": "江浙沪周边游",
+        "activity_type": "周边游",
+        "city": "上海",
+        "location": "江浙沪",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "周末两天"
+        ]
+      },
+      "raw": "{\"title\":\"江浙沪周边游\",\"activity_type\":\"周边游\",\"city\":\"上海\",\"location\":\"江浙沪\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"周末两天\"]}"
+    },
+    "evt_025": {
+      "ok": true,
+      "parsed": {
+        "title": "长三角周末自驾",
+        "activity_type": "自驾",
+        "city": null,
+        "location": "长三角",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "别太劳累"
+        ]
+      },
+      "raw": "```json\n{\"title\":\"长三角周末自驾\",\"activity_type\":\"自驾\",\"city\":null,\"location\":\"长三角\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"别太劳累\"]}\n```"
+    },
+    "evt_026": {
+      "ok": true,
+      "parsed": {
+        "title": "上海周边露营",
+        "activity_type": "露营",
+        "city": "上海",
+        "location": "上海周边 苏杭",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"上海周边露营\",\"activity_type\":\"露营\",\"city\":\"上海\",\"location\":\"上海周边 苏杭\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_027": {
+      "ok": true,
+      "parsed": {
+        "title": "珠三角自驾",
+        "activity_type": "自驾",
+        "city": "广州",
+        "location": "珠三角",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "有车更好"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"珠三角自驾\",\"activity_type\":\"自驾\",\"city\":\"广州\",\"location\":\"珠三角\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"有车更好\"],\"constraints\":[]}\n```"
+    },
+    "evt_028": {
+      "ok": true,
+      "parsed": {
+        "title": "大湾区周末露营",
+        "activity_type": "露营",
+        "city": null,
+        "location": "大湾区",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"大湾区周末露营\",\"activity_type\":\"露营\",\"city\":null,\"location\":\"大湾区\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_029": {
+      "ok": true,
+      "parsed": {
+        "title": "京津冀爬山露营",
+        "activity_type": "爬山露营",
+        "city": null,
+        "location": "京津冀",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"京津冀爬山露营\",\"activity_type\":\"爬山露营\",\"city\":null,\"location\":\"京津冀\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_030": {
+      "ok": true,
+      "parsed": {
+        "title": "天津蓟州爬山",
+        "activity_type": "爬山",
+        "city": "天津",
+        "location": "天津 蓟州",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "周六一天往返"
+        ]
+      },
+      "raw": "{\"title\":\"天津蓟州爬山\",\"activity_type\":\"爬山\",\"city\":\"天津\",\"location\":\"天津 蓟州\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"周六一天往返\"]}"
+    },
+    "evt_031": {
+      "ok": true,
+      "parsed": {
+        "title": "东京周边温泉",
+        "activity_type": "温泉",
+        "city": "东京",
+        "location": "东京周边",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "周末出发"
+        ]
+      },
+      "raw": "{\"title\":\"东京周边温泉\",\"activity_type\":\"温泉\",\"city\":\"东京\",\"location\":\"东京周边\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"周末出发\"]}"
+    },
+    "evt_032": {
+      "ok": true,
+      "parsed": {
+        "title": "箱根温泉住宿",
+        "activity_type": "温泉",
+        "city": null,
+        "location": "箱根",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "住宿一晚"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"箱根温泉住宿\",\"activity_type\":\"温泉\",\"city\":null,\"location\":\"箱根\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"住宿一晚\"],\"constraints\":[]}\n```"
+    },
+    "evt_033": {
+      "ok": true,
+      "parsed": {
+        "title": "关西旅行",
+        "activity_type": "旅行",
+        "city": null,
+        "location": "关西 京都 大阪",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"关西旅行\",\"activity_type\":\"旅行\",\"city\":null,\"location\":\"关西 京都 大阪\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_034": {
+      "ok": true,
+      "parsed": {
+        "title": "线上聊电影",
+        "activity_type": "聊天",
+        "city": null,
+        "location": null,
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "电影话题"
+        ],
+        "constraints": [
+          "线上"
+        ]
+      },
+      "raw": "{\"title\":\"线上聊电影\",\"activity_type\":\"聊天\",\"city\":null,\"location\":null,\"start_time\":null,\"end_time\":null,\"preferences\":[\"电影话题\"],\"constraints\":[\"线上\"]}"
+    },
+    "evt_035": {
+      "ok": true,
+      "parsed": {
+        "title": "桌游",
+        "activity_type": "桌游",
+        "city": null,
+        "location": null,
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"桌游\",\"activity_type\":\"桌游\",\"city\":null,\"location\":null,\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_036": {
+      "ok": true,
+      "parsed": {
+        "title": "西湖散步拍照",
+        "activity_type": "散步",
+        "city": "杭州",
+        "location": "杭州 西湖",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "拍照"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"西湖散步拍照\",\"activity_type\":\"散步\",\"city\":\"杭州\",\"location\":\"杭州 西湖\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"拍照\"],\"constraints\":[]}\n```"
+    },
+    "evt_037": {
+      "ok": true,
+      "parsed": {
+        "title": "苏州园林拍照",
+        "activity_type": "拍照",
+        "city": "苏州",
+        "location": "苏州园林",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"苏州园林拍照\",\"activity_type\":\"拍照\",\"city\":\"苏州\",\"location\":\"苏州园林\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_038": {
+      "ok": true,
+      "parsed": {
+        "title": "佛山岭南天地喝茶",
+        "activity_type": "喝茶",
+        "city": "佛山",
+        "location": "佛山 岭南天地",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "下午",
+          "慢慢坐"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"佛山岭南天地喝茶\",\"activity_type\":\"喝茶\",\"city\":\"佛山\",\"location\":\"佛山 岭南天地\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"下午\",\"慢慢坐\"],\"constraints\":[]}\n```"
+    },
+    "evt_039": {
+      "ok": true,
+      "parsed": {
+        "title": "深圳大鹏露营看海",
+        "activity_type": "露营",
+        "city": "深圳",
+        "location": "深圳 大鹏",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "看海"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"深圳大鹏露营看海\",\"activity_type\":\"露营\",\"city\":\"深圳\",\"location\":\"深圳 大鹏\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"看海\"],\"constraints\":[]}\n```"
+    },
+    "evt_040": {
+      "ok": true,
+      "parsed": {
+        "title": "北京通州看电影",
+        "activity_type": "看电影",
+        "city": "北京",
+        "location": "北京 通州",
+        "start_time": "晚上",
+        "end_time": null,
+        "preferences": [
+          "晚上场"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"北京通州看电影\",\"activity_type\":\"看电影\",\"city\":\"北京\",\"location\":\"北京 通州\",\"start_time\":\"晚上\",\"end_time\":null,\"preferences\":[\"晚上场\"],\"constraints\":[]}\n```"
+    },
+    "evt_041": {
+      "ok": true,
+      "parsed": {
+        "title": "厦门曾厝垵逛吃",
+        "activity_type": "逛吃",
+        "city": "厦门",
+        "location": "厦门 曾厝垵",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"厦门曾厝垵逛吃\",\"activity_type\":\"逛吃\",\"city\":\"厦门\",\"location\":\"厦门 曾厝垵\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_042": {
+      "ok": true,
+      "parsed": {
+        "title": "成都周边山里吸氧",
+        "activity_type": "户外/自然",
+        "city": "成都",
+        "location": "成都周边 山里",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "吸氧",
+          "自然",
+          "周末"
+        ],
+        "constraints": [
+          "一天"
+        ]
+      },
+      "raw": "{\"title\":\"成都周边山里吸氧\",\"activity_type\":\"户外/自然\",\"city\":\"成都\",\"location\":\"成都周边 山里\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"吸氧\",\"自然\",\"周末\"],\"constraints\":[\"一天\"]}"
+    },
+    "evt_043": {
+      "ok": true,
+      "parsed": {
+        "title": "上海今晚咖啡",
+        "activity_type": "咖啡",
+        "city": "上海",
+        "location": "上海 市区",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"上海今晚咖啡\",\"activity_type\":\"咖啡\",\"city\":\"上海\",\"location\":\"上海 市区\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_044": {
+      "ok": true,
+      "parsed": {
+        "title": "蓉城太古里咖啡",
+        "activity_type": "咖啡",
+        "city": "成都",
+        "location": "成都 太古里",
+        "start_time": "15:00",
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"蓉城太古里咖啡\",\"activity_type\":\"咖啡\",\"city\":\"成都\",\"location\":\"成都 太古里\",\"start_time\":\"15:00\",\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_045": {
+      "ok": true,
+      "parsed": {
+        "title": "江浙沪咖啡",
+        "activity_type": "咖啡",
+        "city": null,
+        "location": "江浙沪",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "不想跑太远"
+        ]
+      },
+      "raw": "```json\n{\"title\":\"江浙沪咖啡\",\"activity_type\":\"咖啡\",\"city\":null,\"location\":\"江浙沪\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"不想跑太远\"]}\n```"
+    },
+    "evt_046": {
+      "ok": true,
+      "parsed": {
+        "title": "广州天河吃饭",
+        "activity_type": "餐饮",
+        "city": "广州",
+        "location": "广州 天河",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"广州天河吃饭\",\"activity_type\":\"餐饮\",\"city\":\"广州\",\"location\":\"广州 天河\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_047": {
+      "ok": true,
+      "parsed": {
+        "title": "京津冀自驾拼车",
+        "activity_type": "自驾",
+        "city": "北京",
+        "location": "京津冀",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "拼车"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"京津冀自驾拼车\",\"activity_type\":\"自驾\",\"city\":\"北京\",\"location\":\"京津冀\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"拼车\"],\"constraints\":[]}\n```"
+    },
+    "evt_048": {
+      "ok": true,
+      "parsed": {
+        "title": "新宿附近拉面",
+        "activity_type": "拉面",
+        "city": "东京",
+        "location": "新宿",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"新宿附近拉面\",\"activity_type\":\"拉面\",\"city\":\"东京\",\"location\":\"新宿\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    }
+  },
+  "single_location_guarded": {
+    "evt_001": {
+      "ok": true,
+      "parsed": {
+        "title": "上海浦东咖啡",
+        "activity_type": "咖啡",
+        "city": "上海",
+        "location": "上海 浦东",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "周五下班"
+        ]
+      },
+      "raw": "{\"title\":\"上海浦东咖啡\",\"activity_type\":\"咖啡\",\"city\":\"上海\",\"location\":\"上海 浦东\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"周五下班\"]}"
+    },
+    "evt_002": {
+      "ok": true,
+      "parsed": {
+        "title": "陆家嘴咖啡",
+        "activity_type": "咖啡",
+        "city": "上海",
+        "location": "上海 陆家嘴",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"陆家嘴咖啡\",\"activity_type\":\"咖啡\",\"city\":\"上海\",\"location\":\"上海 陆家嘴\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_003": {
+      "ok": true,
+      "parsed": {
+        "title": "武康路 city walk + brunch",
+        "activity_type": "city walk",
+        "city": "上海",
+        "location": "上海 武康路",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "brunch"
+        ],
+        "constraints": [
+          "周末"
+        ]
+      },
+      "raw": "{\"title\":\"武康路 city walk + brunch\",\"activity_type\":\"city walk\",\"city\":\"上海\",\"location\":\"上海 武康路\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"brunch\"],\"constraints\":[\"周末\"]}"
+    },
+    "evt_004": {
+      "ok": true,
+      "parsed": {
+        "title": "北京朝阳看展",
+        "activity_type": "看展",
+        "city": "北京",
+        "location": "北京 朝阳",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"北京朝阳看展\",\"activity_type\":\"看展\",\"city\":\"北京\",\"location\":\"北京 朝阳\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_005": {
+      "ok": true,
+      "parsed": {
+        "title": "北京环球影城看电影",
+        "activity_type": "看电影",
+        "city": "北京",
+        "location": "北京 环球影城",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"北京环球影城看电影\",\"activity_type\":\"看电影\",\"city\":\"北京\",\"location\":\"北京 环球影城\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_006": {
+      "ok": true,
+      "parsed": {
+        "title": "杭州西湖边散步拍照",
+        "activity_type": "散步",
+        "city": "杭州",
+        "location": "杭州 西湖",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "拍照"
+        ],
+        "constraints": [
+          "周末下午"
+        ]
+      },
+      "raw": "{\"title\":\"杭州西湖边散步拍照\",\"activity_type\":\"散步\",\"city\":\"杭州\",\"location\":\"杭州 西湖\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"拍照\"],\"constraints\":[\"周末下午\"]}"
+    },
+    "evt_007": {
+      "ok": true,
+      "parsed": {
+        "title": "南京新街口吃饭",
+        "activity_type": "吃饭",
+        "city": "南京",
+        "location": "南京 新街口",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"南京新街口吃饭\",\"activity_type\":\"吃饭\",\"city\":\"南京\",\"location\":\"南京 新街口\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_008": {
+      "ok": true,
+      "parsed": {
+        "title": "深圳南山健身",
+        "activity_type": "健身",
+        "city": "深圳",
+        "location": "深圳 南山",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "晚上下班后"
+        ]
+      },
+      "raw": "{\"title\":\"深圳南山健身\",\"activity_type\":\"健身\",\"city\":\"深圳\",\"location\":\"深圳 南山\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"晚上下班后\"]}"
+    },
+    "evt_009": {
+      "ok": true,
+      "parsed": {
+        "title": "广州天河喝茶聊天",
+        "activity_type": "喝茶聊天",
+        "city": "广州",
+        "location": "广州 天河",
+        "start_time": "周日下午",
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"广州天河喝茶聊天\",\"activity_type\":\"喝茶聊天\",\"city\":\"广州\",\"location\":\"广州 天河\",\"start_time\":\"周日下午\",\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_010": {
+      "ok": true,
+      "parsed": {
+        "title": "香港中环酒吧",
+        "activity_type": "酒吧",
+        "city": "香港",
+        "location": "香港 中环",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "下班后"
+        ]
+      },
+      "raw": "{\"title\":\"香港中环酒吧\",\"activity_type\":\"酒吧\",\"city\":\"香港\",\"location\":\"香港 中环\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"下班后\"]}"
+    },
+    "evt_011": {
+      "ok": true,
+      "parsed": {
+        "title": "台北周末桌游",
+        "activity_type": "桌游",
+        "city": "台北",
+        "location": "不限地点",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "周末"
+        ]
+      },
+      "raw": "{\"title\":\"台北周末桌游\",\"activity_type\":\"桌游\",\"city\":\"台北\",\"location\":\"不限地点\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"周末\"]}"
+    },
+    "evt_012": {
+      "ok": true,
+      "parsed": {
+        "title": "新加坡牛车水吃饭",
+        "activity_type": "吃饭",
+        "city": "新加坡",
+        "location": "新加坡 牛车水",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "不赶时间"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"新加坡牛车水吃饭\",\"activity_type\":\"吃饭\",\"city\":\"新加坡\",\"location\":\"新加坡 牛车水\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"不赶时间\"],\"constraints\":[]}"
+    },
+    "evt_013": {
+      "ok": true,
+      "parsed": {
+        "title": "成都太古里火锅",
+        "activity_type": "火锅",
+        "city": "成都",
+        "location": "成都 太古里",
+        "start_time": "今晚",
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"成都太古里火锅\",\"activity_type\":\"火锅\",\"city\":\"成都\",\"location\":\"成都 太古里\",\"start_time\":\"今晚\",\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_014": {
+      "ok": true,
+      "parsed": {
+        "title": "鼓浪屿旅行",
+        "activity_type": "旅行",
+        "city": "厦门",
+        "location": "厦门 鼓浪屿",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "慢慢逛",
+          "一天"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"鼓浪屿旅行\",\"activity_type\":\"旅行\",\"city\":\"厦门\",\"location\":\"厦门 鼓浪屿\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"慢慢逛\",\"一天\"],\"constraints\":[]}\n```"
+    },
+    "evt_015": {
+      "ok": true,
+      "parsed": {
+        "title": "大理洱海发呆旅行",
+        "activity_type": "旅行",
+        "city": "大理",
+        "location": "大理 洱海",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "发呆",
+          "拼搭子"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"大理洱海发呆旅行\",\"activity_type\":\"旅行\",\"city\":\"大理\",\"location\":\"大理 洱海\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"发呆\",\"拼搭子\"],\"constraints\":[]}\n```"
+    },
+    "evt_016": {
+      "ok": true,
+      "parsed": {
+        "title": "东京新宿拉面",
+        "activity_type": "餐饮",
+        "city": "东京",
+        "location": "东京 新宿",
+        "start_time": "今晚",
+        "end_time": null,
+        "preferences": [
+          "拉面"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"东京新宿拉面\",\"activity_type\":\"餐饮\",\"city\":\"东京\",\"location\":\"东京 新宿\",\"start_time\":\"今晚\",\"end_time\":null,\"preferences\":[\"拉面\"],\"constraints\":[]}"
+    },
+    "evt_017": {
+      "ok": true,
+      "parsed": {
+        "title": "京都岚山旅行拍照",
+        "activity_type": "旅行拍照",
+        "city": "京都",
+        "location": "京都 岚山",
+        "start_time": "周末",
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"京都岚山旅行拍照\",\"activity_type\":\"旅行拍照\",\"city\":\"京都\",\"location\":\"京都 岚山\",\"start_time\":\"周末\",\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_018": {
+      "ok": true,
+      "parsed": {
+        "title": "上海静安看电影",
+        "activity_type": "看电影",
+        "city": "上海",
+        "location": "上海 静安",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "文艺片"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"上海静安看电影\",\"activity_type\":\"看电影\",\"city\":\"上海\",\"location\":\"上海 静安\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"文艺片\"],\"constraints\":[]}\n```"
+    },
+    "evt_019": {
+      "ok": true,
+      "parsed": {
+        "title": "香港铜锣湾逛街",
+        "activity_type": "逛街",
+        "city": "香港",
+        "location": "香港 铜锣湾",
+        "start_time": "周六下午",
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"香港铜锣湾逛街\",\"activity_type\":\"逛街\",\"city\":\"香港\",\"location\":\"香港 铜锣湾\",\"start_time\":\"周六下午\",\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_020": {
+      "ok": true,
+      "parsed": {
+        "title": "乌节路逛街购物",
+        "activity_type": "逛街购物",
+        "city": "新加坡",
+        "location": "新加坡 乌节路",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "购物"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"乌节路逛街购物\",\"activity_type\":\"逛街购物\",\"city\":\"新加坡\",\"location\":\"新加坡 乌节路\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"购物\"],\"constraints\":[]}"
+    },
+    "evt_021": {
+      "ok": true,
+      "parsed": {
+        "title": "川西徒步",
+        "activity_type": "徒步",
+        "city": "成都",
+        "location": "川西",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "成都出发"
+        ]
+      },
+      "raw": "{\"title\":\"川西徒步\",\"activity_type\":\"徒步\",\"city\":\"成都\",\"location\":\"川西\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"成都出发\"]}"
+    },
+    "evt_022": {
+      "ok": true,
+      "parsed": {
+        "title": "四姑娘山自驾",
+        "activity_type": "自驾",
+        "city": null,
+        "location": "四姑娘山",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "会开车"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"四姑娘山自驾\",\"activity_type\":\"自驾\",\"city\":null,\"location\":\"四姑娘山\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"会开车\"],\"constraints\":[]}"
+    },
+    "evt_023": {
+      "ok": true,
+      "parsed": {
+        "title": "稻城亚丁摄影旅行",
+        "activity_type": "旅行",
+        "city": null,
+        "location": "稻城亚丁",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "摄影"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"稻城亚丁摄影旅行\",\"activity_type\":\"旅行\",\"city\":null,\"location\":\"稻城亚丁\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"摄影\"],\"constraints\":[]}"
+    },
+    "evt_024": {
+      "ok": true,
+      "parsed": {
+        "title": "江浙沪周边游",
+        "activity_type": "周边游",
+        "city": "上海",
+        "location": "江浙沪",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "周末两天"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"江浙沪周边游\",\"activity_type\":\"周边游\",\"city\":\"上海\",\"location\":\"江浙沪\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"周末两天\"],\"constraints\":[]}\n```"
+    },
+    "evt_025": {
+      "ok": true,
+      "parsed": {
+        "title": "长三角周末自驾",
+        "activity_type": "自驾",
+        "city": null,
+        "location": "长三角",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "别太累"
+        ]
+      },
+      "raw": "{\"title\":\"长三角周末自驾\",\"activity_type\":\"自驾\",\"city\":null,\"location\":\"长三角\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"别太累\"]}"
+    },
+    "evt_026": {
+      "ok": true,
+      "parsed": {
+        "title": "上海周边露营",
+        "activity_type": "露营",
+        "city": "上海",
+        "location": "上海周边",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "苏杭方向"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"上海周边露营\",\"activity_type\":\"露营\",\"city\":\"上海\",\"location\":\"上海周边\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"苏杭方向\"],\"constraints\":[]}\n```"
+    },
+    "evt_027": {
+      "ok": true,
+      "parsed": {
+        "title": "珠三角自驾",
+        "activity_type": "自驾",
+        "city": "广州",
+        "location": "珠三角",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "有车更好"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"珠三角自驾\",\"activity_type\":\"自驾\",\"city\":\"广州\",\"location\":\"珠三角\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"有车更好\"],\"constraints\":[]}"
+    },
+    "evt_028": {
+      "ok": true,
+      "parsed": {
+        "title": "大湾区露营",
+        "activity_type": "露营",
+        "city": null,
+        "location": "大湾区",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "深圳广州都方便"
+        ]
+      },
+      "raw": "{\"title\":\"大湾区露营\",\"activity_type\":\"露营\",\"city\":null,\"location\":\"大湾区\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"深圳广州都方便\"]}"
+    },
+    "evt_029": {
+      "ok": true,
+      "parsed": {
+        "title": "京津冀周边爬山露营",
+        "activity_type": "爬山露营",
+        "city": null,
+        "location": "京津冀",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"京津冀周边爬山露营\",\"activity_type\":\"爬山露营\",\"city\":null,\"location\":\"京津冀\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}\n```"
+    },
+    "evt_030": {
+      "ok": true,
+      "parsed": {
+        "title": "天津蓟州爬山",
+        "activity_type": "爬山",
+        "city": "天津",
+        "location": "天津 蓟州",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "周六一天",
+          "往返"
+        ]
+      },
+      "raw": "{\"title\":\"天津蓟州爬山\",\"activity_type\":\"爬山\",\"city\":\"天津\",\"location\":\"天津 蓟州\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"周六一天\",\"往返\"]}"
+    },
+    "evt_031": {
+      "ok": true,
+      "parsed": {
+        "title": "东京周边温泉",
+        "activity_type": "温泉",
+        "city": "东京",
+        "location": "东京周边",
+        "start_time": "周末",
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"东京周边温泉\",\"activity_type\":\"温泉\",\"city\":\"东京\",\"location\":\"东京周边\",\"start_time\":\"周末\",\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_032": {
+      "ok": true,
+      "parsed": {
+        "title": "箱根温泉搭子",
+        "activity_type": "温泉",
+        "city": null,
+        "location": "箱根",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "住宿一晚"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"箱根温泉搭子\",\"activity_type\":\"温泉\",\"city\":null,\"location\":\"箱根\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"住宿一晚\"],\"constraints\":[]}"
+    },
+    "evt_033": {
+      "ok": true,
+      "parsed": {
+        "title": "关西旅行",
+        "activity_type": "旅行",
+        "city": null,
+        "location": "关西",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "京都",
+          "大阪"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"关西旅行\",\"activity_type\":\"旅行\",\"city\":null,\"location\":\"关西\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"京都\",\"大阪\"],\"constraints\":[]}"
+    },
+    "evt_034": {
+      "ok": true,
+      "parsed": {
+        "title": "线上聊天",
+        "activity_type": "线上聊天",
+        "city": null,
+        "location": "线上",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "电影"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"线上聊天\",\"activity_type\":\"线上聊天\",\"city\":null,\"location\":\"线上\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"电影\"],\"constraints\":[]}"
+    },
+    "evt_035": {
+      "ok": true,
+      "parsed": {
+        "title": "桌游搭子",
+        "activity_type": "桌游",
+        "city": null,
+        "location": "不限地点",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"桌游搭子\",\"activity_type\":\"桌游\",\"city\":null,\"location\":\"不限地点\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_036": {
+      "ok": true,
+      "parsed": {
+        "title": "西湖走走拍照",
+        "activity_type": "散步",
+        "city": "杭州",
+        "location": "杭州 西湖",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "拍照"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"西湖走走拍照\",\"activity_type\":\"散步\",\"city\":\"杭州\",\"location\":\"杭州 西湖\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"拍照\"],\"constraints\":[]}\n```"
+    },
+    "evt_037": {
+      "ok": true,
+      "parsed": {
+        "title": "苏州园林拍照",
+        "activity_type": "摄影",
+        "city": "苏州",
+        "location": "苏州",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "园林",
+          "拍照",
+          "周末"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"苏州园林拍照\",\"activity_type\":\"摄影\",\"city\":\"苏州\",\"location\":\"苏州\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"园林\",\"拍照\",\"周末\"],\"constraints\":[]}\n```"
+    },
+    "evt_038": {
+      "ok": true,
+      "parsed": {
+        "title": "佛山岭南天地喝茶",
+        "activity_type": "喝茶",
+        "city": "佛山",
+        "location": "佛山 岭南天地",
+        "start_time": "下午",
+        "end_time": null,
+        "preferences": [
+          "慢慢坐"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"佛山岭南天地喝茶\",\"activity_type\":\"喝茶\",\"city\":\"佛山\",\"location\":\"佛山 岭南天地\",\"start_time\":\"下午\",\"end_time\":null,\"preferences\":[\"慢慢坐\"],\"constraints\":[]}"
+    },
+    "evt_039": {
+      "ok": true,
+      "parsed": {
+        "title": "深圳大鹏露营",
+        "activity_type": "露营",
+        "city": "深圳",
+        "location": "深圳 大鹏",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "看海"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"深圳大鹏露营\",\"activity_type\":\"露营\",\"city\":\"深圳\",\"location\":\"深圳 大鹏\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"看海\"],\"constraints\":[]}"
+    },
+    "evt_040": {
+      "ok": true,
+      "parsed": {
+        "title": "北京通州看电影",
+        "activity_type": "电影",
+        "city": "北京",
+        "location": "北京 通州",
+        "start_time": "晚上",
+        "end_time": null,
+        "preferences": [
+          "晚上场"
+        ],
+        "constraints": []
+      },
+      "raw": "```json\n{\"title\":\"北京通州看电影\",\"activity_type\":\"电影\",\"city\":\"北京\",\"location\":\"北京 通州\",\"start_time\":\"晚上\",\"end_time\":null,\"preferences\":[\"晚上场\"],\"constraints\":[]}\n```"
+    },
+    "evt_041": {
+      "ok": true,
+      "parsed": {
+        "title": "厦门曾厝垵逛吃",
+        "activity_type": "逛吃",
+        "city": "厦门",
+        "location": "厦门 曾厝垵",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"厦门曾厝垵逛吃\",\"activity_type\":\"逛吃\",\"city\":\"厦门\",\"location\":\"厦门 曾厝垵\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_042": {
+      "ok": true,
+      "parsed": {
+        "title": "成都周边山里吸氧",
+        "activity_type": "户外/徒步",
+        "city": "成都",
+        "location": "成都周边",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [
+          "山里",
+          "吸氧",
+          "周末",
+          "一天"
+        ],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"成都周边山里吸氧\",\"activity_type\":\"户外/徒步\",\"city\":\"成都\",\"location\":\"成都周边\",\"start_time\":null,\"end_time\":null,\"preferences\":[\"山里\",\"吸氧\",\"周末\",\"一天\"],\"constraints\":[]}"
+    },
+    "evt_043": {
+      "ok": true,
+      "parsed": {
+        "title": "魔都咖啡",
+        "activity_type": "咖啡",
+        "city": "上海",
+        "location": "上海 市区",
+        "start_time": "今晚",
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"魔都咖啡\",\"activity_type\":\"咖啡\",\"city\":\"上海\",\"location\":\"上海 市区\",\"start_time\":\"今晚\",\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_044": {
+      "ok": true,
+      "parsed": {
+        "title": "太古里咖啡",
+        "activity_type": "咖啡",
+        "city": "成都",
+        "location": "成都 太古里",
+        "start_time": "15:00",
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"太古里咖啡\",\"activity_type\":\"咖啡\",\"city\":\"成都\",\"location\":\"成都 太古里\",\"start_time\":\"15:00\",\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_045": {
+      "ok": true,
+      "parsed": {
+        "title": "江浙沪咖啡",
+        "activity_type": "咖啡",
+        "city": null,
+        "location": "江浙沪",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "不想跑太远"
+        ]
+      },
+      "raw": "```json\n{\"title\":\"江浙沪咖啡\",\"activity_type\":\"咖啡\",\"city\":null,\"location\":\"江浙沪\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"不想跑太远\"]}\n```"
+    },
+    "evt_046": {
+      "ok": true,
+      "parsed": {
+        "title": "广州吃饭",
+        "activity_type": "聚餐",
+        "city": "广州",
+        "location": "广州 天河",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"广州吃饭\",\"activity_type\":\"聚餐\",\"city\":\"广州\",\"location\":\"广州 天河\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    },
+    "evt_047": {
+      "ok": true,
+      "parsed": {
+        "title": "京津冀自驾拼车",
+        "activity_type": "自驾",
+        "city": "北京",
+        "location": "京津冀",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": [
+          "拼车"
+        ]
+      },
+      "raw": "{\"title\":\"京津冀自驾拼车\",\"activity_type\":\"自驾\",\"city\":\"北京\",\"location\":\"京津冀\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[\"拼车\"]}"
+    },
+    "evt_048": {
+      "ok": true,
+      "parsed": {
+        "title": "新宿拉面",
+        "activity_type": "拉面",
+        "city": "东京",
+        "location": "东京 新宿",
+        "start_time": null,
+        "end_time": null,
+        "preferences": [],
+        "constraints": []
+      },
+      "raw": "{\"title\":\"新宿拉面\",\"activity_type\":\"拉面\",\"city\":\"东京\",\"location\":\"东京 新宿\",\"start_time\":null,\"end_time\":null,\"preferences\":[],\"constraints\":[]}"
+    }
+  },
+  "location_only_guarded": {
+    "evt_001": {
+      "ok": true,
+      "parsed": {
+        "location": "上海 浦东"
+      },
+      "raw": "{\"location\":\"上海 浦东\"}"
+    },
+    "evt_002": {
+      "ok": true,
+      "parsed": {
+        "location": "陆家嘴"
+      },
+      "raw": "{\"location\":\"陆家嘴\"}"
+    },
+    "evt_003": {
+      "ok": true,
+      "parsed": {
+        "location": "上海 武康路"
+      },
+      "raw": "{\"location\":\"上海 武康路\"}"
+    },
+    "evt_004": {
+      "ok": true,
+      "parsed": {
+        "location": "北京 朝阳"
+      },
+      "raw": "{\"location\":\"北京 朝阳\"}"
+    },
+    "evt_005": {
+      "ok": true,
+      "parsed": {
+        "location": "北京 环球影城"
+      },
+      "raw": "{\"location\":\"北京 环球影城\"}"
+    },
+    "evt_006": {
+      "ok": true,
+      "parsed": {
+        "location": "杭州 西湖"
+      },
+      "raw": "{\"location\":\"杭州 西湖\"}"
+    },
+    "evt_007": {
+      "ok": true,
+      "parsed": {
+        "location": "南京 新街口"
+      },
+      "raw": "{\"location\":\"南京 新街口\"}"
+    },
+    "evt_008": {
+      "ok": true,
+      "parsed": {
+        "location": "深圳 南山"
+      },
+      "raw": "{\"location\":\"深圳 南山\"}"
+    },
+    "evt_009": {
+      "ok": true,
+      "parsed": {
+        "location": "广州 天河"
+      },
+      "raw": "{\"location\":\"广州 天河\"}"
+    },
+    "evt_010": {
+      "ok": true,
+      "parsed": {
+        "location": "香港 中环"
+      },
+      "raw": "{\"location\":\"香港 中环\"}"
+    },
+    "evt_011": {
+      "ok": true,
+      "parsed": {
+        "location": "台北"
+      },
+      "raw": "{\"location\":\"台北\"}"
+    },
+    "evt_012": {
+      "ok": true,
+      "parsed": {
+        "location": "新加坡 牛车水"
+      },
+      "raw": "{\"location\":\"新加坡 牛车水\"}"
+    },
+    "evt_013": {
+      "ok": true,
+      "parsed": {
+        "location": "成都 太古里"
+      },
+      "raw": "{\"location\":\"成都 太古里\"}"
+    },
+    "evt_014": {
+      "ok": true,
+      "parsed": {
+        "location": "厦门 鼓浪屿"
+      },
+      "raw": "{\"location\":\"厦门 鼓浪屿\"}"
+    },
+    "evt_015": {
+      "ok": true,
+      "parsed": {
+        "location": "大理 洱海"
+      },
+      "raw": "{\"location\":\"大理 洱海\"}"
+    },
+    "evt_016": {
+      "ok": true,
+      "parsed": {
+        "location": "东京 新宿"
+      },
+      "raw": "{\"location\":\"东京 新宿\"}"
+    },
+    "evt_017": {
+      "ok": true,
+      "parsed": {
+        "location": "京都 岚山"
+      },
+      "raw": "{\"location\":\"京都 岚山\"}"
+    },
+    "evt_018": {
+      "ok": true,
+      "parsed": {
+        "location": "上海 静安"
+      },
+      "raw": "{\"location\":\"上海 静安\"}"
+    },
+    "evt_019": {
+      "ok": true,
+      "parsed": {
+        "location": "香港 铜锣湾"
+      },
+      "raw": "{\"location\":\"香港 铜锣湾\"}"
+    },
+    "evt_020": {
+      "ok": true,
+      "parsed": {
+        "location": "新加坡 乌节路"
+      },
+      "raw": "{\"location\":\"新加坡 乌节路\"}"
+    },
+    "evt_021": {
+      "ok": true,
+      "parsed": {
+        "location": "川西"
+      },
+      "raw": "{\"location\":\"川西\"}"
+    },
+    "evt_022": {
+      "ok": true,
+      "parsed": {
+        "location": "四姑娘山"
+      },
+      "raw": "{\"location\":\"四姑娘山\"}"
+    },
+    "evt_023": {
+      "ok": true,
+      "parsed": {
+        "location": "稻城亚丁"
+      },
+      "raw": "{\"location\":\"稻城亚丁\"}"
+    },
+    "evt_024": {
+      "ok": true,
+      "parsed": {
+        "location": "江浙沪"
+      },
+      "raw": "{\"location\":\"江浙沪\"}"
+    },
+    "evt_025": {
+      "ok": true,
+      "parsed": {
+        "location": "长三角"
+      },
+      "raw": "{\"location\":\"长三角\"}"
+    },
+    "evt_026": {
+      "ok": true,
+      "parsed": {
+        "location": "上海周边"
+      },
+      "raw": "{\"location\":\"上海周边\"}"
+    },
+    "evt_027": {
+      "ok": true,
+      "parsed": {
+        "location": "珠三角"
+      },
+      "raw": "{\"location\":\"珠三角\"}"
+    },
+    "evt_028": {
+      "ok": true,
+      "parsed": {
+        "location": "大湾区"
+      },
+      "raw": "{\"location\":\"大湾区\"}"
+    },
+    "evt_029": {
+      "ok": true,
+      "parsed": {
+        "location": "京津冀"
+      },
+      "raw": "{\"location\":\"京津冀\"}"
+    },
+    "evt_030": {
+      "ok": true,
+      "parsed": {
+        "location": "天津 蓟州"
+      },
+      "raw": "{\"location\":\"天津 蓟州\"}"
+    },
+    "evt_031": {
+      "ok": true,
+      "parsed": {
+        "location": "东京周边"
+      },
+      "raw": "{\"location\":\"东京周边\"}"
+    },
+    "evt_032": {
+      "ok": true,
+      "parsed": {
+        "location": "箱根"
+      },
+      "raw": "{\"location\":\"箱根\"}"
+    },
+    "evt_033": {
+      "ok": true,
+      "parsed": {
+        "location": "关西"
+      },
+      "raw": "{\"location\":\"关西\"}"
+    },
+    "evt_034": {
+      "ok": true,
+      "parsed": {
+        "location": "线上"
+      },
+      "raw": "{\"location\":\"线上\"}"
+    },
+    "evt_035": {
+      "ok": true,
+      "parsed": {
+        "location": "不限地点"
+      },
+      "raw": "{\"location\":\"不限地点\"}"
+    },
+    "evt_036": {
+      "ok": true,
+      "parsed": {
+        "location": "杭州 西湖"
+      },
+      "raw": "{\"location\":\"杭州 西湖\"}"
+    },
+    "evt_037": {
+      "ok": true,
+      "parsed": {
+        "location": "苏州"
+      },
+      "raw": "{\"location\":\"苏州\"}"
+    },
+    "evt_038": {
+      "ok": true,
+      "parsed": {
+        "location": "佛山 岭南天地"
+      },
+      "raw": "{\"location\":\"佛山 岭南天地\"}"
+    },
+    "evt_039": {
+      "ok": true,
+      "parsed": {
+        "location": "深圳 大鹏"
+      },
+      "raw": "{\"location\":\"深圳 大鹏\"}"
+    },
+    "evt_040": {
+      "ok": true,
+      "parsed": {
+        "location": "北京 通州"
+      },
+      "raw": "{\"location\":\"北京 通州\"}"
+    },
+    "evt_041": {
+      "ok": true,
+      "parsed": {
+        "location": "厦门 曾厝垵"
+      },
+      "raw": "{\"location\":\"厦门 曾厝垵\"}"
+    },
+    "evt_042": {
+      "ok": true,
+      "parsed": {
+        "location": "成都周边"
+      },
+      "raw": "{\"location\":\"成都周边\"}"
+    },
+    "evt_043": {
+      "ok": true,
+      "parsed": {
+        "location": "上海"
+      },
+      "raw": "{\"location\":\"上海\"}"
+    },
+    "evt_044": {
+      "ok": true,
+      "parsed": {
+        "location": "成都 太古里"
+      },
+      "raw": "{\"location\":\"成都 太古里\"}"
+    },
+    "evt_045": {
+      "ok": true,
+      "parsed": {
+        "location": "江浙沪"
+      },
+      "raw": "{\"location\":\"江浙沪\"}"
+    },
+    "evt_046": {
+      "ok": true,
+      "parsed": {
+        "location": "广州 天河"
+      },
+      "raw": "{\"location\":\"广州 天河\"}"
+    },
+    "evt_047": {
+      "ok": true,
+      "parsed": {
+        "location": "京津冀"
+      },
+      "raw": "{\"location\":\"京津冀\"}"
+    },
+    "evt_048": {
+      "ok": true,
+      "parsed": {
+        "location": "东京 新宿"
+      },
+      "raw": "{\"location\":\"东京 新宿\"}"
+    }
+  }
+}

@@ -1,0 +1,6480 @@
+{
+  "extraction": {
+    "default": {
+      "total": 48,
+      "valid_json_rate": 1.0,
+      "non_empty_location_rate": 0.9792,
+      "location_accuracy": 0.9375,
+      "misses": [
+        {
+          "id": "evt_026",
+          "utterance": "上海周边露营，苏杭方向都行",
+          "expected_location": "上海周边",
+          "actual_location": "苏州、杭州方向",
+          "parsed": {
+            "title": "上海周边露营",
+            "activity_type": "露营",
+            "city": "",
+            "start_time": "",
+            "end_time": "",
+            "location": "苏州、杭州方向",
+            "preferences": "上海周边，苏杭方向",
+            "constraints": ""
+          },
+          "error": null
+        },
+        {
+          "id": "evt_033",
+          "utterance": "关西旅行，京都大阪都行",
+          "expected_location": "关西",
+          "actual_location": "京都、大阪",
+          "parsed": {
+            "title": "关西旅行",
+            "activity_type": "旅行",
+            "city": null,
+            "start_time": null,
+            "end_time": null,
+            "location": "京都、大阪",
+            "preferences": null,
+            "constraints": null
+          },
+          "error": null
+        },
+        {
+          "id": "evt_035",
+          "utterance": "地点不限，找桌游搭子",
+          "expected_location": "不限地点",
+          "actual_location": "",
+          "parsed": {
+            "title": "找桌游搭子",
+            "activity_type": "桌游",
+            "city": null,
+            "start_time": null,
+            "end_time": null,
+            "location": null,
+            "preferences": [
+              "桌游"
+            ],
+            "constraints": [
+              "地点不限"
+            ]
+          },
+          "error": null
+        }
+      ]
+    },
+    "single_location_fewshot": {
+      "total": 48,
+      "valid_json_rate": 1.0,
+      "non_empty_location_rate": 0.9583,
+      "location_accuracy": 0.9583,
+      "misses": [
+        {
+          "id": "evt_034",
+          "utterance": "线上聊天，随便聊聊电影",
+          "expected_location": "线上",
+          "actual_location": "",
+          "parsed": {
+            "title": "线上聊电影",
+            "activity_type": "聊天",
+            "city": null,
+            "location": null,
+            "start_time": null,
+            "end_time": null,
+            "preferences": [
+              "电影话题"
+            ],
+            "constraints": [
+              "线上"
+            ]
+          },
+          "error": null
+        },
+        {
+          "id": "evt_035",
+          "utterance": "地点不限，找桌游搭子",
+          "expected_location": "不限地点",
+          "actual_location": "",
+          "parsed": {
+            "title": "桌游",
+            "activity_type": "桌游",
+            "city": null,
+            "location": null,
+            "start_time": null,
+            "end_time": null,
+            "preferences": [],
+            "constraints": []
+          },
+          "error": null
+        }
+      ]
+    }
+  },
+  "matching": {
+    "gold_location": {
+      "city_overlap": {
+        "threshold": 0.01,
+        "accuracy": 0.7833,
+        "precision": 0.7674,
+        "recall": 0.9167,
+        "f1": 0.8354,
+        "tp": 33,
+        "fp": 10,
+        "tn": 14,
+        "fn": 3,
+        "name": "city_overlap",
+        "mistakes": [
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_006",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "target": {
+              "id": "evt_022",
+              "activity_type": "自驾",
+              "eval_location": "四姑娘山",
+              "utterance": "四姑娘山自驾搭子，最好会开车"
+            },
+            "note": "川西包含四姑娘山"
+          },
+          {
+            "id": "pair_007",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "target": {
+              "id": "evt_023",
+              "activity_type": "旅行",
+              "eval_location": "稻城亚丁",
+              "utterance": "稻城亚丁旅行，想拼个摄影搭子"
+            },
+            "note": "川西包含稻城亚丁"
+          },
+          {
+            "id": "pair_008",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_013",
+              "activity_type": "吃饭",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "target": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "note": "成都吃饭不应匹配川西徒步"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州 苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "吃饭",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "泡温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_034",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "粤港澳大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "大湾区露营 vs 香港中环酒吧，严格活动不跨区域"
+          },
+          {
+            "id": "pair_035",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_029",
+              "activity_type": "爬山",
+              "eval_location": "京津冀",
+              "utterance": "京津冀周边爬山露营，想找搭子"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "京津冀爬山 vs 北京朝阳看展"
+          },
+          {
+            "id": "pair_041",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_042",
+              "activity_type": "周边游",
+              "eval_location": "成都周边",
+              "utterance": "成都周边山里吸氧，周末一天"
+            },
+            "target": {
+              "id": "evt_013",
+              "activity_type": "吃饭",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "note": "成都周边山里 vs 成都太古里吃饭"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "泡温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "吃饭",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_054",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_025",
+              "activity_type": "自驾",
+              "eval_location": "长三角",
+              "utterance": "长三角周末自驾都可以，别太累"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "长三角自驾 vs 上海浦东咖啡，严格活动不跨区域"
+          },
+          {
+            "id": "pair_055",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_022",
+              "activity_type": "自驾",
+              "eval_location": "四姑娘山",
+              "utterance": "四姑娘山自驾搭子，最好会开车"
+            },
+            "target": {
+              "id": "evt_023",
+              "activity_type": "旅行",
+              "eval_location": "稻城亚丁",
+              "utterance": "稻城亚丁旅行，想拼个摄影搭子"
+            },
+            "note": "四姑娘山/稻城亚丁同属川西旅行圈"
+          }
+        ]
+      },
+      "location_char_ngram": {
+        "threshold": 0.0,
+        "accuracy": 0.6,
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1": 0.75,
+        "tp": 36,
+        "fp": 24,
+        "tn": 0,
+        "fn": 0,
+        "name": "location_char_ngram",
+        "mistakes": [
+          {
+            "id": "pair_002",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "上海咖啡 vs 北京看展"
+          },
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_008",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_013",
+              "activity_type": "吃饭",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "target": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "note": "成都吃饭不应匹配川西徒步"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州 苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_018",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津 蓟州",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京看展 vs 天津爬山"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "吃饭",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "泡温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_023",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_015",
+              "activity_type": "旅行",
+              "eval_location": "大理 洱海",
+              "utterance": "大理洱海边发呆旅行，随缘拼个搭子"
+            },
+            "target": {
+              "id": "evt_014",
+              "activity_type": "旅行",
+              "eval_location": "厦门 鼓浪屿",
+              "utterance": "厦门鼓浪屿旅行，想慢慢逛一天"
+            },
+            "note": "大理 vs 厦门"
+          },
+          {
+            "id": "pair_026",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_012",
+              "activity_type": "吃饭",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "新加坡 vs 香港"
+          },
+          {
+            "id": "pair_031",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_008",
+              "activity_type": "健身",
+              "eval_location": "深圳 南山",
+              "utterance": "深圳南山健身搭子，晚上下班后"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳健身 vs 广州喝茶"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_034",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "粤港澳大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "大湾区露营 vs 香港中环酒吧，严格活动不跨区域"
+          },
+          {
+            "id": "pair_035",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_029",
+              "activity_type": "爬山",
+              "eval_location": "京津冀",
+              "utterance": "京津冀周边爬山露营，想找搭子"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "京津冀爬山 vs 北京朝阳看展"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_041",
+            "expected": false,
+            "actual": true,
+            "score": 0.2887,
+            "source": {
+              "id": "evt_042",
+              "activity_type": "周边游",
+              "eval_location": "成都周边",
+              "utterance": "成都周边山里吸氧，周末一天"
+            },
+            "target": {
+              "id": "evt_013",
+              "activity_type": "吃饭",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "note": "成都周边山里 vs 成都太古里吃饭"
+          },
+          {
+            "id": "pair_042",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_023",
+              "activity_type": "旅行",
+              "eval_location": "稻城亚丁",
+              "utterance": "稻城亚丁旅行，想拼个摄影搭子"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "泡温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "稻城亚丁 vs 箱根"
+          },
+          {
+            "id": "pair_043",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_017",
+              "activity_type": "旅行",
+              "eval_location": "京都 岚山",
+              "utterance": "京都岚山旅行拍照，周末出发"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "泡温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "京都岚山 vs 箱根"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.3333,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "泡温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "吃饭",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_046",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_020",
+              "activity_type": "逛街",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "新加坡 vs 香港"
+          },
+          {
+            "id": "pair_051",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_007",
+              "activity_type": "吃饭",
+              "eval_location": "南京 新街口",
+              "utterance": "南京新街口附近吃饭，有人搭吗"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州 苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "南京吃饭 vs 苏州拍照，严格跨城不放行"
+          },
+          {
+            "id": "pair_054",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_025",
+              "activity_type": "自驾",
+              "eval_location": "长三角",
+              "utterance": "长三角周末自驾都可以，别太累"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "长三角自驾 vs 上海浦东咖啡，严格活动不跨区域"
+          },
+          {
+            "id": "pair_056",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "深圳大鹏露营 vs 佛山喝茶，严格活动不跨城"
+          },
+          {
+            "id": "pair_058",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳大鹏露营 vs 广州天河喝茶"
+          },
+          {
+            "id": "pair_060",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "看电影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津 蓟州",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京通州电影 vs 天津蓟州爬山"
+          }
+        ]
+      },
+      "augmented_location_char_ngram": {
+        "threshold": 0.14,
+        "accuracy": 0.8,
+        "precision": 0.7609,
+        "recall": 0.9722,
+        "f1": 0.8537,
+        "tp": 35,
+        "fp": 11,
+        "tn": 13,
+        "fn": 1,
+        "name": "augmented_location_char_ngram",
+        "mistakes": [
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.3807,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.4757,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州 苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.4,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.1741,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "吃饭",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "泡温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_031",
+            "expected": false,
+            "actual": true,
+            "score": 0.2236,
+            "source": {
+              "id": "evt_008",
+              "activity_type": "健身",
+              "eval_location": "深圳 南山",
+              "utterance": "深圳南山健身搭子，晚上下班后"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳健身 vs 广州喝茶"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 0.1414,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_037",
+            "expected": true,
+            "actual": false,
+            "score": 0.1197,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "上海 city-only 咖啡 vs 上海浦东咖啡"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.3487,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.2981,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "泡温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "吃饭",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_051",
+            "expected": false,
+            "actual": true,
+            "score": 0.1617,
+            "source": {
+              "id": "evt_007",
+              "activity_type": "吃饭",
+              "eval_location": "南京 新街口",
+              "utterance": "南京新街口附近吃饭，有人搭吗"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州 苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "南京吃饭 vs 苏州拍照，严格跨城不放行"
+          },
+          {
+            "id": "pair_056",
+            "expected": false,
+            "actual": true,
+            "score": 0.2236,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "深圳大鹏露营 vs 佛山喝茶，严格活动不跨城"
+          },
+          {
+            "id": "pair_058",
+            "expected": false,
+            "actual": true,
+            "score": 0.2236,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳大鹏露营 vs 广州天河喝茶"
+          }
+        ]
+      },
+      "augmented_char_ngram_strict_gate": {
+        "threshold": 0.14,
+        "accuracy": 0.9333,
+        "precision": 0.9706,
+        "recall": 0.9167,
+        "f1": 0.9429,
+        "tp": 33,
+        "fp": 1,
+        "tn": 23,
+        "fn": 3,
+        "name": "augmented_char_ngram_strict_gate",
+        "mistakes": [
+          {
+            "id": "pair_014",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "粤港澳大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "大湾区覆盖佛山"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.1741,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "吃饭",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "泡温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_033",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "珠三角覆盖佛山"
+          },
+          {
+            "id": "pair_037",
+            "expected": true,
+            "actual": false,
+            "score": 0.1197,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "上海 city-only 咖啡 vs 上海浦东咖啡"
+          }
+        ]
+      },
+      "location_embedding_raw": {
+        "threshold": 0.26,
+        "accuracy": 0.6667,
+        "precision": 0.6481,
+        "recall": 0.9722,
+        "f1": 0.7778,
+        "tp": 35,
+        "fp": 19,
+        "tn": 5,
+        "fn": 1,
+        "name": "location_embedding_raw",
+        "mistakes": [
+          {
+            "id": "pair_002",
+            "expected": false,
+            "actual": true,
+            "score": 0.3596,
+            "source": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "上海咖啡 vs 北京看展"
+          },
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.3986,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_008",
+            "expected": false,
+            "actual": true,
+            "score": 0.3486,
+            "source": {
+              "id": "evt_013",
+              "activity_type": "吃饭",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "target": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "note": "成都吃饭不应匹配川西徒步"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.3169,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州 苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.3755,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_018",
+            "expected": false,
+            "actual": true,
+            "score": 0.4259,
+            "source": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津 蓟州",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京看展 vs 天津爬山"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.4164,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "吃饭",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "泡温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_023",
+            "expected": false,
+            "actual": true,
+            "score": 0.2604,
+            "source": {
+              "id": "evt_015",
+              "activity_type": "旅行",
+              "eval_location": "大理 洱海",
+              "utterance": "大理洱海边发呆旅行，随缘拼个搭子"
+            },
+            "target": {
+              "id": "evt_014",
+              "activity_type": "旅行",
+              "eval_location": "厦门 鼓浪屿",
+              "utterance": "厦门鼓浪屿旅行，想慢慢逛一天"
+            },
+            "note": "大理 vs 厦门"
+          },
+          {
+            "id": "pair_031",
+            "expected": false,
+            "actual": true,
+            "score": 0.4197,
+            "source": {
+              "id": "evt_008",
+              "activity_type": "健身",
+              "eval_location": "深圳 南山",
+              "utterance": "深圳南山健身搭子，晚上下班后"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳健身 vs 广州喝茶"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 0.3889,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_034",
+            "expected": false,
+            "actual": true,
+            "score": 0.4123,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "粤港澳大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "大湾区露营 vs 香港中环酒吧，严格活动不跨区域"
+          },
+          {
+            "id": "pair_035",
+            "expected": false,
+            "actual": true,
+            "score": 0.4174,
+            "source": {
+              "id": "evt_029",
+              "activity_type": "爬山",
+              "eval_location": "京津冀",
+              "utterance": "京津冀周边爬山露营，想找搭子"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "京津冀爬山 vs 北京朝阳看展"
+          },
+          {
+            "id": "pair_041",
+            "expected": false,
+            "actual": true,
+            "score": 0.6691,
+            "source": {
+              "id": "evt_042",
+              "activity_type": "周边游",
+              "eval_location": "成都周边",
+              "utterance": "成都周边山里吸氧，周末一天"
+            },
+            "target": {
+              "id": "evt_013",
+              "activity_type": "吃饭",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "note": "成都周边山里 vs 成都太古里吃饭"
+          },
+          {
+            "id": "pair_043",
+            "expected": false,
+            "actual": true,
+            "score": 0.3991,
+            "source": {
+              "id": "evt_017",
+              "activity_type": "旅行",
+              "eval_location": "京都 岚山",
+              "utterance": "京都岚山旅行拍照，周末出发"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "泡温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "京都岚山 vs 箱根"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.568,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "泡温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "吃饭",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_051",
+            "expected": false,
+            "actual": true,
+            "score": 0.3391,
+            "source": {
+              "id": "evt_007",
+              "activity_type": "吃饭",
+              "eval_location": "南京 新街口",
+              "utterance": "南京新街口附近吃饭，有人搭吗"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州 苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "南京吃饭 vs 苏州拍照，严格跨城不放行"
+          },
+          {
+            "id": "pair_052",
+            "expected": true,
+            "actual": false,
+            "score": 0.2012,
+            "source": {
+              "id": "evt_025",
+              "activity_type": "自驾",
+              "eval_location": "长三角",
+              "utterance": "长三角周末自驾都可以，别太累"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州 苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "长三角覆盖苏州园林"
+          },
+          {
+            "id": "pair_056",
+            "expected": false,
+            "actual": true,
+            "score": 0.3426,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "深圳大鹏露营 vs 佛山喝茶，严格活动不跨城"
+          },
+          {
+            "id": "pair_058",
+            "expected": false,
+            "actual": true,
+            "score": 0.3799,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳大鹏露营 vs 广州天河喝茶"
+          },
+          {
+            "id": "pair_060",
+            "expected": false,
+            "actual": true,
+            "score": 0.5423,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "看电影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津 蓟州",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京通州电影 vs 天津蓟州爬山"
+          }
+        ]
+      },
+      "location_embedding_augmented": {
+        "threshold": 0.63,
+        "accuracy": 0.8667,
+        "precision": 0.8889,
+        "recall": 0.8889,
+        "f1": 0.8889,
+        "tp": 32,
+        "fp": 4,
+        "tn": 20,
+        "fn": 4,
+        "name": "location_embedding_augmented",
+        "mistakes": [
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.7394,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.866,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州 苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.777,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_025",
+            "expected": true,
+            "actual": false,
+            "score": 0.4894,
+            "source": {
+              "id": "evt_012",
+              "activity_type": "吃饭",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "target": {
+              "id": "evt_020",
+              "activity_type": "逛街",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "note": "新加坡市内"
+          },
+          {
+            "id": "pair_037",
+            "expected": true,
+            "actual": false,
+            "score": 0.4416,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "上海 city-only 咖啡 vs 上海浦东咖啡"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.735,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_045",
+            "expected": true,
+            "actual": false,
+            "score": 0.4894,
+            "source": {
+              "id": "evt_020",
+              "activity_type": "逛街",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "target": {
+              "id": "evt_012",
+              "activity_type": "吃饭",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "note": "新加坡市内"
+          },
+          {
+            "id": "pair_059",
+            "expected": true,
+            "actual": false,
+            "score": 0.4556,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "看电影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "北京同城电影/看展"
+          }
+        ]
+      },
+      "event_location_embedding_augmented": {
+        "threshold": 0.59,
+        "accuracy": 0.8667,
+        "precision": 0.8889,
+        "recall": 0.8889,
+        "f1": 0.8889,
+        "tp": 32,
+        "fp": 4,
+        "tn": 20,
+        "fn": 4,
+        "name": "event_location_embedding_augmented",
+        "mistakes": [
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.6326,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.7434,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州 苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_014",
+            "expected": true,
+            "actual": false,
+            "score": 0.5781,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "粤港澳大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "大湾区覆盖佛山"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.8121,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "喝茶",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_025",
+            "expected": true,
+            "actual": false,
+            "score": 0.5154,
+            "source": {
+              "id": "evt_012",
+              "activity_type": "吃饭",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "target": {
+              "id": "evt_020",
+              "activity_type": "逛街",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "note": "新加坡市内"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.6457,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_045",
+            "expected": true,
+            "actual": false,
+            "score": 0.5154,
+            "source": {
+              "id": "evt_020",
+              "activity_type": "逛街",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "target": {
+              "id": "evt_012",
+              "activity_type": "吃饭",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "note": "新加坡市内"
+          },
+          {
+            "id": "pair_059",
+            "expected": true,
+            "actual": false,
+            "score": 0.502,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "看电影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "北京同城电影/看展"
+          }
+        ]
+      },
+      "augmented_embedding_strict_gate": {
+        "threshold": 0.4,
+        "accuracy": 0.9333,
+        "precision": 0.9444,
+        "recall": 0.9444,
+        "f1": 0.9444,
+        "tp": 34,
+        "fp": 2,
+        "tn": 22,
+        "fn": 2,
+        "name": "augmented_embedding_strict_gate",
+        "mistakes": [
+          {
+            "id": "pair_014",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "粤港澳大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "大湾区覆盖佛山"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.5645,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "吃饭",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "泡温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_033",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "珠三角覆盖佛山"
+          },
+          {
+            "id": "pair_043",
+            "expected": false,
+            "actual": true,
+            "score": 0.6209,
+            "source": {
+              "id": "evt_017",
+              "activity_type": "旅行",
+              "eval_location": "京都 岚山",
+              "utterance": "京都岚山旅行拍照，周末出发"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "泡温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "京都岚山 vs 箱根"
+          }
+        ]
+      }
+    },
+    "kimi_default": {
+      "city_overlap": {
+        "threshold": 0.01,
+        "accuracy": 0.75,
+        "precision": 0.7561,
+        "recall": 0.8611,
+        "f1": 0.8052,
+        "tp": 31,
+        "fp": 10,
+        "tn": 14,
+        "fn": 5,
+        "name": "city_overlap",
+        "mistakes": [
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡探店",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步、摄影",
+              "eval_location": "杭州 西湖边",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_006",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "成都 川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "target": {
+              "id": "evt_022",
+              "activity_type": "自驾游",
+              "eval_location": "阿坝藏族羌族自治州 四姑娘山",
+              "utterance": "四姑娘山自驾搭子，最好会开车"
+            },
+            "note": "川西包含四姑娘山"
+          },
+          {
+            "id": "pair_007",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "成都 川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "target": {
+              "id": "evt_023",
+              "activity_type": "摄影旅行",
+              "eval_location": "甘孜藏族自治州 稻城亚丁",
+              "utterance": "稻城亚丁旅行，想拼个摄影搭子"
+            },
+            "note": "川西包含稻城亚丁"
+          },
+          {
+            "id": "pair_008",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_013",
+              "activity_type": "聚餐",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "target": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "成都 川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "note": "成都吃饭不应匹配川西徒步"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡探店",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "摄影/结伴出行",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉住宿",
+              "eval_location": "箱根町 箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_028",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_029",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_011",
+              "activity_type": "桌游",
+              "eval_location": "台北",
+              "utterance": "台北周末桌游，地点可以再约"
+            },
+            "target": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "广州 珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_034",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧/夜生活",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "大湾区露营 vs 香港中环酒吧，严格活动不跨区域"
+          },
+          {
+            "id": "pair_035",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_029",
+              "activity_type": "爬山露营",
+              "eval_location": "京津冀周边",
+              "utterance": "京津冀周边爬山露营，想找搭子"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "京津冀爬山 vs 北京朝阳看展"
+          },
+          {
+            "id": "pair_041",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_042",
+              "activity_type": "户外/徒步/休闲",
+              "eval_location": "成都周边山区",
+              "utterance": "成都周边山里吸氧，周末一天"
+            },
+            "target": {
+              "id": "evt_013",
+              "activity_type": "聚餐",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "note": "成都周边山里 vs 成都太古里吃饭"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_054",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_025",
+              "activity_type": "自驾游",
+              "eval_location": "长三角",
+              "utterance": "长三角周末自驾都可以，别太累"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "长三角自驾 vs 上海浦东咖啡，严格活动不跨区域"
+          },
+          {
+            "id": "pair_055",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_022",
+              "activity_type": "自驾游",
+              "eval_location": "阿坝藏族羌族自治州 四姑娘山",
+              "utterance": "四姑娘山自驾搭子，最好会开车"
+            },
+            "target": {
+              "id": "evt_023",
+              "activity_type": "摄影旅行",
+              "eval_location": "甘孜藏族自治州 稻城亚丁",
+              "utterance": "稻城亚丁旅行，想拼个摄影搭子"
+            },
+            "note": "四姑娘山/稻城亚丁同属川西旅行圈"
+          }
+        ]
+      },
+      "location_char_ngram": {
+        "threshold": 0.0,
+        "accuracy": 0.6,
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1": 0.75,
+        "tp": 36,
+        "fp": 24,
+        "tn": 0,
+        "fn": 0,
+        "name": "location_char_ngram",
+        "mistakes": [
+          {
+            "id": "pair_002",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "上海咖啡 vs 北京看展"
+          },
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡探店",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步、摄影",
+              "eval_location": "杭州 西湖边",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_008",
+            "expected": false,
+            "actual": true,
+            "score": 0.2887,
+            "source": {
+              "id": "evt_013",
+              "activity_type": "聚餐",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "target": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "成都 川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "note": "成都吃饭不应匹配川西徒步"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡探店",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "摄影/结伴出行",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "餐饮/休闲",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_018",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津市 蓟州区",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京看展 vs 天津爬山"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉住宿",
+              "eval_location": "箱根町 箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_023",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_015",
+              "activity_type": "旅行",
+              "eval_location": "大理 洱海边",
+              "utterance": "大理洱海边发呆旅行，随缘拼个搭子"
+            },
+            "target": {
+              "id": "evt_014",
+              "activity_type": "旅行/观光",
+              "eval_location": "厦门 鼓浪屿",
+              "utterance": "厦门鼓浪屿旅行，想慢慢逛一天"
+            },
+            "note": "大理 vs 厦门"
+          },
+          {
+            "id": "pair_026",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_012",
+              "activity_type": "聚餐",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧/夜生活",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "新加坡 vs 香港"
+          },
+          {
+            "id": "pair_031",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_008",
+              "activity_type": "健身",
+              "eval_location": "深圳 南山",
+              "utterance": "深圳南山健身搭子，晚上下班后"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳健身 vs 广州喝茶"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 0.2887,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "广州 珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_034",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧/夜生活",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "大湾区露营 vs 香港中环酒吧，严格活动不跨区域"
+          },
+          {
+            "id": "pair_035",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_029",
+              "activity_type": "爬山露营",
+              "eval_location": "京津冀周边",
+              "utterance": "京津冀周边爬山露营，想找搭子"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "京津冀爬山 vs 北京朝阳看展"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步、摄影",
+              "eval_location": "杭州 西湖边",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_041",
+            "expected": false,
+            "actual": true,
+            "score": 0.25,
+            "source": {
+              "id": "evt_042",
+              "activity_type": "户外/徒步/休闲",
+              "eval_location": "成都周边山区",
+              "utterance": "成都周边山里吸氧，周末一天"
+            },
+            "target": {
+              "id": "evt_013",
+              "activity_type": "聚餐",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "note": "成都周边山里 vs 成都太古里吃饭"
+          },
+          {
+            "id": "pair_042",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_023",
+              "activity_type": "摄影旅行",
+              "eval_location": "甘孜藏族自治州 稻城亚丁",
+              "utterance": "稻城亚丁旅行，想拼个摄影搭子"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉住宿",
+              "eval_location": "箱根町 箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "稻城亚丁 vs 箱根"
+          },
+          {
+            "id": "pair_043",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_017",
+              "activity_type": "旅行摄影",
+              "eval_location": "京都 岚山",
+              "utterance": "京都岚山旅行拍照，周末出发"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉住宿",
+              "eval_location": "箱根町 箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "京都岚山 vs 箱根"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.3333,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_046",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_020",
+              "activity_type": "购物",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧/夜生活",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "新加坡 vs 香港"
+          },
+          {
+            "id": "pair_051",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_007",
+              "activity_type": "聚餐",
+              "eval_location": "南京 新街口附近",
+              "utterance": "南京新街口附近吃饭，有人搭吗"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "摄影/结伴出行",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "南京吃饭 vs 苏州拍照，严格跨城不放行"
+          },
+          {
+            "id": "pair_054",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_025",
+              "activity_type": "自驾游",
+              "eval_location": "长三角",
+              "utterance": "长三角周末自驾都可以，别太累"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "长三角自驾 vs 上海浦东咖啡，严格活动不跨区域"
+          },
+          {
+            "id": "pair_056",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳市 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "餐饮/休闲",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "深圳大鹏露营 vs 佛山喝茶，严格活动不跨城"
+          },
+          {
+            "id": "pair_058",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳市 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳大鹏露营 vs 广州天河喝茶"
+          },
+          {
+            "id": "pair_060",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "观影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津市 蓟州区",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京通州电影 vs 天津蓟州爬山"
+          }
+        ]
+      },
+      "augmented_location_char_ngram": {
+        "threshold": 0.19,
+        "accuracy": 0.8,
+        "precision": 0.8333,
+        "recall": 0.8333,
+        "f1": 0.8333,
+        "tp": 30,
+        "fp": 6,
+        "tn": 18,
+        "fn": 6,
+        "name": "augmented_location_char_ngram",
+        "mistakes": [
+          {
+            "id": "pair_003",
+            "expected": true,
+            "actual": false,
+            "score": 0.1508,
+            "source": {
+              "id": "evt_003",
+              "activity_type": "city_walk",
+              "eval_location": "上海 武康路",
+              "utterance": "周末想去武康路 city walk 顺便 brunch"
+            },
+            "target": {
+              "id": "evt_018",
+              "activity_type": "观影",
+              "eval_location": "上海 静安",
+              "utterance": "上海静安看电影，想看文艺片"
+            },
+            "note": "上海市内活动"
+          },
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.3698,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡探店",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步、摄影",
+              "eval_location": "杭州 西湖边",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.4757,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡探店",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "摄影/结伴出行",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.4,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "餐饮/休闲",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_028",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_029",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_011",
+              "activity_type": "桌游",
+              "eval_location": "台北",
+              "utterance": "台北周末桌游，地点可以再约"
+            },
+            "target": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_031",
+            "expected": false,
+            "actual": true,
+            "score": 0.2236,
+            "source": {
+              "id": "evt_008",
+              "activity_type": "健身",
+              "eval_location": "深圳 南山",
+              "utterance": "深圳南山健身搭子，晚上下班后"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳健身 vs 广州喝茶"
+          },
+          {
+            "id": "pair_037",
+            "expected": true,
+            "actual": false,
+            "score": 0.1197,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "上海 city-only 咖啡 vs 上海浦东咖啡"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.3387,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步、摄影",
+              "eval_location": "杭州 西湖边",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.2981,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_049",
+            "expected": true,
+            "actual": false,
+            "score": 0.1421,
+            "source": {
+              "id": "evt_002",
+              "activity_type": "咖啡/社交",
+              "eval_location": "上海 陆家嘴",
+              "utterance": "今晚陆家嘴附近来杯咖啡，有人吗"
+            },
+            "target": {
+              "id": "evt_003",
+              "activity_type": "city_walk",
+              "eval_location": "上海 武康路",
+              "utterance": "周末想去武康路 city walk 顺便 brunch"
+            },
+            "note": "上海市内咖啡/city walk"
+          },
+          {
+            "id": "pair_059",
+            "expected": true,
+            "actual": false,
+            "score": 0.1414,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "观影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "北京同城电影/看展"
+          }
+        ]
+      },
+      "augmented_char_ngram_strict_gate": {
+        "threshold": 0.19,
+        "accuracy": 0.8667,
+        "precision": 0.9375,
+        "recall": 0.8333,
+        "f1": 0.8824,
+        "tp": 30,
+        "fp": 2,
+        "tn": 22,
+        "fn": 6,
+        "name": "augmented_char_ngram_strict_gate",
+        "mistakes": [
+          {
+            "id": "pair_003",
+            "expected": true,
+            "actual": false,
+            "score": 0.1508,
+            "source": {
+              "id": "evt_003",
+              "activity_type": "city_walk",
+              "eval_location": "上海 武康路",
+              "utterance": "周末想去武康路 city walk 顺便 brunch"
+            },
+            "target": {
+              "id": "evt_018",
+              "activity_type": "观影",
+              "eval_location": "上海 静安",
+              "utterance": "上海静安看电影，想看文艺片"
+            },
+            "note": "上海市内活动"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.4,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "餐饮/休闲",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_028",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_029",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_011",
+              "activity_type": "桌游",
+              "eval_location": "台北",
+              "utterance": "台北周末桌游，地点可以再约"
+            },
+            "target": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_037",
+            "expected": true,
+            "actual": false,
+            "score": 0.1197,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "上海 city-only 咖啡 vs 上海浦东咖啡"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.2981,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_049",
+            "expected": true,
+            "actual": false,
+            "score": 0.1421,
+            "source": {
+              "id": "evt_002",
+              "activity_type": "咖啡/社交",
+              "eval_location": "上海 陆家嘴",
+              "utterance": "今晚陆家嘴附近来杯咖啡，有人吗"
+            },
+            "target": {
+              "id": "evt_003",
+              "activity_type": "city_walk",
+              "eval_location": "上海 武康路",
+              "utterance": "周末想去武康路 city walk 顺便 brunch"
+            },
+            "note": "上海市内咖啡/city walk"
+          },
+          {
+            "id": "pair_059",
+            "expected": true,
+            "actual": false,
+            "score": 0.1414,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "观影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "北京同城电影/看展"
+          }
+        ]
+      },
+      "location_embedding_raw": {
+        "threshold": 0.3,
+        "accuracy": 0.65,
+        "precision": 0.6415,
+        "recall": 0.9444,
+        "f1": 0.764,
+        "tp": 34,
+        "fp": 19,
+        "tn": 5,
+        "fn": 2,
+        "name": "location_embedding_raw",
+        "mistakes": [
+          {
+            "id": "pair_002",
+            "expected": false,
+            "actual": true,
+            "score": 0.3596,
+            "source": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "上海咖啡 vs 北京看展"
+          },
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.3831,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡探店",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步、摄影",
+              "eval_location": "杭州 西湖边",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_008",
+            "expected": false,
+            "actual": true,
+            "score": 0.5912,
+            "source": {
+              "id": "evt_013",
+              "activity_type": "聚餐",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "target": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "成都 川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "note": "成都吃饭不应匹配川西徒步"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.4425,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡探店",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "摄影/结伴出行",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.5922,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "餐饮/休闲",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_018",
+            "expected": false,
+            "actual": true,
+            "score": 0.4945,
+            "source": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津市 蓟州区",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京看展 vs 天津爬山"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.4505,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉住宿",
+              "eval_location": "箱根町 箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_023",
+            "expected": false,
+            "actual": true,
+            "score": 0.3792,
+            "source": {
+              "id": "evt_015",
+              "activity_type": "旅行",
+              "eval_location": "大理 洱海边",
+              "utterance": "大理洱海边发呆旅行，随缘拼个搭子"
+            },
+            "target": {
+              "id": "evt_014",
+              "activity_type": "旅行/观光",
+              "eval_location": "厦门 鼓浪屿",
+              "utterance": "厦门鼓浪屿旅行，想慢慢逛一天"
+            },
+            "note": "大理 vs 厦门"
+          },
+          {
+            "id": "pair_031",
+            "expected": false,
+            "actual": true,
+            "score": 0.5015,
+            "source": {
+              "id": "evt_008",
+              "activity_type": "健身",
+              "eval_location": "深圳 南山",
+              "utterance": "深圳南山健身搭子，晚上下班后"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳健身 vs 广州喝茶"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 0.7284,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "广州 珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_034",
+            "expected": false,
+            "actual": true,
+            "score": 0.4723,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧/夜生活",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "大湾区露营 vs 香港中环酒吧，严格活动不跨区域"
+          },
+          {
+            "id": "pair_035",
+            "expected": false,
+            "actual": true,
+            "score": 0.5475,
+            "source": {
+              "id": "evt_029",
+              "activity_type": "爬山露营",
+              "eval_location": "京津冀周边",
+              "utterance": "京津冀周边爬山露营，想找搭子"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "京津冀爬山 vs 北京朝阳看展"
+          },
+          {
+            "id": "pair_041",
+            "expected": false,
+            "actual": true,
+            "score": 0.6088,
+            "source": {
+              "id": "evt_042",
+              "activity_type": "户外/徒步/休闲",
+              "eval_location": "成都周边山区",
+              "utterance": "成都周边山里吸氧，周末一天"
+            },
+            "target": {
+              "id": "evt_013",
+              "activity_type": "聚餐",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "note": "成都周边山里 vs 成都太古里吃饭"
+          },
+          {
+            "id": "pair_043",
+            "expected": false,
+            "actual": true,
+            "score": 0.4491,
+            "source": {
+              "id": "evt_017",
+              "activity_type": "旅行摄影",
+              "eval_location": "京都 岚山",
+              "utterance": "京都岚山旅行拍照，周末出发"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉住宿",
+              "eval_location": "箱根町 箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "京都岚山 vs 箱根"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.568,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_051",
+            "expected": false,
+            "actual": true,
+            "score": 0.4202,
+            "source": {
+              "id": "evt_007",
+              "activity_type": "聚餐",
+              "eval_location": "南京 新街口附近",
+              "utterance": "南京新街口附近吃饭，有人搭吗"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "摄影/结伴出行",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "南京吃饭 vs 苏州拍照，严格跨城不放行"
+          },
+          {
+            "id": "pair_052",
+            "expected": true,
+            "actual": false,
+            "score": 0.2402,
+            "source": {
+              "id": "evt_025",
+              "activity_type": "自驾游",
+              "eval_location": "长三角",
+              "utterance": "长三角周末自驾都可以，别太累"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "摄影/结伴出行",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "长三角覆盖苏州园林"
+          },
+          {
+            "id": "pair_053",
+            "expected": true,
+            "actual": false,
+            "score": 0.2424,
+            "source": {
+              "id": "evt_025",
+              "activity_type": "自驾游",
+              "eval_location": "长三角",
+              "utterance": "长三角周末自驾都可以，别太累"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步、摄影",
+              "eval_location": "杭州 西湖边",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "长三角覆盖杭州西湖"
+          },
+          {
+            "id": "pair_056",
+            "expected": false,
+            "actual": true,
+            "score": 0.4105,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳市 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "餐饮/休闲",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "深圳大鹏露营 vs 佛山喝茶，严格活动不跨城"
+          },
+          {
+            "id": "pair_058",
+            "expected": false,
+            "actual": true,
+            "score": 0.5399,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳市 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳大鹏露营 vs 广州天河喝茶"
+          },
+          {
+            "id": "pair_060",
+            "expected": false,
+            "actual": true,
+            "score": 0.5568,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "观影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津市 蓟州区",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京通州电影 vs 天津蓟州爬山"
+          }
+        ]
+      },
+      "location_embedding_augmented": {
+        "threshold": 0.61,
+        "accuracy": 0.8,
+        "precision": 0.875,
+        "recall": 0.7778,
+        "f1": 0.8235,
+        "tp": 28,
+        "fp": 4,
+        "tn": 20,
+        "fn": 8,
+        "name": "location_embedding_augmented",
+        "mistakes": [
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.7642,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡探店",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步、摄影",
+              "eval_location": "杭州 西湖边",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_011",
+            "expected": true,
+            "actual": false,
+            "score": 0.5307,
+            "source": {
+              "id": "evt_026",
+              "activity_type": "露营",
+              "eval_location": "苏州、杭州方向",
+              "utterance": "上海周边露营，苏杭方向都行"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "摄影/结伴出行",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "上海周边到苏州可接受"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.8611,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡探店",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "摄影/结伴出行",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.777,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "餐饮/休闲",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_021",
+            "expected": true,
+            "actual": false,
+            "score": 0.5235,
+            "source": {
+              "id": "evt_033",
+              "activity_type": "旅行",
+              "eval_location": "京都、大阪",
+              "utterance": "关西旅行，京都大阪都行"
+            },
+            "target": {
+              "id": "evt_017",
+              "activity_type": "旅行摄影",
+              "eval_location": "京都 岚山",
+              "utterance": "京都岚山旅行拍照，周末出发"
+            },
+            "note": "关西覆盖京都岚山"
+          },
+          {
+            "id": "pair_025",
+            "expected": true,
+            "actual": false,
+            "score": 0.4894,
+            "source": {
+              "id": "evt_012",
+              "activity_type": "聚餐",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "target": {
+              "id": "evt_020",
+              "activity_type": "购物",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "note": "新加坡市内"
+          },
+          {
+            "id": "pair_028",
+            "expected": true,
+            "actual": false,
+            "score": 0.3097,
+            "source": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_029",
+            "expected": true,
+            "actual": false,
+            "score": 0.3227,
+            "source": {
+              "id": "evt_011",
+              "activity_type": "桌游",
+              "eval_location": "台北",
+              "utterance": "台北周末桌游，地点可以再约"
+            },
+            "target": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_037",
+            "expected": true,
+            "actual": false,
+            "score": 0.4576,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "上海 city-only 咖啡 vs 上海浦东咖啡"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.7181,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步、摄影",
+              "eval_location": "杭州 西湖边",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_045",
+            "expected": true,
+            "actual": false,
+            "score": 0.4894,
+            "source": {
+              "id": "evt_020",
+              "activity_type": "购物",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "target": {
+              "id": "evt_012",
+              "activity_type": "聚餐",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "note": "新加坡市内"
+          },
+          {
+            "id": "pair_059",
+            "expected": true,
+            "actual": false,
+            "score": 0.4556,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "观影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "北京同城电影/看展"
+          }
+        ]
+      },
+      "event_location_embedding_augmented": {
+        "threshold": 0.54,
+        "accuracy": 0.85,
+        "precision": 0.8293,
+        "recall": 0.9444,
+        "f1": 0.8831,
+        "tp": 34,
+        "fp": 7,
+        "tn": 17,
+        "fn": 2,
+        "name": "event_location_embedding_augmented",
+        "mistakes": [
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.6962,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡探店",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步、摄影",
+              "eval_location": "杭州 西湖边",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.7707,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡探店",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "摄影/结伴出行",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.8036,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "餐饮/休闲",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.575,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉住宿",
+              "eval_location": "箱根町 箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_028",
+            "expected": true,
+            "actual": false,
+            "score": 0.284,
+            "source": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 0.606,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "广州 珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.6069,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步、摄影",
+              "eval_location": "杭州 西湖边",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.5593,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_059",
+            "expected": true,
+            "actual": false,
+            "score": 0.5364,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "观影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "北京同城电影/看展"
+          }
+        ]
+      },
+      "augmented_embedding_strict_gate": {
+        "threshold": 0.43,
+        "accuracy": 0.8333,
+        "precision": 0.8095,
+        "recall": 0.9444,
+        "f1": 0.8718,
+        "tp": 34,
+        "fp": 8,
+        "tn": 16,
+        "fn": 2,
+        "name": "augmented_embedding_strict_gate",
+        "mistakes": [
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.777,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "餐饮/休闲",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.5575,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉住宿",
+              "eval_location": "箱根町 箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_028",
+            "expected": true,
+            "actual": false,
+            "score": 0.3097,
+            "source": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "社交/咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_029",
+            "expected": true,
+            "actual": false,
+            "score": 0.3227,
+            "source": {
+              "id": "evt_011",
+              "activity_type": "桌游",
+              "eval_location": "台北",
+              "utterance": "台北周末桌游，地点可以再约"
+            },
+            "target": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 0.5583,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "广州 珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_043",
+            "expected": false,
+            "actual": true,
+            "score": 0.6065,
+            "source": {
+              "id": "evt_017",
+              "activity_type": "旅行摄影",
+              "eval_location": "京都 岚山",
+              "utterance": "京都岚山旅行拍照，周末出发"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉住宿",
+              "eval_location": "箱根町 箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "京都岚山 vs 箱根"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.5723,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_051",
+            "expected": false,
+            "actual": true,
+            "score": 0.4946,
+            "source": {
+              "id": "evt_007",
+              "activity_type": "聚餐",
+              "eval_location": "南京 新街口附近",
+              "utterance": "南京新街口附近吃饭，有人搭吗"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "摄影/结伴出行",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "南京吃饭 vs 苏州拍照，严格跨城不放行"
+          },
+          {
+            "id": "pair_056",
+            "expected": false,
+            "actual": true,
+            "score": 0.5131,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳市 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "餐饮/休闲",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "深圳大鹏露营 vs 佛山喝茶，严格活动不跨城"
+          },
+          {
+            "id": "pair_058",
+            "expected": false,
+            "actual": true,
+            "score": 0.4835,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳市 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "社交聚会",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳大鹏露营 vs 广州天河喝茶"
+          }
+        ]
+      }
+    },
+    "kimi_single_location_fewshot": {
+      "city_overlap": {
+        "threshold": 0.01,
+        "accuracy": 0.7333,
+        "precision": 0.75,
+        "recall": 0.8333,
+        "f1": 0.7895,
+        "tp": 30,
+        "fp": 10,
+        "tn": 14,
+        "fn": 6,
+        "name": "city_overlap",
+        "mistakes": [
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步拍照",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_006",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "成都 川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "target": {
+              "id": "evt_022",
+              "activity_type": "自驾",
+              "eval_location": "四姑娘山",
+              "utterance": "四姑娘山自驾搭子，最好会开车"
+            },
+            "note": "川西包含四姑娘山"
+          },
+          {
+            "id": "pair_007",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "成都 川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "target": {
+              "id": "evt_023",
+              "activity_type": "旅行",
+              "eval_location": "稻城亚丁",
+              "utterance": "稻城亚丁旅行，想拼个摄影搭子"
+            },
+            "note": "川西包含稻城亚丁"
+          },
+          {
+            "id": "pair_008",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_013",
+              "activity_type": "火锅",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "target": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "成都 川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "note": "成都吃饭不应匹配川西徒步"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_027",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_034",
+              "activity_type": "聊天",
+              "eval_location": "",
+              "utterance": "线上聊天，随便聊聊电影"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "线上活动地点放行"
+          },
+          {
+            "id": "pair_028",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_029",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_011",
+              "activity_type": "桌游",
+              "eval_location": "台北",
+              "utterance": "台北周末桌游，地点可以再约"
+            },
+            "target": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "广州 珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_034",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "大湾区露营 vs 香港中环酒吧，严格活动不跨区域"
+          },
+          {
+            "id": "pair_035",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_029",
+              "activity_type": "爬山露营",
+              "eval_location": "京津冀",
+              "utterance": "京津冀周边爬山露营，想找搭子"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "京津冀爬山 vs 北京朝阳看展"
+          },
+          {
+            "id": "pair_041",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_042",
+              "activity_type": "户外/自然",
+              "eval_location": "成都周边 山里",
+              "utterance": "成都周边山里吸氧，周末一天"
+            },
+            "target": {
+              "id": "evt_013",
+              "activity_type": "火锅",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "note": "成都周边山里 vs 成都太古里吃饭"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_054",
+            "expected": false,
+            "actual": true,
+            "score": 1.0,
+            "source": {
+              "id": "evt_025",
+              "activity_type": "自驾",
+              "eval_location": "长三角",
+              "utterance": "长三角周末自驾都可以，别太累"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "长三角自驾 vs 上海浦东咖啡，严格活动不跨区域"
+          },
+          {
+            "id": "pair_055",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_022",
+              "activity_type": "自驾",
+              "eval_location": "四姑娘山",
+              "utterance": "四姑娘山自驾搭子，最好会开车"
+            },
+            "target": {
+              "id": "evt_023",
+              "activity_type": "旅行",
+              "eval_location": "稻城亚丁",
+              "utterance": "稻城亚丁旅行，想拼个摄影搭子"
+            },
+            "note": "四姑娘山/稻城亚丁同属川西旅行圈"
+          }
+        ]
+      },
+      "location_char_ngram": {
+        "threshold": 0.0,
+        "accuracy": 0.6,
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1": 0.75,
+        "tp": 36,
+        "fp": 24,
+        "tn": 0,
+        "fn": 0,
+        "name": "location_char_ngram",
+        "mistakes": [
+          {
+            "id": "pair_002",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "上海咖啡 vs 北京看展"
+          },
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步拍照",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_008",
+            "expected": false,
+            "actual": true,
+            "score": 0.2887,
+            "source": {
+              "id": "evt_013",
+              "activity_type": "火锅",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "target": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "成都 川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "note": "成都吃饭不应匹配川西徒步"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_018",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津 蓟州",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京看展 vs 天津爬山"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_023",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_015",
+              "activity_type": "发呆旅行",
+              "eval_location": "大理 洱海",
+              "utterance": "大理洱海边发呆旅行，随缘拼个搭子"
+            },
+            "target": {
+              "id": "evt_014",
+              "activity_type": "旅行",
+              "eval_location": "厦门 鼓浪屿",
+              "utterance": "厦门鼓浪屿旅行，想慢慢逛一天"
+            },
+            "note": "大理 vs 厦门"
+          },
+          {
+            "id": "pair_026",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_012",
+              "activity_type": "吃饭",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "新加坡 vs 香港"
+          },
+          {
+            "id": "pair_031",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_008",
+              "activity_type": "健身",
+              "eval_location": "深圳 南山",
+              "utterance": "深圳南山健身搭子，晚上下班后"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳健身 vs 广州喝茶"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 0.2887,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "广州 珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_034",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "大湾区露营 vs 香港中环酒吧，严格活动不跨区域"
+          },
+          {
+            "id": "pair_035",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_029",
+              "activity_type": "爬山露营",
+              "eval_location": "京津冀",
+              "utterance": "京津冀周边爬山露营，想找搭子"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "京津冀爬山 vs 北京朝阳看展"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步拍照",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_041",
+            "expected": false,
+            "actual": true,
+            "score": 0.2236,
+            "source": {
+              "id": "evt_042",
+              "activity_type": "户外/自然",
+              "eval_location": "成都周边 山里",
+              "utterance": "成都周边山里吸氧，周末一天"
+            },
+            "target": {
+              "id": "evt_013",
+              "activity_type": "火锅",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "note": "成都周边山里 vs 成都太古里吃饭"
+          },
+          {
+            "id": "pair_042",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_023",
+              "activity_type": "旅行",
+              "eval_location": "稻城亚丁",
+              "utterance": "稻城亚丁旅行，想拼个摄影搭子"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "稻城亚丁 vs 箱根"
+          },
+          {
+            "id": "pair_043",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_017",
+              "activity_type": "旅行拍照",
+              "eval_location": "京都 岚山",
+              "utterance": "京都岚山旅行拍照，周末出发"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "京都岚山 vs 箱根"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.3333,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_046",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_020",
+              "activity_type": "购物",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "新加坡 vs 香港"
+          },
+          {
+            "id": "pair_051",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_007",
+              "activity_type": "吃饭",
+              "eval_location": "南京 新街口",
+              "utterance": "南京新街口附近吃饭，有人搭吗"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "南京吃饭 vs 苏州拍照，严格跨城不放行"
+          },
+          {
+            "id": "pair_054",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_025",
+              "activity_type": "自驾",
+              "eval_location": "长三角",
+              "utterance": "长三角周末自驾都可以，别太累"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "长三角自驾 vs 上海浦东咖啡，严格活动不跨区域"
+          },
+          {
+            "id": "pair_056",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "深圳大鹏露营 vs 佛山喝茶，严格活动不跨城"
+          },
+          {
+            "id": "pair_058",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳大鹏露营 vs 广州天河喝茶"
+          },
+          {
+            "id": "pair_060",
+            "expected": false,
+            "actual": true,
+            "score": 0.0,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "看电影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津 蓟州",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京通州电影 vs 天津蓟州爬山"
+          }
+        ]
+      },
+      "augmented_location_char_ngram": {
+        "threshold": 0.14,
+        "accuracy": 0.75,
+        "precision": 0.7442,
+        "recall": 0.8889,
+        "f1": 0.8101,
+        "tp": 32,
+        "fp": 11,
+        "tn": 13,
+        "fn": 4,
+        "name": "augmented_location_char_ngram",
+        "mistakes": [
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.3807,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步拍照",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.4757,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.4,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.1741,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_027",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_034",
+              "activity_type": "聊天",
+              "eval_location": "",
+              "utterance": "线上聊天，随便聊聊电影"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "线上活动地点放行"
+          },
+          {
+            "id": "pair_028",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_029",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_011",
+              "activity_type": "桌游",
+              "eval_location": "台北",
+              "utterance": "台北周末桌游，地点可以再约"
+            },
+            "target": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_031",
+            "expected": false,
+            "actual": true,
+            "score": 0.2236,
+            "source": {
+              "id": "evt_008",
+              "activity_type": "健身",
+              "eval_location": "深圳 南山",
+              "utterance": "深圳南山健身搭子，晚上下班后"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳健身 vs 广州喝茶"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 0.1414,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "广州 珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_037",
+            "expected": true,
+            "actual": false,
+            "score": 0.1197,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "上海 city-only 咖啡 vs 上海浦东咖啡"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.3487,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步拍照",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.2981,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_051",
+            "expected": false,
+            "actual": true,
+            "score": 0.1617,
+            "source": {
+              "id": "evt_007",
+              "activity_type": "吃饭",
+              "eval_location": "南京 新街口",
+              "utterance": "南京新街口附近吃饭，有人搭吗"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "南京吃饭 vs 苏州拍照，严格跨城不放行"
+          },
+          {
+            "id": "pair_056",
+            "expected": false,
+            "actual": true,
+            "score": 0.2236,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "深圳大鹏露营 vs 佛山喝茶，严格活动不跨城"
+          },
+          {
+            "id": "pair_058",
+            "expected": false,
+            "actual": true,
+            "score": 0.2236,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳大鹏露营 vs 广州天河喝茶"
+          }
+        ]
+      },
+      "augmented_char_ngram_strict_gate": {
+        "threshold": 0.14,
+        "accuracy": 0.8667,
+        "precision": 0.9375,
+        "recall": 0.8333,
+        "f1": 0.8824,
+        "tp": 30,
+        "fp": 2,
+        "tn": 22,
+        "fn": 6,
+        "name": "augmented_char_ngram_strict_gate",
+        "mistakes": [
+          {
+            "id": "pair_014",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "大湾区覆盖佛山"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.1741,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_027",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_034",
+              "activity_type": "聊天",
+              "eval_location": "",
+              "utterance": "线上聊天，随便聊聊电影"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "线上活动地点放行"
+          },
+          {
+            "id": "pair_028",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_029",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_011",
+              "activity_type": "桌游",
+              "eval_location": "台北",
+              "utterance": "台北周末桌游，地点可以再约"
+            },
+            "target": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_033",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "广州 珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "珠三角覆盖佛山"
+          },
+          {
+            "id": "pair_037",
+            "expected": true,
+            "actual": false,
+            "score": 0.1197,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "上海 city-only 咖啡 vs 上海浦东咖啡"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.2981,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          }
+        ]
+      },
+      "location_embedding_raw": {
+        "threshold": 0.24,
+        "accuracy": 0.6667,
+        "precision": 0.6429,
+        "recall": 1.0,
+        "f1": 0.7826,
+        "tp": 36,
+        "fp": 20,
+        "tn": 4,
+        "fn": 0,
+        "name": "location_embedding_raw",
+        "mistakes": [
+          {
+            "id": "pair_002",
+            "expected": false,
+            "actual": true,
+            "score": 0.3596,
+            "source": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "上海咖啡 vs 北京看展"
+          },
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.3986,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步拍照",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_008",
+            "expected": false,
+            "actual": true,
+            "score": 0.5204,
+            "source": {
+              "id": "evt_013",
+              "activity_type": "火锅",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "target": {
+              "id": "evt_021",
+              "activity_type": "徒步",
+              "eval_location": "成都 川西",
+              "utterance": "想找人去川西徒步，成都出发也行"
+            },
+            "note": "成都吃饭不应匹配川西徒步"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.2921,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.3789,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_018",
+            "expected": false,
+            "actual": true,
+            "score": 0.4259,
+            "source": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津 蓟州",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京看展 vs 天津爬山"
+          },
+          {
+            "id": "pair_023",
+            "expected": false,
+            "actual": true,
+            "score": 0.2604,
+            "source": {
+              "id": "evt_015",
+              "activity_type": "发呆旅行",
+              "eval_location": "大理 洱海",
+              "utterance": "大理洱海边发呆旅行，随缘拼个搭子"
+            },
+            "target": {
+              "id": "evt_014",
+              "activity_type": "旅行",
+              "eval_location": "厦门 鼓浪屿",
+              "utterance": "厦门鼓浪屿旅行，想慢慢逛一天"
+            },
+            "note": "大理 vs 厦门"
+          },
+          {
+            "id": "pair_031",
+            "expected": false,
+            "actual": true,
+            "score": 0.4197,
+            "source": {
+              "id": "evt_008",
+              "activity_type": "健身",
+              "eval_location": "深圳 南山",
+              "utterance": "深圳南山健身搭子，晚上下班后"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳健身 vs 广州喝茶"
+          },
+          {
+            "id": "pair_032",
+            "expected": false,
+            "actual": true,
+            "score": 0.4934,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "广州 珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "珠三角自驾 vs 广州天河喝茶，严格活动不跨区域"
+          },
+          {
+            "id": "pair_034",
+            "expected": false,
+            "actual": true,
+            "score": 0.4723,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_010",
+              "activity_type": "酒吧",
+              "eval_location": "香港 中环",
+              "utterance": "香港中环下班后去酒吧坐坐"
+            },
+            "note": "大湾区露营 vs 香港中环酒吧，严格活动不跨区域"
+          },
+          {
+            "id": "pair_035",
+            "expected": false,
+            "actual": true,
+            "score": 0.5482,
+            "source": {
+              "id": "evt_029",
+              "activity_type": "爬山露营",
+              "eval_location": "京津冀",
+              "utterance": "京津冀周边爬山露营，想找搭子"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "京津冀爬山 vs 北京朝阳看展"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.3132,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步拍照",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_041",
+            "expected": false,
+            "actual": true,
+            "score": 0.6299,
+            "source": {
+              "id": "evt_042",
+              "activity_type": "户外/自然",
+              "eval_location": "成都周边 山里",
+              "utterance": "成都周边山里吸氧，周末一天"
+            },
+            "target": {
+              "id": "evt_013",
+              "activity_type": "火锅",
+              "eval_location": "成都 太古里",
+              "utterance": "成都太古里吃火锅，今晚有人吗"
+            },
+            "note": "成都周边山里 vs 成都太古里吃饭"
+          },
+          {
+            "id": "pair_042",
+            "expected": false,
+            "actual": true,
+            "score": 0.4322,
+            "source": {
+              "id": "evt_023",
+              "activity_type": "旅行",
+              "eval_location": "稻城亚丁",
+              "utterance": "稻城亚丁旅行，想拼个摄影搭子"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "稻城亚丁 vs 箱根"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.7403,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_051",
+            "expected": false,
+            "actual": true,
+            "score": 0.4793,
+            "source": {
+              "id": "evt_007",
+              "activity_type": "吃饭",
+              "eval_location": "南京 新街口",
+              "utterance": "南京新街口附近吃饭，有人搭吗"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "南京吃饭 vs 苏州拍照，严格跨城不放行"
+          },
+          {
+            "id": "pair_054",
+            "expected": false,
+            "actual": true,
+            "score": 0.2541,
+            "source": {
+              "id": "evt_025",
+              "activity_type": "自驾",
+              "eval_location": "长三角",
+              "utterance": "长三角周末自驾都可以，别太累"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "长三角自驾 vs 上海浦东咖啡，严格活动不跨区域"
+          },
+          {
+            "id": "pair_056",
+            "expected": false,
+            "actual": true,
+            "score": 0.3047,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "深圳大鹏露营 vs 佛山喝茶，严格活动不跨城"
+          },
+          {
+            "id": "pair_058",
+            "expected": false,
+            "actual": true,
+            "score": 0.5391,
+            "source": {
+              "id": "evt_039",
+              "activity_type": "露营",
+              "eval_location": "深圳 大鹏",
+              "utterance": "深圳大鹏露营，看海也行"
+            },
+            "target": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "note": "深圳大鹏露营 vs 广州天河喝茶"
+          },
+          {
+            "id": "pair_060",
+            "expected": false,
+            "actual": true,
+            "score": 0.5423,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "看电影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津 蓟州",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京通州电影 vs 天津蓟州爬山"
+          }
+        ]
+      },
+      "location_embedding_augmented": {
+        "threshold": 0.58,
+        "accuracy": 0.8,
+        "precision": 0.8529,
+        "recall": 0.8056,
+        "f1": 0.8286,
+        "tp": 29,
+        "fp": 5,
+        "tn": 19,
+        "fn": 7,
+        "name": "location_embedding_augmented",
+        "mistakes": [
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.7394,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步拍照",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.8611,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.777,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_025",
+            "expected": true,
+            "actual": false,
+            "score": 0.4894,
+            "source": {
+              "id": "evt_012",
+              "activity_type": "吃饭",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "target": {
+              "id": "evt_020",
+              "activity_type": "购物",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "note": "新加坡市内"
+          },
+          {
+            "id": "pair_027",
+            "expected": true,
+            "actual": false,
+            "score": 0.3598,
+            "source": {
+              "id": "evt_034",
+              "activity_type": "聊天",
+              "eval_location": "",
+              "utterance": "线上聊天，随便聊聊电影"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "线上活动地点放行"
+          },
+          {
+            "id": "pair_028",
+            "expected": true,
+            "actual": false,
+            "score": 0.3097,
+            "source": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_029",
+            "expected": true,
+            "actual": false,
+            "score": 0.3227,
+            "source": {
+              "id": "evt_011",
+              "activity_type": "桌游",
+              "eval_location": "台北",
+              "utterance": "台北周末桌游，地点可以再约"
+            },
+            "target": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_037",
+            "expected": true,
+            "actual": false,
+            "score": 0.4576,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "上海 city-only 咖啡 vs 上海浦东咖啡"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.7164,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步拍照",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_043",
+            "expected": false,
+            "actual": true,
+            "score": 0.6209,
+            "source": {
+              "id": "evt_017",
+              "activity_type": "旅行拍照",
+              "eval_location": "京都 岚山",
+              "utterance": "京都岚山旅行拍照，周末出发"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "京都岚山 vs 箱根"
+          },
+          {
+            "id": "pair_045",
+            "expected": true,
+            "actual": false,
+            "score": 0.4894,
+            "source": {
+              "id": "evt_020",
+              "activity_type": "购物",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "target": {
+              "id": "evt_012",
+              "activity_type": "吃饭",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "note": "新加坡市内"
+          },
+          {
+            "id": "pair_059",
+            "expected": true,
+            "actual": false,
+            "score": 0.4556,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "看电影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "北京同城电影/看展"
+          }
+        ]
+      },
+      "event_location_embedding_augmented": {
+        "threshold": 0.57,
+        "accuracy": 0.8333,
+        "precision": 0.8611,
+        "recall": 0.8611,
+        "f1": 0.8611,
+        "tp": 31,
+        "fp": 5,
+        "tn": 19,
+        "fn": 5,
+        "name": "event_location_embedding_augmented",
+        "mistakes": [
+          {
+            "id": "pair_005",
+            "expected": false,
+            "actual": true,
+            "score": 0.6313,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步拍照",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "咖啡类对跨城区域不放行"
+          },
+          {
+            "id": "pair_012",
+            "expected": false,
+            "actual": true,
+            "score": 0.7436,
+            "source": {
+              "id": "evt_045",
+              "activity_type": "咖啡",
+              "eval_location": "江浙沪",
+              "utterance": "江浙沪咖啡，但不想跑太远"
+            },
+            "target": {
+              "id": "evt_037",
+              "activity_type": "拍照",
+              "eval_location": "苏州园林",
+              "utterance": "苏州园林拍照，周末找人同行"
+            },
+            "note": "咖啡类跨城区域不放行"
+          },
+          {
+            "id": "pair_015",
+            "expected": false,
+            "actual": true,
+            "score": 0.7953,
+            "source": {
+              "id": "evt_009",
+              "activity_type": "喝茶聊天",
+              "eval_location": "广州 天河",
+              "utterance": "广州天河喝茶聊天，周日下午"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "喝茶类广州天河 vs 佛山岭南天地跨城"
+          },
+          {
+            "id": "pair_025",
+            "expected": true,
+            "actual": false,
+            "score": 0.4965,
+            "source": {
+              "id": "evt_012",
+              "activity_type": "吃饭",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "target": {
+              "id": "evt_020",
+              "activity_type": "购物",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "note": "新加坡市内"
+          },
+          {
+            "id": "pair_027",
+            "expected": true,
+            "actual": false,
+            "score": 0.3621,
+            "source": {
+              "id": "evt_034",
+              "activity_type": "聊天",
+              "eval_location": "",
+              "utterance": "线上聊天，随便聊聊电影"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "线上活动地点放行"
+          },
+          {
+            "id": "pair_028",
+            "expected": true,
+            "actual": false,
+            "score": 0.2587,
+            "source": {
+              "id": "evt_035",
+              "activity_type": "桌游",
+              "eval_location": "",
+              "utterance": "地点不限，找桌游搭子"
+            },
+            "target": {
+              "id": "evt_001",
+              "activity_type": "咖啡",
+              "eval_location": "上海 浦东",
+              "utterance": "我周五下班想在上海浦东找个人喝咖啡"
+            },
+            "note": "不限地点放行"
+          },
+          {
+            "id": "pair_038",
+            "expected": false,
+            "actual": true,
+            "score": 0.6182,
+            "source": {
+              "id": "evt_043",
+              "activity_type": "咖啡",
+              "eval_location": "上海 市区",
+              "utterance": "魔都今晚咖啡，市区都可以"
+            },
+            "target": {
+              "id": "evt_006",
+              "activity_type": "散步拍照",
+              "eval_location": "杭州 西湖",
+              "utterance": "杭州西湖边散步拍照，周末下午"
+            },
+            "note": "上海咖啡 vs 杭州西湖"
+          },
+          {
+            "id": "pair_043",
+            "expected": false,
+            "actual": true,
+            "score": 0.5883,
+            "source": {
+              "id": "evt_017",
+              "activity_type": "旅行拍照",
+              "eval_location": "京都 岚山",
+              "utterance": "京都岚山旅行拍照，周末出发"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "京都岚山 vs 箱根"
+          },
+          {
+            "id": "pair_045",
+            "expected": true,
+            "actual": false,
+            "score": 0.4965,
+            "source": {
+              "id": "evt_020",
+              "activity_type": "购物",
+              "eval_location": "新加坡 乌节路",
+              "utterance": "新加坡乌节路逛街，想买点东西"
+            },
+            "target": {
+              "id": "evt_012",
+              "activity_type": "吃饭",
+              "eval_location": "新加坡 牛车水",
+              "utterance": "新加坡牛车水吃饭，想找不赶时间的搭子"
+            },
+            "note": "新加坡市内"
+          },
+          {
+            "id": "pair_059",
+            "expected": true,
+            "actual": false,
+            "score": 0.502,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "看电影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_004",
+              "activity_type": "看展",
+              "eval_location": "北京 朝阳",
+              "utterance": "北京朝阳周六看展，有没有同去的"
+            },
+            "note": "北京同城电影/看展"
+          }
+        ]
+      },
+      "augmented_embedding_strict_gate": {
+        "threshold": 0.01,
+        "accuracy": 0.8667,
+        "precision": 0.85,
+        "recall": 0.9444,
+        "f1": 0.8947,
+        "tp": 34,
+        "fp": 6,
+        "tn": 18,
+        "fn": 2,
+        "name": "augmented_embedding_strict_gate",
+        "mistakes": [
+          {
+            "id": "pair_014",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_028",
+              "activity_type": "露营",
+              "eval_location": "大湾区",
+              "utterance": "大湾区周末露营，深圳广州都方便"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "大湾区覆盖佛山"
+          },
+          {
+            "id": "pair_020",
+            "expected": false,
+            "actual": true,
+            "score": 0.5645,
+            "source": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "东京新宿吃饭 vs 箱根温泉"
+          },
+          {
+            "id": "pair_023",
+            "expected": false,
+            "actual": true,
+            "score": 0.3675,
+            "source": {
+              "id": "evt_015",
+              "activity_type": "发呆旅行",
+              "eval_location": "大理 洱海",
+              "utterance": "大理洱海边发呆旅行，随缘拼个搭子"
+            },
+            "target": {
+              "id": "evt_014",
+              "activity_type": "旅行",
+              "eval_location": "厦门 鼓浪屿",
+              "utterance": "厦门鼓浪屿旅行，想慢慢逛一天"
+            },
+            "note": "大理 vs 厦门"
+          },
+          {
+            "id": "pair_033",
+            "expected": true,
+            "actual": false,
+            "score": 0.0,
+            "source": {
+              "id": "evt_027",
+              "activity_type": "自驾",
+              "eval_location": "广州 珠三角",
+              "utterance": "广州出发珠三角自驾，有车更好"
+            },
+            "target": {
+              "id": "evt_038",
+              "activity_type": "喝茶",
+              "eval_location": "佛山 岭南天地",
+              "utterance": "佛山岭南天地喝茶，下午慢慢坐"
+            },
+            "note": "珠三角覆盖佛山"
+          },
+          {
+            "id": "pair_042",
+            "expected": false,
+            "actual": true,
+            "score": 0.3438,
+            "source": {
+              "id": "evt_023",
+              "activity_type": "旅行",
+              "eval_location": "稻城亚丁",
+              "utterance": "稻城亚丁旅行，想拼个摄影搭子"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "稻城亚丁 vs 箱根"
+          },
+          {
+            "id": "pair_043",
+            "expected": false,
+            "actual": true,
+            "score": 0.6209,
+            "source": {
+              "id": "evt_017",
+              "activity_type": "旅行拍照",
+              "eval_location": "京都 岚山",
+              "utterance": "京都岚山旅行拍照，周末出发"
+            },
+            "target": {
+              "id": "evt_032",
+              "activity_type": "温泉",
+              "eval_location": "箱根",
+              "utterance": "箱根温泉搭子，想住一晚"
+            },
+            "note": "京都岚山 vs 箱根"
+          },
+          {
+            "id": "pair_044",
+            "expected": false,
+            "actual": true,
+            "score": 0.5723,
+            "source": {
+              "id": "evt_031",
+              "activity_type": "温泉",
+              "eval_location": "东京周边",
+              "utterance": "东京周边泡温泉，周末出发"
+            },
+            "target": {
+              "id": "evt_016",
+              "activity_type": "餐饮",
+              "eval_location": "东京 新宿",
+              "utterance": "东京新宿附近吃拉面，今晚"
+            },
+            "note": "东京周边温泉 vs 东京新宿吃饭"
+          },
+          {
+            "id": "pair_060",
+            "expected": false,
+            "actual": true,
+            "score": 0.3968,
+            "source": {
+              "id": "evt_040",
+              "activity_type": "看电影",
+              "eval_location": "北京 通州",
+              "utterance": "北京通州看电影，晚上场"
+            },
+            "target": {
+              "id": "evt_030",
+              "activity_type": "爬山",
+              "eval_location": "天津 蓟州",
+              "utterance": "天津蓟州爬山，周六一天往返"
+            },
+            "note": "北京通州电影 vs 天津蓟州爬山"
+          }
+        ]
+      }
+    }
+  }
+}

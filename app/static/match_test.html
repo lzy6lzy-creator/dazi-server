@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I搭不搭 - 匹配系统测试</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.6}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+h1{text-align:center;margin-bottom:8px;font-size:28px;background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{text-align:center;color:#94a3b8;margin-bottom:24px;font-size:14px}
+
+/* Control Panel */
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:24px;padding:16px;background:#1e293b;border-radius:12px;border:1px solid #334155}
+.controls button{padding:8px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+.btn-primary{background:#6366f1;color:#fff}.btn-primary:hover{background:#4f46e5}
+.btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-secondary{background:#334155;color:#e2e8f0}.btn-secondary:hover{background:#475569}
+.controls select,.controls input{padding:8px 12px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#e2e8f0;font-size:14px}
+.controls label{color:#94a3b8;font-size:13px}
+#status{margin-left:auto;color:#94a3b8;font-size:13px}
+
+/* Stats Cards */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:#1e293b;border-radius:10px;padding:16px;border:1px solid #334155}
+.stat-card h3{font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.stat-card .value{font-size:28px;font-weight:700;color:#818cf8}
+.stat-card .detail{font-size:12px;color:#64748b;margin-top:4px}
+.tag-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;background:#1e1b4b;color:#a5b4fc}
+
+/* Event List */
+.event-list{display:flex;flex-direction:column;gap:16px}
+.event-card{background:#1e293b;border-radius:12px;border:1px solid #334155;overflow:hidden;transition:border-color .2s}
+.event-card:hover{border-color:#6366f1}
+.event-header{display:flex;align-items:center;gap:12px;padding:16px;cursor:pointer;user-select:none}
+.event-header .badge{background:#312e81;color:#a5b4fc;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap}
+.event-header .title{font-size:16px;font-weight:600;flex:1}
+.event-header .meta{display:flex;gap:12px;font-size:13px;color:#94a3b8}
+.event-header .candidate-count{background:#1e1b4b;color:#818cf8;padding:2px 8px;border-radius:4px;font-size:12px}
+.event-header .arrow{transition:transform .3s;color:#64748b;font-size:18px}
+.event-card.open .arrow{transform:rotate(90deg)}
+.event-info{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 8px;font-size:12px;color:#64748b}
+.event-info span{background:#0f172a;padding:2px 8px;border-radius:4px}
+
+/* Candidates Table */
+.candidates{display:none;border-top:1px solid #334155}
+.event-card.open .candidates{display:block}
+.cand-table{width:100%;border-collapse:collapse}
+.cand-table th{text-align:left;padding:10px 12px;background:#0f172a;color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0}
+.cand-table td{padding:8px 12px;border-top:1px solid #1e293b;font-size:12px}
+.cand-table tr:hover td{background:#162032}
+.cand-table tr.row-filtered td{opacity:.6}
+.cand-table .rank{font-weight:700;color:#818cf8;text-align:center;width:30px}
+.score-bar{display:inline-flex;align-items:center;gap:6px}
+.score-bar .bar{width:70px;height:6px;background:#1e293b;border-radius:3px;overflow:hidden}
+.score-bar .fill{height:100%;border-radius:3px;transition:width .3s}
+.score-bar .val{font-size:12px;font-weight:600;min-width:36px}
+
+/* Status badges */
+.status-passed{background:#065f46;color:#34d399;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.status-filtered{background:#7f1d1d;color:#fca5a5;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.status-hard_filtered{background:#7f1d1d;color:#fca5a5;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.status-blocklisted{background:#581c87;color:#d8b4fe;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.status-below_threshold{background:#78350f;color:#fcd34d;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.status-a2a_round_1{background:#065f46;color:#34d399;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.status-a2a_round_2{background:#164e63;color:#67e8f9;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.status-standby{background:#1e3a5f;color:#93c5fd;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.filter-reason{color:#94a3b8;font-size:11px;margin-top:2px}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:#64748b}
+.spinner{display:inline-block;width:24px;height:24px;border:3px solid #334155;border-top-color:#6366f1;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Empty */
+.empty{text-align:center;padding:60px 20px;color:#64748b}
+.empty .icon{font-size:48px;margin-bottom:12px}
+
+/* Time display */
+.time-range{font-size:11px;color:#94a3b8}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>I搭不搭 匹配系统测试</h1>
+<p class="subtitle">向量语义匹配 Pipeline: 城市分桶 + pgvector 召回 + 硬过滤/黑名单 + 两轮 A2A</p>
+
+<div class="controls">
+  <button class="btn-primary" onclick="generateData()">生成 1000 事件</button>
+  <button class="btn-secondary" onclick="loadPreview()">加载匹配预览</button>
+  <label>活动类型:
+    <select id="filterType" onchange="loadPreview()">
+      <option value="">全部</option>
+      <option>电影</option><option>徒步</option><option>美食</option>
+      <option>看展</option><option>咖啡</option><option>桌游</option>
+      <option>摄影</option><option>演出</option><option>运动</option>
+    </select>
+  </label>
+  <label>城市:
+    <select id="filterCity" onchange="loadPreview()">
+      <option value="">全部</option>
+      <option>上海</option><option>北京</option><option>深圳</option><option>广州</option>
+      <option>杭州</option><option>成都</option><option>南京</option><option>武汉</option>
+    </select>
+  </label>
+  <label>显示:
+    <input id="filterLimit" type="number" value="30" min="1" max="200" style="width:60px" onchange="loadPreview()">
+  </label>
+  <button class="btn-danger" onclick="cleanupData()">清理数据</button>
+  <span id="status"></span>
+</div>
+
+<div class="stats" id="statsArea"></div>
+<div id="content"><div class="empty"><div class="icon">&#128269;</div>点击「生成 1000 事件」开始，然后「加载匹配预览」查看匹配细节</div></div>
+</div>
+
+<script>
+const API = location.origin;
+const $ = s => document.querySelector(s);
+
+function setStatus(msg) { $('#status').textContent = msg; }
+
+function fmtTime(iso) {
+  if (!iso) return '未设';
+  return new Date(iso).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'});
+}
+
+async function generateData() {
+  setStatus('生成中...');
+  $('#content').innerHTML = '<div class="loading"><span class="spinner"></span>正在生成 200 用户 x 5 事件 = 1000 个事件...</div>';
+  try {
+    const r = await fetch(`${API}/api/admin/test/generate?user_count=200&events_per_user=5`, {method:'POST'});
+    const d = await r.json();
+    setStatus(d.message);
+    await loadStats();
+    await loadPreview();
+  } catch(e) { setStatus('生成失败: '+e.message); }
+}
+
+async function cleanupData() {
+  if (!confirm('确定要清理所有测试数据吗？')) return;
+  setStatus('清理中...');
+  try {
+    const r = await fetch(`${API}/api/admin/test/cleanup`, {method:'DELETE'});
+    const d = await r.json();
+    setStatus(d.message);
+    $('#statsArea').innerHTML = '';
+    $('#content').innerHTML = '<div class="empty"><div class="icon">&#128465;</div>数据已清理</div>';
+  } catch(e) { setStatus('清理失败: '+e.message); }
+}
+
+async function loadStats() {
+  try {
+    const r = await fetch(`${API}/api/admin/test/stats`);
+    const d = await r.json();
+    let html = `<div class="stat-card"><h3>Pending 事件总数</h3><div class="value">${d.total_pending}</div></div>`;
+    html += `<div class="stat-card"><h3>按活动类型</h3><div class="tag-row">${d.by_activity_type.map(t=>`<span class="tag">${t.type} ${t.count}</span>`).join('')}</div></div>`;
+    html += `<div class="stat-card"><h3>按城市</h3><div class="tag-row">${d.by_city.map(c=>`<span class="tag">${c.city} ${c.count}</span>`).join('')}</div></div>`;
+    $('#statsArea').innerHTML = html;
+  } catch(e) { console.error('Stats error', e); }
+}
+
+async function loadPreview() {
+  const type = $('#filterType').value;
+  const city = $('#filterCity').value;
+  const limit = $('#filterLimit').value || 30;
+  setStatus('加载中...');
+  $('#content').innerHTML = '<div class="loading"><span class="spinner"></span>正在计算向量匹配...</div>';
+
+  try {
+    let url = `${API}/api/admin/test/match-preview-all?limit=${limit}`;
+    if (type) url += `&activity_type=${encodeURIComponent(type)}`;
+    if (city) url += `&city=${encodeURIComponent(city)}`;
+
+    const r = await fetch(url);
+    const d = await r.json();
+    setStatus(`已加载 ${d.total_events} 个事件`);
+    await loadStats();
+    renderPreviews(d.previews);
+  } catch(e) {
+    setStatus('加载失败: '+e.message);
+    $('#content').innerHTML = `<div class="empty"><div class="icon">&#9888;</div>${e.message}</div>`;
+  }
+}
+
+function renderPreviews(previews) {
+  if (!previews || !previews.length) {
+    $('#content').innerHTML = '<div class="empty"><div class="icon">&#128528;</div>没有找到事件，请先生成测试数据</div>';
+    return;
+  }
+  let html = '<div class="event-list">';
+  for (const p of previews) {
+    const e = p.event;
+    const cands = p.candidates || [];
+    const passedCands = cands.filter(c => c.passed);
+    const bestScore = passedCands.length ? passedCands[0].similarity : (cands.length ? cands[0].similarity : 0);
+    const totalRecalled = p.total_recalled || cands.length;
+    const totalPassed = p.total_passed || passedCands.length;
+    html += `<div class="event-card" onclick="this.classList.toggle('open')">
+      <div class="event-header">
+        <span class="badge">${e.activity_type}</span>
+        <span class="title">${e.title}</span>
+        <span class="meta">
+          <span>${e.city || '-'} (${p.city_normalized || '-'})</span>
+          <span>${fmtTime(e.start_time)}</span>
+        </span>
+        <span class="candidate-count">${totalRecalled} 召回 / ${totalPassed} 通过</span>
+        ${scoreBarHTML(bestScore)}
+        <span class="arrow">&#9654;</span>
+      </div>
+      <div class="event-info">
+        <span>偏好: ${(e.preferences||[]).join(', ') || '无'}</span>
+        <span>约束: ${(e.constraints||[]).join(', ') || '无'}</span>
+        <span>地点: ${e.location || '未设'}</span>
+        <span>阈值: ${p.threshold}</span>
+      </div>
+      <div class="candidates">
+        ${cands.length ? candidateTable(cands, e) : '<div style="padding:20px;text-align:center;color:#64748b">无匹配候选</div>'}
+      </div>
+    </div>`;
+  }
+  html += '</div>';
+  $('#content').innerHTML = html;
+}
+
+function candidateTable(candidates, sourceEvent) {
+  let html = `<table class="cand-table"><thead><tr>
+    <th>#</th><th>候选事件</th><th>活动类型</th><th>城市</th><th>地点</th>
+    <th>时间</th><th>偏好</th><th>约束</th>
+    <th>相似度</th><th>状态</th><th>过滤原因</th>
+  </tr></thead><tbody>`;
+  candidates.forEach((c, i) => {
+    const e = c.event;
+    const rowClass = c.passed ? '' : 'row-filtered';
+    const statusLabel = {
+      passed: 'PASS',
+      filtered: '时间过滤',
+      hard_filtered: '硬过滤',
+      blocklisted: '黑名单',
+      below_threshold: '低于阈值',
+      a2a_round_1: 'A2A 1轮',
+      a2a_round_2: 'A2A 2轮',
+      standby: '备用',
+    }[c.status] || c.status;
+    const statusClass = `status-${c.status}`;
+    html += `<tr class="${rowClass}">
+      <td class="rank">${i+1}</td>
+      <td><strong>${e.title}</strong></td>
+      <td>${e.activity_type}</td>
+      <td>${e.city||'-'} (${e.city_normalized||'-'})</td>
+      <td>${e.location||'-'}</td>
+      <td class="time-range">${fmtTime(e.start_time)}${e.end_time ? ' ~ '+fmtTime(e.end_time) : ''}</td>
+      <td><div class="tag-row">${(e.preferences||[]).map(p=>`<span class="tag">${p}</span>`).join('')}</div></td>
+      <td><div class="tag-row">${(e.constraints||[]).map(p=>`<span class="tag">${p}</span>`).join('')}</div></td>
+      <td>${scoreBarHTML(c.similarity)}</td>
+      <td><span class="${statusClass}">${statusLabel}</span></td>
+      <td class="filter-reason">${c.filter_reason || '-'}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  return html;
+}
+
+function scoreBarHTML(score) {
+  const pct = Math.round(score * 100);
+  const color = pct >= 70 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#f87171';
+  return `<div class="score-bar">
+    <div class="bar"><div class="fill" style="width:${pct}%;background:${color}"></div></div>
+    <span class="val" style="color:${color}">${score.toFixed(4)}</span>
+  </div>`;
+}
+</script>
+</body>
+</html>
