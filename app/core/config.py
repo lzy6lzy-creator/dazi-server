@@ -26,6 +26,16 @@ class Settings(BaseSettings):
     INTERNAL_TEST_PHONES: str = ""
     INTERNAL_TEST_PHONES_FILE: str = "internal_test_phones.txt"
 
+    # App Store Connect API for TestFlight internal invitations
+    ASC_KEY_ID: str = ""
+    ASC_ISSUER_ID: str = ""
+    ASC_PRIVATE_KEY_PATH: str = ""
+    ASC_BUNDLE_ID: str = "com.linke.dazi"
+    ASC_APP_ID: str = ""
+    ASC_INTERNAL_GROUP_NAME: str = "搭子test"
+    ASC_INTERNAL_GROUP_ID: str = ""
+    ASC_INVITE_ROLE: str = "MARKETING"
+
     # LLM
     LLM_API_KEY: str = ""
     LLM_BASE_URL: str = "https://api.moonshot.cn/v1"

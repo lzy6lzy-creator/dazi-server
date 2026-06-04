@@ -1,5 +1,5 @@
 """
-I搭不搭 - Backend API Server
+i搭不搭 - Backend API Server
 """
 import asyncio
 import logging
@@ -24,6 +24,8 @@ from app.models.user import User, Agent, AgentMemory, AgentChatMessage  # noqa: 
 from app.models.event import Event, MatchLog, MatchBlocklist  # noqa: F401
 from app.models.chat import ChatRoom, ChatRoomMember, ChatMessage, ChatRoomVote, PassiveMatchRequest  # noqa: F401
 from app.models.prompt import PromptTemplate  # noqa: F401
+from app.models.beta_signup import BetaSignup  # noqa: F401
+from app.models.site_feedback import SiteFeedback  # noqa: F401
 
 # 导入路由
 from app.api.auth import router as auth_router
@@ -31,6 +33,8 @@ from app.api.users import router as users_router
 from app.api.events import router as events_router
 from app.api.agent_chat import router as agent_chat_router
 from app.api.chat import router as chat_router
+from app.api.beta import router as beta_router
+from app.api.feedback import router as feedback_router
 from app.api.admin import router as admin_router
 from app.api.ws import router as ws_router
 
@@ -76,7 +80,7 @@ async def lifespan(app: FastAPI):
     # 初始化 LLM httpx 客户端
     llm_service.start()
 
-    # 启动定时匹配任务（每天 18:00 北京时间）
+    # 启动定时匹配任务（每小时扫描 pending 事件）
     match_scheduler.start()
 
     yield
@@ -90,7 +94,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="I搭不搭 API",
+    title="i搭不搭 API",
     description="AI Agent 社交搭子匹配平台",
     version="0.2.0",
     lifespan=lifespan,
@@ -104,6 +108,8 @@ app.add_middleware(
         "http://localhost:8080",
         "http://47.103.127.95:8000",
         "http://47.103.127.95",
+        "https://idabuda.com",
+        "https://www.idabuda.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -116,6 +122,8 @@ app.include_router(users_router)
 app.include_router(events_router)
 app.include_router(agent_chat_router)
 app.include_router(chat_router)
+app.include_router(beta_router)
+app.include_router(feedback_router)
 app.include_router(admin_router)
 app.include_router(ws_router)
 

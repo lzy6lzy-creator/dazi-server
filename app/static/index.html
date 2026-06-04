@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>I搭不搭 - 找到合适的活动搭子</title>
-<meta name="description" content="I搭不搭是一个 AI 活动搭子匹配服务。告诉 AI 你想做什么，它帮你找到时间、地点和兴趣都合适的人。">
+<title>i搭不搭 - 找到合适的活动搭子</title>
+<meta name="description" content="i搭不搭是一个 AI 活动搭子匹配服务。告诉 AI 你想做什么，它帮你找到时间、地点和兴趣都合适的人。">
 <style>
 :root {
   --ink: #20272d;
@@ -46,7 +46,7 @@ button, a.button {
   font-weight: 650;
   cursor: pointer;
 }
-a.button.primary {
+.button.primary, button.primary {
   background: var(--ink);
   border-color: var(--ink);
   color: #fff;
@@ -384,6 +384,120 @@ h3 {
   color: var(--ink);
 }
 
+.signup-form {
+  width: min(760px, 100%);
+  margin: 28px auto 0;
+  padding: 22px;
+  border-radius: 18px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .18);
+}
+
+.signup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.signup-field {
+  display: grid;
+  gap: 7px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.signup-field.full {
+  grid-column: 1 / -1;
+}
+
+.label-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.label-hint {
+  color: var(--sage);
+  font-size: 12px;
+  font-weight: 620;
+}
+
+.signup-field input,
+.signup-field select,
+.signup-field textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 13px;
+  color: var(--ink);
+  background: #fffdf9;
+  font: inherit;
+  font-weight: 500;
+}
+
+.signup-field select {
+  appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%) right 16px center / 7px 7px no-repeat,
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%) right 11px center / 7px 7px no-repeat,
+    #fffdf9;
+}
+
+.signup-field textarea {
+  min-height: 86px;
+  resize: vertical;
+}
+
+.consent {
+  margin-top: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.consent input {
+  margin-top: 4px;
+}
+
+.signup-actions {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.signup-status {
+  color: var(--sage);
+  font-size: 13px;
+}
+
+.signup-status.error {
+  color: var(--coral);
+}
+
+.feedback-section {
+  padding-top: 0;
+}
+
+.feedback-section .section-head {
+  margin-bottom: 24px;
+}
+
+.feedback-form {
+  margin-top: 0;
+  box-shadow: 0 16px 44px rgba(42, 59, 67, .10);
+}
+
+.feedback-form .signup-field textarea {
+  min-height: 132px;
+}
+
 footer {
   width: min(1120px, calc(100% - 40px));
   margin: 0 auto;
@@ -395,19 +509,6 @@ footer {
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 13px;
-}
-
-.utility-links {
-  display: flex;
-  gap: 14px;
-}
-
-.utility-links a {
-  color: var(--muted);
-}
-
-.utility-links a:hover {
-  color: var(--ink);
 }
 
 @media (max-width: 900px) {
@@ -487,6 +588,10 @@ footer {
     padding: 42px 20px;
   }
 
+  .signup-grid {
+    grid-template-columns: 1fr;
+  }
+
   footer {
     align-items: flex-start;
     flex-direction: column;
@@ -501,7 +606,7 @@ footer {
     <div class="hero-shade"></div>
 
     <nav class="nav" aria-label="主导航">
-      <a class="brand" href="/">I搭不搭</a>
+      <a class="brand" href="/">i搭不搭</a>
       <div class="nav-links">
         <a href="#how">怎么用</a>
         <a href="#trust">为什么靠谱</a>
@@ -512,7 +617,7 @@ footer {
     <div class="hero-inner">
       <div>
         <div class="eyebrow">AI 活动搭子匹配</div>
-        <h1 id="home-title">I搭不搭</h1>
+        <h1 id="home-title">i搭不搭</h1>
         <div class="hero-title">想做的事，终于有人一起。</div>
         <p class="hero-copy">想看展、打球、徒步、喝咖啡？告诉你的 AI 经纪人，它会帮你找到时间、地点和兴趣都合适的活动搭子。</p>
         <div class="hero-actions">
@@ -561,7 +666,7 @@ footer {
         <div class="trust-copy">
           <div class="section-kicker">为什么靠谱</div>
           <h2>它不是随机推荐，而是先判断合不合适。</h2>
-          <p>I搭不搭会把活动需求拆成时间、地点、活动类型和偏好，再让双方 AI 先聊一轮。你看到的不是一堆陌生人，而是更可能一起成行的人。</p>
+          <p>i搭不搭会把活动需求拆成时间、地点、活动类型和偏好，再让双方 AI 先聊一轮。你看到的不是一堆陌生人，而是更可能一起成行的人。</p>
         </div>
 
         <div class="trust-grid">
@@ -601,18 +706,188 @@ footer {
   </section>
 
   <section class="closing" id="join">
-    <h2>下次想出门，先问 I搭不搭</h2>
-    <p>加入内测，让 AI 先帮你找到合适的人。</p>
-    <a class="button primary" href="#home-title">加入内测</a>
+    <h2>申请加入内测</h2>
+    <p>留下 TestFlight 邀请信息，我们会优先邀请适合早期体验的用户。</p>
+    <form class="signup-form" id="betaSignupForm">
+      <div class="signup-grid">
+        <label class="signup-field">
+          姓名/昵称
+          <input name="name" autocomplete="name" maxlength="80" placeholder="怎么称呼你" required>
+        </label>
+        <label class="signup-field">
+          Apple ID 邮箱
+          <input name="email" type="email" autocomplete="email" maxlength="160" placeholder="用于接收 TestFlight 邀请" required>
+        </label>
+        <label class="signup-field">
+          手机号
+          <input name="contact" autocomplete="tel" type="tel" inputmode="numeric" pattern="1[3-9][0-9]{9}" maxlength="11" placeholder="11 位手机号，用作登录 app 的账号" required>
+        </label>
+        <label class="signup-field">
+          <span class="label-row">所在城市 <span class="label-hint">上海优先</span></span>
+          <input name="city" autocomplete="address-level2" maxlength="80" placeholder="你所在的城市">
+        </label>
+        <label class="signup-field">
+          iPhone 型号 / iOS 版本
+          <input name="device" maxlength="120" placeholder="例如 iPhone 15, iOS 18">
+        </label>
+        <label class="signup-field">
+          想参加的活动
+          <input name="activity_interests" maxlength="160" placeholder="看展、咖啡、羽毛球">
+        </label>
+        <label class="signup-field full">
+          备注
+          <textarea name="note" maxlength="500" placeholder="你想怎么用 i搭不搭，或者有什么特别想测试的场景"></textarea>
+        </label>
+      </div>
+      <label class="consent">
+        <input name="consent" type="checkbox" required>
+        <span>我同意 i搭不搭使用以上信息发送内测邀请，并在必要时联系我确认测试资格。</span>
+      </label>
+      <div class="signup-actions">
+        <button class="primary" type="submit">提交报名</button>
+        <span class="signup-status" id="betaSignupStatus" aria-live="polite"></span>
+      </div>
+    </form>
+  </section>
+
+  <section class="section feedback-section" id="feedback">
+    <div class="section-head">
+      <div class="section-kicker">反馈</div>
+      <h2>有想法，直接告诉我们</h2>
+      <p>不管是报名问题、体验问题，还是你希望 i搭不搭支持的新场景，都可以留在这里。</p>
+    </div>
+    <form class="signup-form feedback-form" id="feedbackForm">
+      <div class="signup-grid">
+        <label class="signup-field">
+          反馈类型
+          <select name="category" required>
+            <option value="体验问题">体验问题</option>
+            <option value="功能建议">功能建议</option>
+            <option value="报名问题">报名问题</option>
+            <option value="其他">其他</option>
+          </select>
+        </label>
+        <label class="signup-field">
+          联系方式
+          <input name="contact" autocomplete="email tel" maxlength="160" placeholder="邮箱或手机号，可选">
+        </label>
+        <label class="signup-field full">
+          反馈内容
+          <textarea name="content" maxlength="1000" placeholder="哪里不好用、哪里不清楚，或者你希望我们做什么" required></textarea>
+        </label>
+      </div>
+      <div class="signup-actions">
+        <button class="primary" type="submit">提交反馈</button>
+        <span class="signup-status" id="feedbackStatus" aria-live="polite"></span>
+      </div>
+    </form>
   </section>
 
   <footer>
-    <div>I搭不搭 · AI 活动搭子匹配</div>
-    <div class="utility-links">
-      <a href="/docs">API 文档</a>
-      <a href="/admin">管理后台</a>
-    </div>
+    <div>i搭不搭 · AI 活动搭子匹配</div>
   </footer>
 </div>
+<script>
+const betaSignupForm = document.getElementById('betaSignupForm');
+const betaSignupStatus = document.getElementById('betaSignupStatus');
+const feedbackForm = document.getElementById('feedbackForm');
+const feedbackStatus = document.getElementById('feedbackStatus');
+
+function betaSignupErrorText(payload) {
+  if (!payload) return '提交失败，请稍后再试';
+  if (typeof payload.detail === 'string') return payload.detail;
+  if (Array.isArray(payload.detail) && payload.detail.length) {
+    return payload.detail.map(item => item.msg || item.message || '填写内容有误').join('；');
+  }
+  return payload.message || '提交失败，请稍后再试';
+}
+
+function betaSignupActivities(value) {
+  return String(value || '')
+    .split(/[,\s，、]+/)
+    .map(item => item.trim())
+    .filter(Boolean)
+    .slice(0, 12);
+}
+
+if (betaSignupForm) {
+  betaSignupForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const submitButton = betaSignupForm.querySelector('button[type="submit"]');
+    const formData = new FormData(betaSignupForm);
+    const payload = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      contact: formData.get('contact'),
+      city: formData.get('city'),
+      device: formData.get('device'),
+      activity_interests: betaSignupActivities(formData.get('activity_interests')),
+      note: formData.get('note'),
+      source: 'homepage',
+      consent: formData.get('consent') === 'on',
+    };
+
+    betaSignupStatus.textContent = '提交中...';
+    betaSignupStatus.classList.remove('error');
+    submitButton.disabled = true;
+
+    try {
+      const response = await fetch('/api/v1/beta-signups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(betaSignupErrorText(data));
+      }
+      betaSignupForm.reset();
+      betaSignupStatus.textContent = data.message || '报名已收到，我们会尽快发送邀请。';
+    } catch (error) {
+      betaSignupStatus.textContent = error.message || '提交失败，请稍后再试';
+      betaSignupStatus.classList.add('error');
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+}
+
+if (feedbackForm) {
+  feedbackForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const submitButton = feedbackForm.querySelector('button[type="submit"]');
+    const formData = new FormData(feedbackForm);
+    const payload = {
+      category: formData.get('category'),
+      content: formData.get('content'),
+      contact: formData.get('contact'),
+      source: 'homepage',
+    };
+
+    feedbackStatus.textContent = '提交中...';
+    feedbackStatus.classList.remove('error');
+    submitButton.disabled = true;
+
+    try {
+      const response = await fetch('/api/v1/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(betaSignupErrorText(data));
+      }
+      feedbackForm.reset();
+      feedbackStatus.textContent = data.message || '反馈已收到，谢谢。';
+    } catch (error) {
+      feedbackStatus.textContent = error.message || '提交失败，请稍后再试';
+      feedbackStatus.classList.add('error');
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+}
+</script>
 </body>
 </html>

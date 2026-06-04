@@ -3,262 +3,891 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>I搭不搭 - 找到合拍的搭子</title>
+<title>i搭不搭 - 找到合适的活动搭子</title>
+<meta name="description" content="i搭不搭是一个 AI 活动搭子匹配服务。告诉 AI 你想做什么，它帮你找到时间、地点和兴趣都合适的人。">
 <style>
-* { box-sizing: border-box; }
 :root {
-  --ink: #182022;
-  --muted: #5d686b;
-  --line: #d9e2df;
-  --paper: #fbfcf9;
-  --mist: #eef5f2;
-  --teal: #168a78;
-  --coral: #d9644a;
-  --gold: #c28f2c;
+  --ink: #20272d;
+  --ink-soft: #4f5b65;
+  --muted: #6d7882;
+  --paper: #fbf8f3;
+  --paper-strong: #fffdf9;
+  --line: #eadfd2;
+  --sage: #5f7d66;
+  --sage-soft: #eef6f1;
+  --coral: #d9795f;
+  --coral-soft: #fbefe9;
+  --blue-soft: #eef4f8;
+  --shadow: 0 24px 70px rgba(63, 54, 45, .10);
 }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
   color: var(--ink);
   background: var(--paper);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
   line-height: 1.6;
 }
-a { color: inherit; }
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 14px clamp(20px, 5vw, 64px);
-  background: rgba(251, 252, 249, 0.92);
-  border-bottom: 1px solid var(--line);
-  backdrop-filter: blur(14px);
-}
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-}
-.brand img {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-}
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  color: var(--muted);
-  font-size: 14px;
-}
-.nav a { text-decoration: none; }
-.nav a:hover { color: var(--ink); }
-.hero {
-  min-height: 82svh;
-  display: grid;
-  align-items: center;
-  padding: clamp(44px, 8vw, 86px) clamp(20px, 6vw, 84px);
-  background:
-    linear-gradient(90deg, rgba(251, 252, 249, 0.96) 0%, rgba(251, 252, 249, 0.82) 55%, rgba(251, 252, 249, 0.48) 100%),
-    url("assets/app-icon.png");
-  background-repeat: no-repeat;
-  background-size: min(58vmin, 520px);
-  background-position: right clamp(18px, 8vw, 120px) center;
-  border-bottom: 1px solid var(--line);
-}
-.hero-inner {
-  max-width: 660px;
-}
-.eyebrow {
-  color: var(--teal);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0;
-  margin: 0 0 12px;
-}
-h1 {
-  margin: 0;
-  font-size: clamp(44px, 8vw, 86px);
-  line-height: 0.98;
-  letter-spacing: 0;
-}
-.lead {
-  max-width: 560px;
-  margin: 24px 0 0;
-  color: var(--muted);
-  font-size: clamp(17px, 2vw, 22px);
-}
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 32px;
-}
-.button {
+
+a { color: inherit; text-decoration: none; }
+button, a.button {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 18px;
-  border: 1px solid var(--ink);
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 700;
-  background: var(--ink);
-  color: white;
-}
-.button.secondary {
-  background: transparent;
+  border-radius: 999px;
+  padding: 0 20px;
+  border: 1px solid rgba(32, 39, 45, .16);
+  background: rgba(255, 255, 255, .78);
   color: var(--ink);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
 }
-main section {
-  padding: 64px clamp(20px, 6vw, 84px);
+.button.primary, button.primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
 }
-.section-head {
-  max-width: 760px;
-  margin-bottom: 28px;
+a.button:hover { transform: translateY(-1px); }
+
+.page {
+  min-height: 100vh;
+  overflow: hidden;
 }
-h2 {
-  margin: 0 0 10px;
-  font-size: clamp(28px, 4vw, 44px);
+
+.hero {
+  min-height: 88vh;
+  position: relative;
+  display: grid;
+  align-items: stretch;
+  border-bottom: 1px solid rgba(234, 223, 210, .75);
+  background: #fbf4ec;
+}
+
+.hero-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+}
+
+.hero-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(252, 247, 240, .99) 0%, rgba(252, 247, 240, .92) 36%, rgba(252, 247, 240, .36) 68%, rgba(252, 247, 240, 0) 100%),
+    linear-gradient(180deg, rgba(252, 247, 240, .20), rgba(252, 247, 240, .82));
+}
+
+.nav {
+  position: relative;
+  z-index: 2;
+  width: min(1160px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.nav-links a:hover { color: var(--ink); }
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  width: min(1160px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 64px 0 96px;
+  display: grid;
+  grid-template-columns: minmax(0, 520px) 1fr;
+  align-items: center;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  min-height: 30px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(95, 125, 102, .22);
+  background: rgba(255, 255, 255, .72);
+  color: var(--sage);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+h1 {
+  margin: 22px 0 0;
+  font-size: 26px;
   line-height: 1.1;
   letter-spacing: 0;
 }
-.section-head p {
-  margin: 0;
-  color: var(--muted);
+
+.hero-title {
+  margin: 12px 0 0;
+  max-width: 520px;
+  font-size: 58px;
+  line-height: 1.04;
+  letter-spacing: 0;
+  font-weight: 880;
 }
-.grid {
+
+.hero-copy {
+  margin: 22px 0 0;
+  max-width: 510px;
+  color: var(--ink-soft);
+  font-size: 18px;
+  line-height: 1.85;
+}
+
+.hero-actions {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.hero-chips {
+  margin-top: 26px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.chip {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(234, 223, 210, .86);
+  background: rgba(255, 255, 255, .70);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.next-peek {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  z-index: 2;
+  transform: translateX(-50%);
+  color: rgba(32, 39, 45, .45);
+  font-size: 13px;
+}
+
+.section {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 82px 0;
+}
+
+.section.compact { padding-top: 62px; }
+
+.section-head {
+  max-width: 660px;
+  margin: 0 auto 34px;
+  text-align: center;
+}
+
+.section-kicker {
+  color: var(--sage);
+  font-size: 13px;
+  font-weight: 760;
+  margin-bottom: 8px;
+}
+
+h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 34px;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+.section-head p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
-.panel {
-  min-height: 180px;
-  padding: 22px;
+
+.step-card, .trust-card {
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: white;
+  border-radius: 18px;
+  background: var(--paper-strong);
+  box-shadow: 0 12px 34px rgba(63, 54, 45, .06);
 }
-.panel strong {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 18px;
+
+.step-card {
+  min-height: 220px;
+  padding: 22px;
 }
-.panel p {
-  margin: 0;
+
+.step-num {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 800;
+}
+
+.step-card:nth-child(2) .step-num { background: var(--sage); }
+.step-card:nth-child(3) .step-num { background: var(--coral); }
+
+h3 {
+  margin: 18px 0 0;
+  color: var(--ink);
+  font-size: 19px;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.step-card p, .trust-card p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.trust-band {
+  background: #f5faf6;
+  border-top: 1px solid #e7efe8;
+  border-bottom: 1px solid #e7efe8;
+}
+
+.trust-layout {
+  display: grid;
+  grid-template-columns: .9fr 1.1fr;
+  gap: 34px;
+  align-items: center;
+}
+
+.trust-copy {
+  max-width: 440px;
+}
+
+.trust-copy p {
   color: var(--muted);
   font-size: 15px;
+  line-height: 1.85;
 }
-.status {
+
+.trust-grid {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 20px;
-  background: var(--mist);
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  gap: 12px;
 }
-.status-list {
+
+.trust-card {
+  padding: 18px;
+  background: #fff;
+}
+
+.trust-card strong {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.trust-card span {
+  color: var(--sage);
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.activity-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 11px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.activity {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 8px 16px;
+  color: var(--ink-soft);
+  border: 1px solid rgba(234, 223, 210, .95);
+  background: #fffaf5;
+  font-weight: 650;
+}
+
+.activity:nth-child(2n) {
+  background: var(--sage-soft);
+  border-color: #dbe9df;
+}
+
+.activity:nth-child(3n) {
+  background: var(--blue-soft);
+  border-color: #dce8ee;
+}
+
+.closing {
+  width: min(1040px, calc(100% - 40px));
+  margin: 0 auto 84px;
+  border-radius: 26px;
+  padding: 56px 28px;
+  text-align: center;
+  color: #fff;
+  background: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.closing h2 {
+  color: #fff;
+}
+
+.closing p {
+  margin: 12px auto 24px;
+  max-width: 500px;
+  color: #c8d0d6;
+}
+
+.closing .button.primary {
+  background: #fff;
+  border-color: #fff;
+  color: var(--ink);
+}
+
+.signup-form {
+  width: min(760px, 100%);
+  margin: 28px auto 0;
+  padding: 22px;
+  border-radius: 18px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .18);
+}
+
+.signup-grid {
   display: grid;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
-.status-list li {
-  padding: 12px 14px;
-  background: white;
+
+.signup-field {
+  display: grid;
+  gap: 7px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.signup-field.full {
+  grid-column: 1 / -1;
+}
+
+.label-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.label-hint {
+  color: var(--sage);
+  font-size: 12px;
+  font-weight: 620;
+}
+
+.signup-field input,
+.signup-field select,
+.signup-field textarea {
+  width: 100%;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 12px;
+  padding: 12px 13px;
+  color: var(--ink);
+  background: #fffdf9;
+  font: inherit;
+  font-weight: 500;
 }
-footer {
-  padding: 28px clamp(20px, 6vw, 84px);
+
+.signup-field select {
+  appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%) right 16px center / 7px 7px no-repeat,
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%) right 11px center / 7px 7px no-repeat,
+    #fffdf9;
+}
+
+.signup-field textarea {
+  min-height: 86px;
+  resize: vertical;
+}
+
+.consent {
+  margin-top: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   color: var(--muted);
-  border-top: 1px solid var(--line);
-  font-size: 14px;
+  font-size: 13px;
 }
-@media (max-width: 760px) {
-  .topbar { align-items: flex-start; flex-direction: column; }
-  .nav { flex-wrap: wrap; }
+
+.consent input {
+  margin-top: 4px;
+}
+
+.signup-actions {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.signup-status {
+  color: var(--sage);
+  font-size: 13px;
+}
+
+.signup-status.error {
+  color: var(--coral);
+}
+
+.feedback-section {
+  padding-top: 0;
+}
+
+.feedback-section .section-head {
+  margin-bottom: 24px;
+}
+
+.feedback-form {
+  margin-top: 0;
+  box-shadow: 0 16px 44px rgba(42, 59, 67, .10);
+}
+
+.feedback-form .signup-field textarea {
+  min-height: 132px;
+}
+
+footer {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 28px 0 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
   .hero {
-    min-height: 760px;
-    align-items: start;
-    background-size: 260px;
-    background-position: center bottom 42px;
+    min-height: auto;
   }
-  .grid,
-  .status {
+
+  .hero-art {
+    opacity: .58;
+    object-position: 62% center;
+  }
+
+  .hero-shade {
+    background:
+      linear-gradient(90deg, rgba(252, 247, 240, .98), rgba(252, 247, 240, .82)),
+      linear-gradient(180deg, rgba(252, 247, 240, .18), rgba(252, 247, 240, .88));
+  }
+
+  .hero-inner {
     grid-template-columns: 1fr;
+    padding: 46px 0 84px;
+  }
+
+  .hero-title {
+    font-size: 46px;
+  }
+
+  .steps, .trust-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .trust-copy {
+    max-width: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .nav {
+    width: min(100% - 28px, 1120px);
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .hero-inner, .section, .closing, footer {
+    width: min(100% - 28px, 1120px);
+  }
+
+  .hero-title {
+    font-size: 38px;
+  }
+
+  .hero-copy {
+    font-size: 16px;
+  }
+
+  h2 {
+    font-size: 28px;
+  }
+
+  .section {
+    padding: 60px 0;
+  }
+
+  .section.compact {
+    padding-top: 46px;
+  }
+
+  .step-card {
+    min-height: auto;
+  }
+
+  .closing {
+    margin-bottom: 56px;
+    border-radius: 20px;
+    padding: 42px 20px;
+  }
+
+  .signup-grid {
+    grid-template-columns: 1fr;
+  }
+
+  footer {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 </style>
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="/" aria-label="I搭不搭首页">
-      <img src="assets/app-icon.png" alt="">
-      <span>I搭不搭</span>
-    </a>
-    <nav class="nav" aria-label="主导航">
-      <a href="#how">怎么搭</a>
-      <a href="#status">内测状态</a>
-      <a href="https://idabuda.com/travel_with_dots/">Travel with Dots</a>
-    </nav>
-  </header>
+<div class="page">
+  <section class="hero" aria-labelledby="home-title">
+    <img class="hero-art" src="/static/assets/hero-activity-cards.png" alt="由咖啡、看展、运动、日历和地图等活动卡片组成的温暖插画">
+    <div class="hero-shade"></div>
 
-  <section class="hero">
-    <div class="hero-inner">
-      <p class="eyebrow">AI agent social matching</p>
-      <h1>I搭不搭</h1>
-      <p class="lead">把想做的事交给你的 AI 搭子代理。它理解你的时间、地点和偏好，帮你找到更合拍的人一起吃饭、运动、看展、散步或临时成行。</p>
-      <div class="actions">
-        <a class="button" href="#status">查看内测进度</a>
-        <a class="button secondary" href="/docs">开发文档</a>
+    <nav class="nav" aria-label="主导航">
+      <a class="brand" href="/">i搭不搭</a>
+      <div class="nav-links">
+        <a href="#how">怎么用</a>
+        <a href="#trust">为什么靠谱</a>
+        <a href="#activities">适合做什么</a>
       </div>
+    </nav>
+
+    <div class="hero-inner">
+      <div>
+        <div class="eyebrow">AI 活动搭子匹配</div>
+        <h1 id="home-title">i搭不搭</h1>
+        <div class="hero-title">想做的事，终于有人一起。</div>
+        <p class="hero-copy">想看展、打球、徒步、喝咖啡？告诉你的 AI 经纪人，它会帮你找到时间、地点和兴趣都合适的活动搭子。</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#join">加入内测</a>
+          <a class="button" href="#how">看看怎么匹配</a>
+        </div>
+        <div class="hero-chips" aria-label="产品特点">
+          <span class="chip">不用刷人</span>
+          <span class="chip">不用尬聊</span>
+          <span class="chip">围绕具体活动匹配</span>
+        </div>
+      </div>
+    </div>
+    <div class="next-peek">向下了解</div>
+  </section>
+
+  <section class="section compact" id="how">
+    <div class="section-head">
+      <div class="section-kicker">怎么用</div>
+      <h2>和 AI 说一句，就能开始找搭子</h2>
+      <p>不用先认识人，也不用从一堆资料里筛。你只要说出想做的事。</p>
+    </div>
+
+    <div class="steps">
+      <article class="step-card">
+        <div class="step-num">1</div>
+        <h3>说出活动</h3>
+        <p>比如“周六下午想找人去看展，地点别太远”。自然聊天就能创建活动需求。</p>
+      </article>
+      <article class="step-card">
+        <div class="step-num">2</div>
+        <h3>AI 先筛一轮</h3>
+        <p>系统会先看时间、地点、活动偏好，减少不合适的人互相打扰。</p>
+      </article>
+      <article class="step-card">
+        <div class="step-num">3</div>
+        <h3>匹配后进群</h3>
+        <p>双方都有共同活动目标后，再进入聊天室敲定细节，社交压力更小。</p>
+      </article>
     </div>
   </section>
 
-  <main>
-    <section id="how">
-      <div class="section-head">
-        <h2>不是广场式社交，是把一次约定搭起来。</h2>
-        <p>搭子从事件出发：你说想做什么，系统再结合偏好、城市和时间窗口做匹配。</p>
-      </div>
-      <div class="grid">
-        <article class="panel">
-          <strong>说出事件</strong>
-          <p>告诉 agent 你想找饭搭子、运动搭子、学习搭子，或者只是想临时有人同行。</p>
-        </article>
-        <article class="panel">
-          <strong>理解边界</strong>
-          <p>系统记录你的城市、偏好、约束和历史选择，减少不合适的打扰。</p>
-        </article>
-        <article class="panel">
-          <strong>促成连接</strong>
-          <p>匹配成功后进入聊天室，让双方围绕这次具体事件快速确认。</p>
-        </article>
-      </div>
-    </section>
+  <div class="trust-band" id="trust">
+    <section class="section">
+      <div class="trust-layout">
+        <div class="trust-copy">
+          <div class="section-kicker">为什么靠谱</div>
+          <h2>它不是随机推荐，而是先判断合不合适。</h2>
+          <p>i搭不搭会把活动需求拆成时间、地点、活动类型和偏好，再让双方 AI 先聊一轮。你看到的不是一堆陌生人，而是更可能一起成行的人。</p>
+        </div>
 
-    <section id="status" class="status">
-      <div>
-        <h2>当前处于内测准备阶段。</h2>
-        <p>正式域名、HTTPS、管理后台和移动端接口正在收口到 idabuda.com。公开访问前会完成备案、证书和 App 端验证。</p>
+        <div class="trust-grid">
+          <article class="trust-card">
+            <strong>时间合得上 <span>优先</span></strong>
+            <p>不把根本碰不上的人推给你，活动时间先过一遍。</p>
+          </article>
+          <article class="trust-card">
+            <strong>地点不折腾 <span>优先</span></strong>
+            <p>附近、同城、区域表达都会被理解，尽量少走冤枉路。</p>
+          </article>
+          <article class="trust-card">
+            <strong>活动偏好接近 <span>优先</span></strong>
+            <p>比如安静看展、轻松徒步、不尬聊，细节也会被纳入判断。</p>
+          </article>
+        </div>
       </div>
-      <ul class="status-list">
-        <li>域名：idabuda.com</li>
-        <li>服务：iOS、Android、FastAPI、WebSocket</li>
-        <li>额外作品：/travel_with_dots/</li>
-      </ul>
     </section>
-  </main>
+  </div>
+
+  <section class="section" id="activities">
+    <div class="section-head">
+      <div class="section-kicker">适合做什么</div>
+      <h2>那些“想去但缺个人”的时刻</h2>
+      <p>越具体的活动，越容易找到真正合拍的人。</p>
+    </div>
+    <div class="activity-cloud">
+      <span class="activity">看展</span>
+      <span class="activity">咖啡</span>
+      <span class="activity">羽毛球</span>
+      <span class="activity">徒步</span>
+      <span class="activity">电影</span>
+      <span class="activity">桌游</span>
+      <span class="activity">演出</span>
+      <span class="activity">城市散步</span>
+    </div>
+  </section>
+
+  <section class="closing" id="join">
+    <h2>申请加入内测</h2>
+    <p>留下 TestFlight 邀请信息，我们会优先邀请适合早期体验的用户。</p>
+    <form class="signup-form" id="betaSignupForm">
+      <div class="signup-grid">
+        <label class="signup-field">
+          姓名/昵称
+          <input name="name" autocomplete="name" maxlength="80" placeholder="怎么称呼你" required>
+        </label>
+        <label class="signup-field">
+          Apple ID 邮箱
+          <input name="email" type="email" autocomplete="email" maxlength="160" placeholder="用于接收 TestFlight 邀请" required>
+        </label>
+        <label class="signup-field">
+          手机号
+          <input name="contact" autocomplete="tel" type="tel" inputmode="numeric" pattern="1[3-9][0-9]{9}" maxlength="11" placeholder="11 位手机号，用作登录 app 的账号" required>
+        </label>
+        <label class="signup-field">
+          <span class="label-row">所在城市 <span class="label-hint">上海优先</span></span>
+          <input name="city" autocomplete="address-level2" maxlength="80" placeholder="你所在的城市">
+        </label>
+        <label class="signup-field">
+          iPhone 型号 / iOS 版本
+          <input name="device" maxlength="120" placeholder="例如 iPhone 15, iOS 18">
+        </label>
+        <label class="signup-field">
+          想参加的活动
+          <input name="activity_interests" maxlength="160" placeholder="看展、咖啡、羽毛球">
+        </label>
+        <label class="signup-field full">
+          备注
+          <textarea name="note" maxlength="500" placeholder="你想怎么用 i搭不搭，或者有什么特别想测试的场景"></textarea>
+        </label>
+      </div>
+      <label class="consent">
+        <input name="consent" type="checkbox" required>
+        <span>我同意 i搭不搭使用以上信息发送内测邀请，并在必要时联系我确认测试资格。</span>
+      </label>
+      <div class="signup-actions">
+        <button class="primary" type="submit">提交报名</button>
+        <span class="signup-status" id="betaSignupStatus" aria-live="polite"></span>
+      </div>
+    </form>
+  </section>
+
+  <section class="section feedback-section" id="feedback">
+    <div class="section-head">
+      <div class="section-kicker">反馈</div>
+      <h2>有想法，直接告诉我们</h2>
+      <p>不管是报名问题、体验问题，还是你希望 i搭不搭支持的新场景，都可以留在这里。</p>
+    </div>
+    <form class="signup-form feedback-form" id="feedbackForm">
+      <div class="signup-grid">
+        <label class="signup-field">
+          反馈类型
+          <select name="category" required>
+            <option value="体验问题">体验问题</option>
+            <option value="功能建议">功能建议</option>
+            <option value="报名问题">报名问题</option>
+            <option value="其他">其他</option>
+          </select>
+        </label>
+        <label class="signup-field">
+          联系方式
+          <input name="contact" autocomplete="email tel" maxlength="160" placeholder="邮箱或手机号，可选">
+        </label>
+        <label class="signup-field full">
+          反馈内容
+          <textarea name="content" maxlength="1000" placeholder="哪里不好用、哪里不清楚，或者你希望我们做什么" required></textarea>
+        </label>
+      </div>
+      <div class="signup-actions">
+        <button class="primary" type="submit">提交反馈</button>
+        <span class="signup-status" id="feedbackStatus" aria-live="polite"></span>
+      </div>
+    </form>
+  </section>
 
   <footer>
-    <span>I搭不搭</span>
+    <div>i搭不搭 · AI 活动搭子匹配</div>
   </footer>
+</div>
+<script>
+const betaSignupForm = document.getElementById('betaSignupForm');
+const betaSignupStatus = document.getElementById('betaSignupStatus');
+const feedbackForm = document.getElementById('feedbackForm');
+const feedbackStatus = document.getElementById('feedbackStatus');
+
+function betaSignupErrorText(payload) {
+  if (!payload) return '提交失败，请稍后再试';
+  if (typeof payload.detail === 'string') return payload.detail;
+  if (Array.isArray(payload.detail) && payload.detail.length) {
+    return payload.detail.map(item => item.msg || item.message || '填写内容有误').join('；');
+  }
+  return payload.message || '提交失败，请稍后再试';
+}
+
+function betaSignupActivities(value) {
+  return String(value || '')
+    .split(/[,\s，、]+/)
+    .map(item => item.trim())
+    .filter(Boolean)
+    .slice(0, 12);
+}
+
+if (betaSignupForm) {
+  betaSignupForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const submitButton = betaSignupForm.querySelector('button[type="submit"]');
+    const formData = new FormData(betaSignupForm);
+    const payload = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      contact: formData.get('contact'),
+      city: formData.get('city'),
+      device: formData.get('device'),
+      activity_interests: betaSignupActivities(formData.get('activity_interests')),
+      note: formData.get('note'),
+      source: 'homepage',
+      consent: formData.get('consent') === 'on',
+    };
+
+    betaSignupStatus.textContent = '提交中...';
+    betaSignupStatus.classList.remove('error');
+    submitButton.disabled = true;
+
+    try {
+      const response = await fetch('/api/v1/beta-signups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(betaSignupErrorText(data));
+      }
+      betaSignupForm.reset();
+      betaSignupStatus.textContent = data.message || '报名已收到，我们会尽快发送邀请。';
+    } catch (error) {
+      betaSignupStatus.textContent = error.message || '提交失败，请稍后再试';
+      betaSignupStatus.classList.add('error');
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+}
+
+if (feedbackForm) {
+  feedbackForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const submitButton = feedbackForm.querySelector('button[type="submit"]');
+    const formData = new FormData(feedbackForm);
+    const payload = {
+      category: formData.get('category'),
+      content: formData.get('content'),
+      contact: formData.get('contact'),
+      source: 'homepage',
+    };
+
+    feedbackStatus.textContent = '提交中...';
+    feedbackStatus.classList.remove('error');
+    submitButton.disabled = true;
+
+    try {
+      const response = await fetch('/api/v1/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(betaSignupErrorText(data));
+      }
+      feedbackForm.reset();
+      feedbackStatus.textContent = data.message || '反馈已收到，谢谢。';
+    } catch (error) {
+      feedbackStatus.textContent = error.message || '提交失败，请稍后再试';
+      feedbackStatus.classList.add('error');
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+}
+</script>
 </body>
 </html>

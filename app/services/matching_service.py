@@ -1,7 +1,7 @@
-"""匹配服务 — 向量召回 + A2A 二阶段精排 pipeline
+"""匹配服务 — 向量召回 + A2A 精排 pipeline
 
 Pipeline: city_normalized 分桶 → pgvector 向量召回 → 硬过滤/黑名单 →
-Top3 A2A 精排 → 失败后下一组 Top3 A2A → 匹配决策。
+Top3 A2A 精排 → 匹配决策。
 """
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ from app.models.user import Agent
 from app.api.ws import manager as ws_manager
 from app.services.a2a_matcher import a2a_matcher
 from app.services.embedding_service import embedding_service
+from app.services.match_blocklist_service import add_match_blocklist
 from app.services.matching_policy import (
     A2AEvaluation,
     A2A_MATCH_THRESHOLD,
@@ -35,7 +36,7 @@ from app.services.location_policy import is_location_compatible
 logger = logging.getLogger(__name__)
 
 MATCH_THRESHOLD = VECTOR_MATCH_THRESHOLD
-SEARCH_K = 30           # 向量搜索 top-k，为两轮 A2A 保留足够候选
+SEARCH_K = 30           # 向量搜索 top-k，为 Top3 A2A 保留足够候选
 
 
 class MatchingService:
@@ -76,7 +77,7 @@ class MatchingService:
                 event.match_round += 1
                 return None
 
-            # 硬过滤 + 两轮候选窗口
+            # 硬过滤 + Top3 候选窗口
             filtered = self._post_filter(event, candidates)
             if not filtered:
                 event.status = "pending"
@@ -105,6 +106,7 @@ class MatchingService:
                     ))
                 return None
 
+            all_evaluations = []
             for round_index, window in enumerate(windows, start=1):
                 evaluations = []
                 for candidate in window:
@@ -113,6 +115,7 @@ class MatchingService:
                         continue
                     evaluation = await self.evaluator.evaluate(event, candidate_event, db)
                     evaluations.append(evaluation)
+                    all_evaluations.append(evaluation)
                     db.add(MatchLog(
                         event_a_id=event.id,
                         event_b_id=candidate_event.id,
@@ -132,6 +135,8 @@ class MatchingService:
                 if matched:
                     return matched
 
+            if all_evaluations:
+                await self._blocklist_evaluated_pairs(event, all_evaluations, db)
             event.status = "pending"
             event.match_round += 1
             return None
@@ -285,6 +290,25 @@ class MatchingService:
 
         return None
 
+    async def _blocklist_evaluated_pairs(
+        self,
+        event: Event,
+        evaluations: list[A2AEvaluation],
+        db: AsyncSession,
+    ) -> None:
+        for evaluation in evaluations:
+            candidate = await db.get(Event, evaluation.candidate_event_id)
+            if candidate is None:
+                continue
+            await add_match_blocklist(
+                db,
+                user_a_id=event.user_id,
+                user_b_id=candidate.user_id,
+                event_a_id=event.id,
+                event_b_id=candidate.id,
+                reason="a2a_rejected",
+            )
+
     async def force_match(self, event_id_a: UUID, event_id_b: UUID,
                           db: AsyncSession) -> dict:
         """手动匹配：不受阈值限制"""
@@ -398,18 +422,15 @@ class MatchingService:
                 passed_count += 1
                 if passed_count <= 3:
                     status = "a2a_round_1"
-                    filter_reason = "进入第一轮 A2A 精排"
-                elif passed_count <= 6:
-                    status = "a2a_round_2"
-                    filter_reason = "第一轮无结果时进入第二轮 A2A 精排"
+                    filter_reason = "进入 Top3 A2A 精排"
                 else:
                     status = "standby"
-                    filter_reason = "超过两轮 A2A 候选窗口，暂不评估"
+                    filter_reason = "超过 Top3 A2A 候选窗口，暂不评估"
 
             results.append({
                 "event": self._event_to_dict(cand),
                 "similarity": round(score, 4),
-                "passed": status in {"a2a_round_1", "a2a_round_2"},
+                "passed": status == "a2a_round_1",
                 "status": status,
                 "filter_reason": filter_reason,
             })

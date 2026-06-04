@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>I搭不搭 - 统一后台</title>
+<title>i搭不搭 - 统一后台</title>
 <style>
 :root {
   color-scheme: dark;
@@ -242,6 +242,21 @@ h3 { font-size: 13px; }
 .primary { border-color: rgba(75, 196, 123, .55); background: #173424; color: #d8ffe5; }
 .primary:hover { background: #1e422e; }
 .blue { border-color: rgba(90, 167, 255, .55); color: #d8ebff; }
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.status-actions button {
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.1;
+}
+.status-actions button.active {
+  border-color: rgba(75, 196, 123, .75);
+  background: #183725;
+  color: #dcffe8;
+}
 
 table {
   width: 100%;
@@ -295,7 +310,7 @@ tr:hover td { background: #171e27; }
 }
 .badge-pending { color: #ffe0a3; border-color: rgba(224, 168, 61, .45); }
 .badge-matching { color: #cce6ff; border-color: rgba(90, 167, 255, .45); }
-.badge-matched, .badge-a2a_round_1, .badge-a2a_round_2 { color: #cbffd9; border-color: rgba(75, 196, 123, .45); }
+.badge-matched, .badge-a2a_round_1 { color: #cbffd9; border-color: rgba(75, 196, 123, .45); }
 .badge-active { color: #d7caff; border-color: rgba(167, 139, 250, .45); }
 .badge-completed { color: #d6dde8; }
 .badge-cancelled, .badge-hard_filtered, .badge-location_filtered, .badge-blocklisted { color: #ffc2c0; border-color: rgba(239, 100, 97, .45); }
@@ -470,7 +485,7 @@ label.field {
 <div class="app">
   <header class="topbar">
     <div class="brand">
-      <strong>I搭不搭</strong>
+      <strong>i搭不搭</strong>
       <span>统一后台</span>
     </div>
     <div class="top-actions">
@@ -484,6 +499,8 @@ label.field {
     <button class="nav-item active" data-panel="overview">概览 <span id="count-overview" class="nav-count"></span></button>
     <button class="nav-item" data-panel="events">事件 <span id="count-events" class="nav-count"></span></button>
     <button class="nav-item" data-panel="users">用户 <span id="count-users" class="nav-count"></span></button>
+    <button class="nav-item" data-panel="beta-signups">内测报名 <span id="count-beta-signups" class="nav-count"></span></button>
+    <button class="nav-item" data-panel="feedback">反馈 <span id="count-feedback" class="nav-count"></span></button>
     <button class="nav-item" data-panel="matching">匹配 <span id="count-matching" class="nav-count"></span></button>
     <button class="nav-item" data-panel="testlab">测试实验 <span id="count-testlab" class="nav-count"></span></button>
     <button class="nav-item" data-panel="prompts">Prompts <span id="count-prompts" class="nav-count"></span></button>
@@ -560,6 +577,68 @@ label.field {
           <input id="userSearch" class="grow" placeholder="搜索姓名、城市、兴趣" oninput="renderUsersTable()">
         </div>
         <div class="table-wrap" id="usersContent"><div class="loading">加载中</div></div>
+      </div>
+    </section>
+
+    <section id="panel-beta-signups" class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><h1>内测报名</h1><span class="subtle" id="betaSignupsSummary"></span></div>
+        <div class="toolbar">
+          <button class="primary" onclick="loadBetaSignups()">刷新报名</button>
+          <button class="blue" onclick="downloadBetaSignupsCsv()">导出 CSV</button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head">
+          <h2>TestFlight 邀请信息</h2>
+          <div class="toolbar">
+            <select id="betaSignupStatusFilter" onchange="loadBetaSignups()">
+              <option value="">全部状态</option>
+              <option value="new">new</option>
+              <option value="updated">updated</option>
+              <option value="approved">approved</option>
+              <option value="invited">invited</option>
+              <option value="accepted">accepted</option>
+              <option value="rejected">rejected</option>
+              <option value="archived">archived</option>
+            </select>
+            <input id="betaSignupSearch" class="grow" placeholder="搜索姓名、邮箱、城市、设备" oninput="renderBetaSignupsTable()">
+          </div>
+        </div>
+        <div class="table-wrap" id="betaSignupsContent"><div class="loading">加载中</div></div>
+      </div>
+    </section>
+
+    <section id="panel-feedback" class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><h1>反馈</h1><span class="subtle" id="feedbackSummary"></span></div>
+        <div class="toolbar">
+          <button class="primary" onclick="loadFeedback()">刷新反馈</button>
+          <button class="blue" onclick="downloadFeedbackCsv()">导出 CSV</button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head">
+          <h2>官网用户反馈</h2>
+          <div class="toolbar">
+            <select id="feedbackCategoryFilter" onchange="loadFeedback()">
+              <option value="">全部类型</option>
+              <option value="体验问题">体验问题</option>
+              <option value="功能建议">功能建议</option>
+              <option value="报名问题">报名问题</option>
+              <option value="其他">其他</option>
+            </select>
+            <select id="feedbackStatusFilter" onchange="loadFeedback()">
+              <option value="">全部状态</option>
+              <option value="new">new</option>
+              <option value="reviewed">reviewed</option>
+              <option value="resolved">resolved</option>
+              <option value="archived">archived</option>
+            </select>
+            <input id="feedbackSearch" class="grow" placeholder="搜索类型、内容、联系方式" oninput="renderFeedbackTable()">
+          </div>
+        </div>
+        <div class="table-wrap" id="feedbackContent"><div class="loading">加载中</div></div>
       </div>
     </section>
 
@@ -726,6 +805,8 @@ const state = {
   status: null,
   events: [],
   users: [],
+  betaSignups: [],
+  feedback: [],
   prompts: [],
   selectedPrompt: null,
   busy: false,
@@ -805,7 +886,12 @@ async function requestAdmin(path, options = {}) {
   }
   if (!response.ok) {
     const text = await response.text().catch(() => '');
-    throw new Error(text || `HTTP ${response.status}`);
+    let detail = text;
+    try {
+      const parsed = JSON.parse(text);
+      detail = parsed.detail || parsed.message || text;
+    } catch (_) {}
+    throw new Error(detail || `HTTP ${response.status}`);
   }
   setAuthStatus('ok', '已连接');
   if (response.status === 204) return {};
@@ -872,6 +958,8 @@ function loadPanel(name, force = false) {
   if (name === 'overview') return loadOverview(force);
   if (name === 'events') return loadEvents(force);
   if (name === 'users') return loadUsers(force);
+  if (name === 'beta-signups') return loadBetaSignups(force);
+  if (name === 'feedback') return loadFeedback(force);
   if (name === 'matching') return loadMatchingPanel(force);
   if (name === 'testlab') return loadTestLab(force);
   if (name === 'prompts') return loadPrompts(force);
@@ -886,10 +974,14 @@ async function loadOverview() {
     state.status = data;
     setNavCount('events', data.events?.total);
     setNavCount('users', data.users);
+    setNavCount('beta-signups', data.beta_signups);
+    setNavCount('feedback', data.feedback);
     setNavCount('rooms', data.chat_rooms);
     $('#overviewUpdated').textContent = `更新于 ${new Date().toLocaleTimeString('zh-CN')}`;
     statsGrid.innerHTML = [
       ['用户', data.users],
+      ['内测报名', data.beta_signups],
+      ['反馈', data.feedback],
       ['Agent', data.agents],
       ['事件总数', data.events?.total],
       ['Pending', data.events?.pending],
@@ -1017,6 +1109,278 @@ function renderUsersTable() {
       </tr>`).join('')}
     </tbody>
   </table>`;
+}
+
+function betaSignupActions(signup) {
+  const statusOptions = [
+    ['approved', '通过'],
+    ['invited', '已邀'],
+    ['accepted', '已入组'],
+    ['rejected', '拒绝'],
+  ];
+  const statusButtons = statusOptions.map(([value, label]) => `
+    <button data-beta-status="${escapeAttr(value)}" class="${signup.status === value ? 'active' : ''}" onclick="setBetaSignupStatus('${escapeAttr(signup.id)}', '${escapeAttr(value)}')">${label}</button>
+  `).join('');
+  const inviteDisabled = signup.status === 'invited' || signup.status === 'accepted' ? 'disabled' : '';
+  return `<div class="status-actions">
+    <button class="primary" ${inviteDisabled} onclick="inviteBetaSignup('${escapeAttr(signup.id)}')">邀请</button>
+    ${statusButtons}
+  </div>`;
+}
+
+function feedbackActions(item) {
+  const statusOptions = [
+    ['reviewed', '已看'],
+    ['resolved', '已处理'],
+    ['archived', '归档'],
+  ];
+  return `<div class="status-actions">
+    ${statusOptions.map(([value, label]) => `
+      <button data-feedback-status="${escapeAttr(value)}" class="${item.status === value ? 'active' : ''}" onclick="setFeedbackStatus('${escapeAttr(item.id)}', '${escapeAttr(value)}')">${label}</button>
+    `).join('')}
+  </div>`;
+}
+
+async function loadBetaSignups() {
+  const params = new URLSearchParams();
+  const status = $('#betaSignupStatusFilter')?.value || '';
+  if (status) params.set('status', status);
+  const path = `/api/admin/beta-signups${params.toString() ? '?' + params.toString() : ''}`;
+  const data = await guarded($('#betaSignupsContent'), async () => requestAdmin(path));
+  if (!data) return;
+  state.betaSignups = data;
+  setNavCount('beta-signups', data.length);
+  renderBetaSignupsTable();
+}
+
+function renderBetaSignupsTable() {
+  const query = ($('#betaSignupSearch')?.value || '').trim().toLowerCase();
+  const rows = state.betaSignups.filter(signup => {
+    if (!query) return true;
+    return [
+      signup.name,
+      signup.email,
+      signup.contact,
+      signup.city,
+      signup.device,
+      (signup.activity_interests || []).join(','),
+      signup.note,
+    ].some(v => String(v || '').toLowerCase().includes(query));
+  });
+  $('#betaSignupsSummary').textContent = `${rows.length} / ${state.betaSignups.length}`;
+  if (!rows.length) {
+    $('#betaSignupsContent').innerHTML = '<div class="empty">暂无报名</div>';
+    return;
+  }
+  $('#betaSignupsContent').innerHTML = `<table>
+    <thead><tr>
+      <th style="width:10%;">姓名</th>
+      <th style="width:16%;">Apple ID 邮箱</th>
+      <th style="width:11%;">联系</th>
+      <th style="width:8%;">城市</th>
+      <th style="width:12%;">设备</th>
+      <th style="width:10%;">活动</th>
+      <th style="width:8%;">状态</th>
+      <th style="width:10%;">时间</th>
+      <th style="width:15%;">操作</th>
+    </tr></thead>
+    <tbody>${rows.map(signup => `
+      <tr>
+        <td><div class="cell-strong">${escapeHtml(signup.name)}</div><div class="subtle mono">${shortId(signup.id)}</div></td>
+        <td class="truncate">${escapeHtml(signup.email)}</td>
+        <td class="truncate">${escapeHtml(signup.contact || '-')}</td>
+        <td>${escapeHtml(signup.city || '-')}</td>
+        <td class="truncate">${escapeHtml(signup.device || '-')}</td>
+        <td>${tags(signup.activity_interests)}</td>
+        <td>${statusBadge(signup.status)}</td>
+        <td class="nowrap">${fmtTime(signup.created_at)}</td>
+        <td>${betaSignupActions(signup)}</td>
+      </tr>
+      ${signup.note ? `<tr><td></td><td colspan="8"><span class="subtle">备注：</span>${escapeHtml(signup.note)}</td></tr>` : ''}
+    `).join('')}</tbody>
+  </table>`;
+}
+
+function updateBetaSignupRow(updated) {
+  state.betaSignups = state.betaSignups.map(signup => signup.id === updated.id ? updated : signup);
+  renderBetaSignupsTable();
+}
+
+async function setBetaSignupStatus(id, status) {
+  const data = await guarded(null, async () => requestAdmin(`/api/admin/beta-signups/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  }));
+  if (!data) return;
+  updateBetaSignupRow(data);
+  showToast(`内测报名状态已更新为 ${data.status}`);
+}
+
+async function inviteBetaSignup(id) {
+  const signup = state.betaSignups.find(item => item.id === id);
+  if (!signup) return showToast('找不到这条报名', true);
+  const message = `确认邀请 ${signup.name} (${signup.email}) 加入内部测试？`;
+  if (!confirmAction(message)) return;
+
+  showToast('正在发送 TestFlight 内测邀请');
+  const data = await guarded(null, async () => requestAdmin(`/api/admin/beta-signups/${encodeURIComponent(id)}/invite-internal`, {
+    method: 'POST',
+  }));
+  if (!data) return;
+  updateBetaSignupRow(data);
+  const asc = data.app_store_connect || {};
+  const suffix = asc.beta_tester_status === 'waiting_for_user_acceptance'
+    ? '，等待对方接受 App Store Connect 邀请'
+    : '，已加入内部测试组';
+  showToast(`已记录邀请状态${suffix}`);
+}
+
+async function downloadBetaSignupsCsv() {
+  const token = $('#adminToken').value.trim();
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  }
+  const params = new URLSearchParams();
+  const status = $('#betaSignupStatusFilter')?.value || '';
+  const query = $('#betaSignupSearch')?.value || '';
+  if (status) params.set('status', status);
+  if (query) params.set('q', query);
+  const path = `/api/admin/beta-signups.csv${params.toString() ? '?' + params.toString() : ''}`;
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+  try {
+    const response = await fetch(path, { headers });
+    if (response.status === 403) {
+      setAuthStatus('bad', 'Token 无效');
+      throw new Error('Admin token 无效或缺失');
+    }
+    if (!response.ok) {
+      throw new Error(`导出失败 HTTP ${response.status}`);
+    }
+    setAuthStatus('ok', '已连接');
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'dazi-beta-signups.csv';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showToast('CSV 已导出');
+  } catch (error) {
+    showToast(error.message || 'CSV 导出失败', true);
+  }
+}
+
+async function loadFeedback() {
+  const params = new URLSearchParams();
+  const category = $('#feedbackCategoryFilter')?.value || '';
+  const status = $('#feedbackStatusFilter')?.value || '';
+  if (category) params.set('category', category);
+  if (status) params.set('status', status);
+  const path = `/api/admin/feedback${params.toString() ? '?' + params.toString() : ''}`;
+  const data = await guarded($('#feedbackContent'), async () => requestAdmin(path));
+  if (!data) return;
+  state.feedback = data;
+  setNavCount('feedback', data.length);
+  renderFeedbackTable();
+}
+
+function renderFeedbackTable() {
+  const query = ($('#feedbackSearch')?.value || '').trim().toLowerCase();
+  const rows = state.feedback.filter(item => {
+    if (!query) return true;
+    return [
+      item.category,
+      item.content,
+      item.contact,
+      item.source,
+      item.status,
+    ].some(v => String(v || '').toLowerCase().includes(query));
+  });
+  $('#feedbackSummary').textContent = `${rows.length} / ${state.feedback.length}`;
+  if (!rows.length) {
+    $('#feedbackContent').innerHTML = '<div class="empty">暂无反馈</div>';
+    return;
+  }
+  $('#feedbackContent').innerHTML = `<table>
+    <thead><tr>
+      <th style="width:10%;">类型</th>
+      <th style="width:34%;">内容</th>
+      <th style="width:14%;">联系方式</th>
+      <th style="width:9%;">状态</th>
+      <th style="width:8%;">来源</th>
+      <th style="width:12%;">时间</th>
+      <th style="width:13%;">操作</th>
+    </tr></thead>
+    <tbody>${rows.map(item => `
+      <tr>
+        <td>${escapeHtml(item.category || '-')}</td>
+        <td><div class="cell-strong">${escapeHtml(item.content || '-')}</div><div class="subtle mono">${shortId(item.id)}</div></td>
+        <td class="truncate">${escapeHtml(item.contact || '-')}</td>
+        <td>${statusBadge(item.status)}</td>
+        <td>${escapeHtml(item.source || '-')}</td>
+        <td class="nowrap">${fmtTime(item.created_at)}</td>
+        <td>${feedbackActions(item)}</td>
+      </tr>
+    `).join('')}</tbody>
+  </table>`;
+}
+
+function updateFeedbackRow(updated) {
+  state.feedback = state.feedback.map(item => item.id === updated.id ? updated : item);
+  renderFeedbackTable();
+}
+
+async function setFeedbackStatus(id, status) {
+  const data = await guarded(null, async () => requestAdmin(`/api/admin/feedback/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  }));
+  if (!data) return;
+  updateFeedbackRow(data);
+  showToast(`反馈状态已更新为 ${data.status}`);
+}
+
+async function downloadFeedbackCsv() {
+  const token = $('#adminToken').value.trim();
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  }
+  const params = new URLSearchParams();
+  const category = $('#feedbackCategoryFilter')?.value || '';
+  const status = $('#feedbackStatusFilter')?.value || '';
+  const query = $('#feedbackSearch')?.value || '';
+  if (category) params.set('category', category);
+  if (status) params.set('status', status);
+  if (query) params.set('q', query);
+  const path = `/api/admin/feedback.csv${params.toString() ? '?' + params.toString() : ''}`;
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+  try {
+    const response = await fetch(path, { headers });
+    if (response.status === 403) {
+      setAuthStatus('bad', 'Token 无效');
+      throw new Error('Admin token 无效或缺失');
+    }
+    if (!response.ok) {
+      throw new Error(`导出失败 HTTP ${response.status}`);
+    }
+    setAuthStatus('ok', '已连接');
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'dazi-feedback.csv';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showToast('CSV 已导出');
+  } catch (error) {
+    showToast(error.message || 'CSV 导出失败', true);
+  }
 }
 
 async function loadMatchingPanel() {

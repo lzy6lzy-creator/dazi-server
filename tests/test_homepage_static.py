@@ -24,6 +24,26 @@ class HomepageStaticTests(unittest.TestCase):
         self.assertNotIn("SwiftUI", html)
         self.assertNotIn("PostgreSQL + pgvector", html)
 
+    def test_homepage_uses_lowercase_i_branding(self):
+        html = self.homepage()
+
+        self.assertIn("i搭不搭", html)
+        self.assertNotIn("I搭不搭", html)
+
+    def test_static_website_pages_use_lowercase_i_branding(self):
+        html_files = list((ROOT / "app/static").glob("*.html")) + [ROOT / "site/index.html"]
+
+        for path in html_files:
+            with self.subTest(path=path.relative_to(ROOT)):
+                html = path.read_text(encoding="utf-8")
+                self.assertNotIn("I搭不搭", html)
+
+    def test_fastapi_public_title_uses_lowercase_i_branding(self):
+        source = (ROOT / "app/main.py").read_text(encoding="utf-8")
+
+        self.assertIn('title="i搭不搭 API"', source)
+        self.assertNotIn('title="I搭不搭 API"', source)
+
     def test_homepage_explains_ai_matching_without_technical_jargon(self):
         html = self.homepage()
 
@@ -33,11 +53,13 @@ class HomepageStaticTests(unittest.TestCase):
         self.assertIn("活动偏好接近", html)
         self.assertNotIn("Agent-to-Agent", html)
 
-    def test_homepage_keeps_low_profile_utility_links(self):
+    def test_homepage_hides_internal_utility_links(self):
         html = self.homepage()
 
-        self.assertRegex(html, r'<a[^>]+href="/docs"[^>]*>API 文档</a>')
-        self.assertRegex(html, r'<a[^>]+href="/admin"[^>]*>管理后台</a>')
+        self.assertNotIn("API 文档", html)
+        self.assertNotIn("管理后台", html)
+        self.assertNotRegex(html, r'<a[^>]+href="/docs"')
+        self.assertNotRegex(html, r'<a[^>]+href="/admin"')
 
     def test_hero_asset_exists_and_no_emoji_icon_copy(self):
         html = self.homepage()

@@ -8,6 +8,7 @@ from uuid import uuid4
 from app.services.matching_policy import (
     A2AEvaluation,
     Candidate,
+    VECTOR_MATCH_THRESHOLD,
     build_candidate_windows,
     choose_a2a_winner,
     collect_blocked_event_ids,
@@ -32,7 +33,26 @@ class BlocklistRow:
 
 
 class MatchingPolicyTests(unittest.TestCase):
-    def test_candidate_windows_skip_blocked_and_split_top_three_then_next_three(self):
+    def test_default_vector_threshold_is_fifty_five(self):
+        self.assertEqual(VECTOR_MATCH_THRESHOLD, 0.55)
+
+    def test_candidate_windows_return_only_top_three_above_threshold(self):
+        ids = [uuid4() for _ in range(5)]
+        candidates = [
+            Candidate(event_id=ids[0], vector_score=0.91),
+            Candidate(event_id=ids[1], vector_score=0.80),
+            Candidate(event_id=ids[2], vector_score=0.60),
+            Candidate(event_id=ids[3], vector_score=0.54),
+            Candidate(event_id=ids[4], vector_score=0.53),
+        ]
+
+        windows = build_candidate_windows(candidates, blocked_event_ids=set())
+
+        self.assertEqual([[c.event_id for c in w] for w in windows], [
+            [ids[0], ids[1], ids[2]],
+        ])
+
+    def test_candidate_windows_skip_blocked_and_keep_only_top_three_by_default(self):
         ids = [uuid4() for _ in range(8)]
         candidates = [
             Candidate(event_id=ids[0], vector_score=0.91),
@@ -48,17 +68,13 @@ class MatchingPolicyTests(unittest.TestCase):
         windows = build_candidate_windows(
             candidates,
             blocked_event_ids={ids[1]},
-            vector_threshold=0.5,
-            window_size=3,
-            max_rounds=2,
         )
 
         self.assertEqual([[c.event_id for c in w] for w in windows], [
             [ids[0], ids[2], ids[3]],
-            [ids[4], ids[5]],
         ])
 
-    def test_candidate_windows_limit_a2a_to_two_rounds(self):
+    def test_candidate_windows_can_split_multiple_rounds_when_explicitly_requested(self):
         ids = [uuid4() for _ in range(7)]
         candidates = [Candidate(event_id=event_id, vector_score=0.8) for event_id in ids]
 
@@ -125,6 +141,28 @@ class MatchingPolicyTests(unittest.TestCase):
         )
 
         self.assertEqual(blocked, {blocked_event_by_pair, blocked_user_event})
+
+    def test_collect_blocked_event_ids_skips_a2a_rejected_event_pair(self):
+        source_event_id = uuid4()
+        source_user_id = uuid4()
+        candidate_event_id = uuid4()
+        candidate_user_id = uuid4()
+
+        blocked = collect_blocked_event_ids(
+            source_event_id=source_event_id,
+            source_user_id=source_user_id,
+            candidate_events_by_user={candidate_user_id: [candidate_event_id]},
+            blocklist_rows=[
+                BlocklistRow(
+                    event_a_id=source_event_id,
+                    event_b_id=candidate_event_id,
+                    user_a_id=source_user_id,
+                    user_b_id=candidate_user_id,
+                )
+            ],
+        )
+
+        self.assertEqual(blocked, {candidate_event_id})
 
     def test_time_overlap_is_hard_filter_when_both_ranges_exist(self):
         now = datetime.now(timezone.utc)

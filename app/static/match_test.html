@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>I搭不搭 - 匹配系统测试</title>
+<title>i搭不搭 - 匹配系统测试</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.6}
@@ -65,7 +65,6 @@ h1{text-align:center;margin-bottom:8px;font-size:28px;background:linear-gradient
 .status-blocklisted{background:#581c87;color:#d8b4fe;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
 .status-below_threshold{background:#78350f;color:#fcd34d;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
 .status-a2a_round_1{background:#065f46;color:#34d399;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
-.status-a2a_round_2{background:#164e63;color:#67e8f9;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
 .status-standby{background:#1e3a5f;color:#93c5fd;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
 .filter-reason{color:#94a3b8;font-size:11px;margin-top:2px}
 
@@ -84,8 +83,8 @@ h1{text-align:center;margin-bottom:8px;font-size:28px;background:linear-gradient
 </head>
 <body>
 <div class="container">
-<h1>I搭不搭 匹配系统测试</h1>
-<p class="subtitle">向量语义匹配 Pipeline: 城市分桶 + pgvector 召回 + 硬过滤/黑名单 + 两轮 A2A</p>
+<h1>i搭不搭 匹配系统测试</h1>
+<p class="subtitle">向量语义匹配 Pipeline: pgvector 召回 + 硬过滤/黑名单 + Top3 A2A</p>
 
 <div class="controls">
   <button class="btn-primary" onclick="generateData()">生成 1000 事件</button>
@@ -240,8 +239,7 @@ function candidateTable(candidates, sourceEvent) {
       hard_filtered: '硬过滤',
       blocklisted: '黑名单',
       below_threshold: '低于阈值',
-      a2a_round_1: 'A2A 1轮',
-      a2a_round_2: 'A2A 2轮',
+      a2a_round_1: 'Top3 A2A',
       standby: '备用',
     }[c.status] || c.status;
     const statusClass = `status-${c.status}`;

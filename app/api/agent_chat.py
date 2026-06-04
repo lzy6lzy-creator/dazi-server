@@ -8,7 +8,6 @@ Agent Chat API - 与 AI Agent 对话
 """
 from __future__ import annotations
 
-import asyncio
 import logging
 from uuid import UUID
 
@@ -24,6 +23,7 @@ from app.core.redis import ChatHistoryCache
 from app.models.user import User, Agent, AgentMemory, AgentChatMessage
 from app.models.event import Event
 from app.services.llm_service import llm_service
+from app.services.matching_tasks import schedule_event_matching
 from app.services.prompt_builder import PromptBuilder
 from app.api.schemas import AgentChatRequest, AgentChatResponse
 
@@ -132,6 +132,7 @@ async def chat_with_agent(
 
     # 9. 如果 event_ready，从已存储的 draft 创建或更新 Event（不再调 LLM）
     event_id = None
+    created_new_event = False
     if event_ready:
         # 检查是否在编辑模式
         editing_event_id = await ChatHistoryCache.get_editing_event(uid_str)
@@ -151,6 +152,7 @@ async def chat_with_agent(
                     user_city=user.city,
                     db=db,
                 )
+                created_new_event = event_id is not None
         else:
             event_id = await _create_event_from_draft(
                 user_id=user_id,
@@ -158,6 +160,10 @@ async def chat_with_agent(
                 user_city=user.city,
                 db=db,
             )
+            created_new_event = event_id is not None
+
+    if created_new_event and event_id is not None:
+        schedule_event_matching(background_tasks, event_id)
 
     return AgentChatResponse(
         reply=clean_reply,

@@ -44,9 +44,17 @@ services:
       INTERNAL_TEST_CODE: ${INTERNAL_TEST_CODE:-}
       INTERNAL_TEST_PHONES: ${INTERNAL_TEST_PHONES:-}
       INTERNAL_TEST_PHONES_FILE: /code/runtime-config/internal_test_phones.txt
+      ASC_KEY_ID: ${ASC_KEY_ID:-}
+      ASC_ISSUER_ID: ${ASC_ISSUER_ID:-}
+      ASC_PRIVATE_KEY_PATH: ${ASC_PRIVATE_KEY_PATH:-}
+      ASC_BUNDLE_ID: ${ASC_BUNDLE_ID:-com.linke.dazi}
+      ASC_APP_ID: ${ASC_APP_ID:-}
+      ASC_INTERNAL_GROUP_NAME: ${ASC_INTERNAL_GROUP_NAME:-搭子test}
+      ASC_INTERNAL_GROUP_ID: ${ASC_INTERNAL_GROUP_ID:-}
+      ASC_INVITE_ROLE: ${ASC_INVITE_ROLE:-MARKETING}
     volumes:
       - ./app:/code/app
-      - .:/code/runtime-config:ro
+      - .:/code/runtime-config
     depends_on:
       db:
         condition: service_healthy

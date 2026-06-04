@@ -1,8 +1,6 @@
 """
 Event API - 活动 CRUD + 匹配触发
 """
-import asyncio
-import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
@@ -15,8 +13,7 @@ from app.core.database import get_db
 from app.core.security import get_current_user_id
 from app.models.event import Event
 from app.api.schemas import EventCreate, EventUpdate, EventResponse
-
-logger = logging.getLogger(__name__)
+from app.services.matching_tasks import schedule_event_matching
 
 router = APIRouter(prefix="/api/v1/events", tags=["events"])
 
@@ -24,6 +21,7 @@ router = APIRouter(prefix="/api/v1/events", tags=["events"])
 @router.post("", response_model=EventResponse)
 async def create_event(
     data: EventCreate,
+    background_tasks: BackgroundTasks = None,
     user_id: UUID = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
@@ -50,6 +48,7 @@ async def create_event(
     )
     event.embedding = await embedding_service.encode(text)
 
+    schedule_event_matching(background_tasks, event.id)
     return event
 
 
@@ -152,22 +151,5 @@ async def trigger_matching(
     if event.status != "pending":
         raise HTTPException(status_code=400, detail=f"活动状态为 {event.status}，无法匹配")
 
-    background_tasks.add_task(_run_matching, event_id)
+    schedule_event_matching(background_tasks, event_id)
     return {"message": "匹配已触发", "event_id": str(event_id)}
-
-
-async def _run_matching(event_id: UUID):
-    """后台匹配任务"""
-    from app.core.database import async_session
-    from app.services.matching_service import matching_service
-
-    try:
-        async with async_session() as db:
-            result = await matching_service.match_event(event_id, db)
-            await db.commit()
-            if result:
-                logger.info(f"Match found for event {event_id}: score={result['score']}")
-            else:
-                logger.info(f"No match found for event {event_id}")
-    except Exception as e:
-        logger.error(f"Matching task failed for {event_id}: {e}")

@@ -7,20 +7,31 @@ Admin API - 管理后台接口
 from __future__ import annotations
 
 import asyncio
+import csv
+import io
 import logging
+from pathlib import Path
 from uuid import UUID
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, delete
+from sqlalchemy import or_, select, func, delete
 
 from app.core.database import get_db
 from app.core.config import settings
 from app.models.user import User, Agent, AgentMemory, AgentChatMessage
-from app.models.event import Event, MatchLog
+from app.models.event import Event, MatchLog, MatchBlocklist
 from app.models.chat import ChatRoom, ChatRoomMember, ChatMessage
+from app.models.beta_signup import BetaSignup
+from app.models.site_feedback import SiteFeedback
+from app.services.app_store_connect import (
+    AppStoreConnectClient,
+    AppStoreConnectConfigError,
+    AppStoreConnectError,
+)
 
 from app.core.log_buffer import log_buffer
 
@@ -35,6 +46,35 @@ async def verify_admin(credentials: HTTPAuthorizationCredentials = Depends(secur
 
 
 router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(verify_admin)])
+
+BETA_SIGNUP_STATUSES = {"new", "updated", "approved", "invited", "accepted", "rejected", "archived"}
+FEEDBACK_STATUSES = {"new", "reviewed", "resolved", "archived"}
+
+
+class BetaSignupStatusUpdate(BaseModel):
+    status: str = Field(..., min_length=1, max_length=30)
+
+
+class FeedbackStatusUpdate(BaseModel):
+    status: str = Field(..., min_length=1, max_length=30)
+
+
+def append_internal_test_phone(phone: str | None, *, name: str, email: str) -> str:
+    if not phone:
+        return "missing"
+    phones_path = Path(settings.INTERNAL_TEST_PHONES_FILE)
+    try:
+        phones_path.parent.mkdir(parents=True, exist_ok=True)
+        existing = phones_path.read_text(encoding="utf-8") if phones_path.exists() else ""
+        if phone in existing:
+            return "already_present"
+        with phones_path.open("a", encoding="utf-8") as file:
+            if existing and not existing.endswith("\n"):
+                file.write("\n")
+            file.write(f"{phone}  # {name} {email} TestFlight internal invite\n")
+        return "added"
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail=f"写入内测手机号白名单失败: {exc}") from exc
 
 
 # ── 系统状态 ──
@@ -51,6 +91,8 @@ async def system_status(db: AsyncSession = Depends(get_db)):
     memories = await db.execute(select(func.count(AgentMemory.id)))
     chat_msgs = await db.execute(select(func.count(AgentChatMessage.id)))
     rooms = await db.execute(select(func.count(ChatRoom.id)))
+    beta_signups = await db.execute(select(func.count(BetaSignup.id)))
+    feedback = await db.execute(select(func.count(SiteFeedback.id)))
 
     return {
         "users": users.scalar(),
@@ -64,6 +106,8 @@ async def system_status(db: AsyncSession = Depends(get_db)):
         "memories": memories.scalar(),
         "agent_chat_messages": chat_msgs.scalar(),
         "chat_rooms": rooms.scalar(),
+        "beta_signups": beta_signups.scalar(),
+        "feedback": feedback.scalar(),
     }
 
 
@@ -309,6 +353,14 @@ async def reset_event_status(
     event.matched_event_id = None
     event.match_score = None
     event.match_round = 0
+    await db.execute(
+        delete(MatchBlocklist).where(
+            or_(
+                MatchBlocklist.event_a_id == event_id,
+                MatchBlocklist.event_b_id == event_id,
+            )
+        )
+    )
     await db.flush()
 
     return {
@@ -333,6 +385,7 @@ async def reset_all_events(db: AsyncSession = Depends(get_db)):
         e.match_score = None
         e.match_round = 0
         count += 1
+    await db.execute(delete(MatchBlocklist))
     await db.flush()
     return {"message": f"已重置 {count} 个事件为 pending"}
 
@@ -415,6 +468,270 @@ async def clear_logs():
     """清空日志缓冲区"""
     log_buffer.clear()
     return {"message": "日志已清空"}
+
+
+# ── 内测报名 ──
+
+def beta_signup_payload(signup: BetaSignup) -> dict:
+    return {
+        "id": str(signup.id),
+        "name": signup.name,
+        "email": signup.email,
+        "contact": signup.contact,
+        "city": signup.city,
+        "device": signup.device,
+        "activity_interests": signup.activity_interests or [],
+        "note": signup.note,
+        "source": signup.source,
+        "status": signup.status,
+        "ip_address": signup.ip_address,
+        "created_at": signup.created_at.isoformat(),
+        "updated_at": signup.updated_at.isoformat(),
+    }
+
+
+def beta_signup_query(status: str | None = None, q: str | None = None):
+    query = select(BetaSignup)
+    if status:
+        query = query.where(BetaSignup.status == status)
+    if q and q.strip():
+        pattern = f"%{q.strip().lower()}%"
+        query = query.where(
+            or_(
+                func.lower(BetaSignup.name).like(pattern),
+                func.lower(BetaSignup.email).like(pattern),
+                func.lower(BetaSignup.contact).like(pattern),
+                func.lower(BetaSignup.city).like(pattern),
+                func.lower(BetaSignup.device).like(pattern),
+            )
+        )
+    return query.order_by(BetaSignup.created_at.desc())
+
+
+@router.get("/beta-signups")
+async def list_beta_signups(
+    status: str | None = None,
+    q: str | None = None,
+    limit: int = 300,
+    db: AsyncSession = Depends(get_db),
+):
+    """查看官网内测报名。"""
+    safe_limit = max(1, min(limit, 1000))
+    result = await db.execute(beta_signup_query(status=status, q=q).limit(safe_limit))
+    return [beta_signup_payload(signup) for signup in result.scalars().all()]
+
+
+@router.patch("/beta-signups/{signup_id}/status")
+async def update_beta_signup_status(
+    signup_id: UUID,
+    body: BetaSignupStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    """手动记录内测报名处理状态。"""
+    status = body.status.strip().lower()
+    if status not in BETA_SIGNUP_STATUSES:
+        raise HTTPException(status_code=400, detail=f"不支持的内测报名状态: {status}")
+
+    result = await db.execute(select(BetaSignup).where(BetaSignup.id == signup_id))
+    signup = result.scalar_one_or_none()
+    if not signup:
+        raise HTTPException(status_code=404, detail="内测报名不存在")
+
+    signup.status = status
+    signup.updated_at = datetime.now(timezone.utc)
+    await db.flush()
+    return beta_signup_payload(signup)
+
+
+@router.post("/beta-signups/{signup_id}/invite-internal")
+async def invite_beta_signup_internal(
+    signup_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """一键发起内部测试邀请。需要 ASC_KEY_ID/ASC_ISSUER_ID/ASC_PRIVATE_KEY_PATH。"""
+    result = await db.execute(select(BetaSignup).where(BetaSignup.id == signup_id))
+    signup = result.scalar_one_or_none()
+    if not signup:
+        raise HTTPException(status_code=404, detail="内测报名不存在")
+
+    phone_status = append_internal_test_phone(signup.contact, name=signup.name, email=signup.email)
+    try:
+        asc_result = await AppStoreConnectClient.from_settings(settings).invite_internal_tester(
+            email=signup.email,
+            name=signup.name,
+        )
+    except AppStoreConnectConfigError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except AppStoreConnectError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    signup.status = "invited"
+    signup.updated_at = datetime.now(timezone.utc)
+    await db.flush()
+    payload = beta_signup_payload(signup)
+    payload["phone_status"] = phone_status
+    payload["app_store_connect"] = asc_result
+    return payload
+
+
+@router.get("/beta-signups.csv")
+async def export_beta_signups_csv(
+    status: str | None = None,
+    q: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """导出官网内测报名，方便整理 TestFlight 邀请邮箱。"""
+    result = await db.execute(beta_signup_query(status=status, q=q))
+    signups = result.scalars().all()
+
+    output = io.StringIO()
+    output.write("\ufeff")
+    writer = csv.writer(output)
+    writer.writerow([
+        "Apple ID 邮箱",
+        "姓名/昵称",
+        "微信/手机号",
+        "城市",
+        "设备",
+        "想参加的活动",
+        "备注",
+        "状态",
+        "来源",
+        "报名时间",
+    ])
+    for signup in signups:
+        writer.writerow([
+            signup.email,
+            signup.name,
+            signup.contact or "",
+            signup.city or "",
+            signup.device or "",
+            "、".join(signup.activity_interests or []),
+            signup.note or "",
+            signup.status,
+            signup.source,
+            signup.created_at.isoformat(),
+        ])
+
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="dazi-beta-signups.csv"'},
+    )
+
+
+# ── 官网反馈 ──
+
+def feedback_payload(feedback: SiteFeedback) -> dict:
+    return {
+        "id": str(feedback.id),
+        "category": feedback.category,
+        "content": feedback.content,
+        "contact": feedback.contact,
+        "source": feedback.source,
+        "status": feedback.status,
+        "ip_address": feedback.ip_address,
+        "created_at": feedback.created_at.isoformat(),
+        "updated_at": feedback.updated_at.isoformat(),
+    }
+
+
+def feedback_query(
+    status: str | None = None,
+    category: str | None = None,
+    q: str | None = None,
+):
+    query = select(SiteFeedback)
+    if status:
+        query = query.where(SiteFeedback.status == status)
+    if category:
+        query = query.where(SiteFeedback.category == category)
+    if q and q.strip():
+        pattern = f"%{q.strip().lower()}%"
+        query = query.where(
+            or_(
+                func.lower(SiteFeedback.category).like(pattern),
+                func.lower(SiteFeedback.content).like(pattern),
+                func.lower(SiteFeedback.contact).like(pattern),
+                func.lower(SiteFeedback.source).like(pattern),
+            )
+        )
+    return query.order_by(SiteFeedback.created_at.desc())
+
+
+@router.get("/feedback")
+async def list_feedback(
+    status: str | None = None,
+    category: str | None = None,
+    q: str | None = None,
+    limit: int = 300,
+    db: AsyncSession = Depends(get_db),
+):
+    """查看官网反馈。"""
+    safe_limit = max(1, min(limit, 1000))
+    result = await db.execute(feedback_query(status=status, category=category, q=q).limit(safe_limit))
+    return [feedback_payload(item) for item in result.scalars().all()]
+
+
+@router.patch("/feedback/{feedback_id}/status")
+async def update_feedback_status(
+    feedback_id: UUID,
+    body: FeedbackStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    """手动记录官网反馈处理状态。"""
+    status = body.status.strip().lower()
+    if status not in FEEDBACK_STATUSES:
+        raise HTTPException(status_code=400, detail=f"不支持的反馈状态: {status}")
+
+    result = await db.execute(select(SiteFeedback).where(SiteFeedback.id == feedback_id))
+    feedback = result.scalar_one_or_none()
+    if not feedback:
+        raise HTTPException(status_code=404, detail="反馈不存在")
+
+    feedback.status = status
+    feedback.updated_at = datetime.now(timezone.utc)
+    await db.flush()
+    return feedback_payload(feedback)
+
+
+@router.get("/feedback.csv")
+async def export_feedback_csv(
+    status: str | None = None,
+    category: str | None = None,
+    q: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """导出官网反馈，方便集中整理。"""
+    result = await db.execute(feedback_query(status=status, category=category, q=q))
+    feedback_items = result.scalars().all()
+
+    output = io.StringIO()
+    output.write("\ufeff")
+    writer = csv.writer(output)
+    writer.writerow([
+        "反馈类型",
+        "反馈内容",
+        "联系方式",
+        "状态",
+        "来源",
+        "提交时间",
+    ])
+    for item in feedback_items:
+        writer.writerow([
+            item.category,
+            item.content,
+            item.contact or "",
+            item.status,
+            item.source,
+            item.created_at.isoformat(),
+        ])
+
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="dazi-feedback.csv"'},
+    )
 
 
 # ── 删除用户 ──
