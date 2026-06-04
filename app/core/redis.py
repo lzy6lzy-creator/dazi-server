@@ -152,3 +152,58 @@ class ChatHistoryCache:
         """清除编辑状态"""
         r = await get_redis()
         await r.delete(f"{cls.EDITING_PREFIX}:{user_id}")
+
+    # ── Clarification session 缓存 ──
+
+    CLARIFICATION_PREFIX = "clarification"
+    CLARIFICATION_LATEST_PREFIX = "clarification_latest"
+    CLARIFICATION_TTL = 3600
+
+    @classmethod
+    async def set_clarification_session(cls, user_id: str, session_id: str, payload: dict):
+        """存储结构化澄清会话。"""
+        r = await get_redis()
+        key = f"{cls.CLARIFICATION_PREFIX}:{user_id}:{session_id}"
+        await r.set(key, json.dumps(payload, ensure_ascii=False), ex=cls.CLARIFICATION_TTL)
+        await r.set(
+            f"{cls.CLARIFICATION_LATEST_PREFIX}:{user_id}",
+            session_id,
+            ex=cls.CLARIFICATION_TTL,
+        )
+
+    @classmethod
+    async def get_clarification_session(cls, user_id: str, session_id: str) -> dict | None:
+        """获取结构化澄清会话。"""
+        r = await get_redis()
+        key = f"{cls.CLARIFICATION_PREFIX}:{user_id}:{session_id}"
+        data = await r.get(key)
+        if data:
+            return json.loads(data)
+        return None
+
+    @classmethod
+    async def get_latest_clarification_session(cls, user_id: str) -> dict | None:
+        """获取用户最近一条仍有效的结构化澄清会话。"""
+        r = await get_redis()
+        latest_key = f"{cls.CLARIFICATION_LATEST_PREFIX}:{user_id}"
+        session_id = await r.get(latest_key)
+        if not session_id:
+            return None
+
+        payload = await cls.get_clarification_session(user_id, session_id)
+        if payload is None:
+            await r.delete(latest_key)
+            return None
+
+        return {"session_id": session_id, **payload}
+
+    @classmethod
+    async def clear_clarification_session(cls, user_id: str, session_id: str):
+        """清除结构化澄清会话。"""
+        r = await get_redis()
+        latest_key = f"{cls.CLARIFICATION_LATEST_PREFIX}:{user_id}"
+        latest_session_id = await r.get(latest_key)
+        keys = [f"{cls.CLARIFICATION_PREFIX}:{user_id}:{session_id}"]
+        if latest_session_id == session_id:
+            keys.append(latest_key)
+        await r.delete(*keys)

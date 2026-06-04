@@ -9,7 +9,7 @@ Agent Chat API - 与 AI Agent 对话
 from __future__ import annotations
 
 import logging
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,7 +25,11 @@ from app.models.event import Event
 from app.services.llm_service import llm_service
 from app.services.matching_tasks import schedule_event_matching
 from app.services.prompt_builder import PromptBuilder
-from app.api.schemas import AgentChatRequest, AgentChatResponse
+from app.services.clarification_service import (
+    merge_clarification_answers,
+    normalize_clarification_payload,
+)
+from app.api.schemas import AgentChatRequest, AgentChatResponse, ClarificationAnswerRequest
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +76,30 @@ async def chat_with_agent(
         if db_messages:
             history = [{"role": m.role, "content": m.content} for m in db_messages]
             await ChatHistoryCache.set_history(uid_str, history)
+
+    existing_draft = await ChatHistoryCache.get_event_draft(uid_str)
+    editing_event_id = await ChatHistoryCache.get_editing_event(uid_str)
+    if not existing_draft and not editing_event_id:
+        pending_response = await _try_answer_pending_clarification_with_free_text(
+            user=user,
+            uid_str=uid_str,
+            message=req.message,
+            background_tasks=background_tasks,
+            db=db,
+        )
+        if pending_response:
+            return pending_response
+
+        if not _looks_like_confirmation(req.message):
+            clarification_response = await _try_build_clarification_response(
+                user=user,
+                uid_str=uid_str,
+                message=req.message,
+                background_tasks=background_tasks,
+                db=db,
+            )
+            if clarification_response:
+                return clarification_response
 
     # 3. 构建 system prompt
     system_prompt = PromptBuilder.build_agent_chat_prompt(
@@ -209,7 +237,268 @@ async def clear_chat_history(
     return {"message": "对话历史已清空"}
 
 
+@router.post("/clarification/answer", response_model=AgentChatResponse)
+async def answer_clarification(
+    req: ClarificationAnswerRequest,
+    background_tasks: BackgroundTasks,
+    user_id: UUID = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """提交结构化澄清卡片答案，并合成活动草稿。"""
+    user_result = await db.execute(select(User).where(User.id == user_id))
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+
+    uid_str = str(user_id)
+    session = await ChatHistoryCache.get_clarification_session(
+        uid_str,
+        req.clarification_session_id,
+    )
+    if not session:
+        raise HTTPException(status_code=404, detail="澄清卡片已过期，请重新描述需求")
+
+    answers = [answer.model_dump(exclude_none=True) for answer in req.answers]
+    return await _complete_clarification_session(
+        user=user,
+        uid_str=uid_str,
+        session_id=req.clarification_session_id,
+        session=session,
+        answers=answers,
+        free_text=req.free_text,
+        background_tasks=background_tasks,
+        db=db,
+    )
+
+
+@router.get("/clarification/pending", response_model=AgentChatResponse)
+async def get_pending_clarification(
+    user_id: UUID = Depends(get_current_user_id),
+):
+    """获取用户最近一条仍可提交的结构化澄清卡片。"""
+    latest = await ChatHistoryCache.get_latest_clarification_session(str(user_id))
+    if not latest:
+        return AgentChatResponse(reply="")
+
+    return AgentChatResponse(
+        reply=str(latest.get("reply") or ""),
+        clarification_pending=True,
+        clarification_session_id=str(latest.get("session_id")),
+        clarification_questions=latest.get("questions") or [],
+    )
+
+
 # ── 后台任务 ──
+
+async def _try_answer_pending_clarification_with_free_text(
+    *,
+    user: User,
+    uid_str: str,
+    message: str,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession,
+) -> AgentChatResponse | None:
+    free_text = (message or "").strip()
+    if not free_text:
+        return None
+
+    latest = await ChatHistoryCache.get_latest_clarification_session(uid_str)
+    if not latest:
+        return None
+
+    session_id = str(latest.get("session_id") or "")
+    if not session_id:
+        return None
+
+    return await _complete_clarification_session(
+        user=user,
+        uid_str=uid_str,
+        session_id=session_id,
+        session=latest,
+        answers=[],
+        free_text=free_text,
+        background_tasks=background_tasks,
+        db=db,
+    )
+
+
+async def _complete_clarification_session(
+    *,
+    user: User,
+    uid_str: str,
+    session_id: str,
+    session: dict,
+    answers: list[dict],
+    free_text: str | None,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession,
+) -> AgentChatResponse:
+    merged = merge_clarification_answers(
+        draft=session.get("draft") or {},
+        questions=session.get("questions") or [],
+        answers=answers,
+        user_birth_date=user.birth_date,
+        free_text=free_text,
+    )
+    await ChatHistoryCache.set_event_draft(uid_str, merged)
+    await ChatHistoryCache.clear_clarification_session(uid_str, session_id)
+
+    user_answer_text = _clarification_answers_to_text(session.get("questions") or [], answers, free_text)
+    reply = _draft_confirmation_reply(merged)
+
+    await ChatHistoryCache.append_message(uid_str, "user", user_answer_text)
+    await ChatHistoryCache.append_message(uid_str, "assistant", reply)
+    db.add(AgentChatMessage(user_id=user.id, role="user", content=user_answer_text))
+    db.add(AgentChatMessage(user_id=user.id, role="assistant", content=reply))
+    await db.flush()
+
+    if free_text:
+        background_tasks.add_task(
+            _extract_memories_background,
+            user_id=user.id,
+            text=free_text,
+        )
+
+    return AgentChatResponse(
+        reply=reply,
+        event_draft_pending=True,
+    )
+
+async def _try_build_clarification_response(
+    *,
+    user: User,
+    uid_str: str,
+    message: str,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession,
+) -> AgentChatResponse | None:
+    """让 LLM 先生成结构化澄清卡片；没有问题时回退到普通聊天。"""
+    prompt = PromptBuilder.build_clarification_questions_prompt(
+        user_name=user.name,
+        user_city=user.city or "",
+        user_interests=user.interests or [],
+        birth_date=user.birth_date.isoformat() if user.birth_date else None,
+    )
+    payload = await llm_service.chat_json([
+        {"role": "system", "content": prompt},
+        {"role": "user", "content": message},
+    ])
+    normalized = normalize_clarification_payload(payload)
+    questions = normalized.get("questions") or []
+    if not questions:
+        return None
+
+    session_id = str(uuid4())
+    reply = normalized.get("reply") or "我先帮你确认几个会影响匹配的小问题。"
+    await ChatHistoryCache.set_clarification_session(
+        uid_str,
+        session_id,
+        {
+            "reply": reply,
+            "original_message": message,
+            "draft": normalized.get("draft") or {},
+            "questions": questions,
+        },
+    )
+
+    await ChatHistoryCache.append_message(uid_str, "user", message)
+    await ChatHistoryCache.append_message(uid_str, "assistant", reply)
+    db.add(AgentChatMessage(user_id=user.id, role="user", content=message))
+    db.add(AgentChatMessage(user_id=user.id, role="assistant", content=reply))
+    await db.flush()
+
+    background_tasks.add_task(
+        _extract_memories_background,
+        user_id=user.id,
+        text=message,
+    )
+
+    return AgentChatResponse(
+        reply=reply,
+        clarification_pending=True,
+        clarification_session_id=session_id,
+        clarification_questions=questions,
+    )
+
+
+def _looks_like_confirmation(message: str) -> bool:
+    text = (message or "").strip().lower()
+    if not text:
+        return False
+    direct_confirmations = {"确认", "可以", "好的", "好", "没问题", "ok", "okay", "yes", "go"}
+    if text in direct_confirmations:
+        return True
+    confirmation_phrases = ("确认发布", "帮我发布", "发吧", "就这样", "没问题，发布")
+    return any(phrase in text for phrase in confirmation_phrases)
+
+
+def _clarification_answers_to_text(
+    questions: list[dict],
+    answers: list[dict],
+    free_text: str | None,
+) -> str:
+    question_by_id = {
+        str(question.get("id")): question
+        for question in questions
+        if isinstance(question, dict) and question.get("id")
+    }
+    lines = ["我已选择澄清卡片："]
+    for answer in answers:
+        question = question_by_id.get(str(answer.get("question_id") or ""))
+        if not question:
+            continue
+        labels = _answer_labels(question, answer)
+        if labels:
+            lines.append(f"- {question.get('title')}: {', '.join(labels)}")
+    if free_text:
+        lines.append(f"- 补充说明: {free_text.strip()}")
+    return "\n".join(lines)
+
+
+def _answer_labels(question: dict, answer: dict) -> list[str]:
+    option_ids = answer.get("option_ids")
+    if not isinstance(option_ids, list):
+        option_ids = []
+    options = {
+        str(option.get("id")): option
+        for option in question.get("options", [])
+        if isinstance(option, dict)
+    }
+    labels = [
+        str(options[option_id].get("label"))
+        for option_id in option_ids
+        if option_id in options and options[option_id].get("label")
+    ]
+    custom_value = answer.get("custom_value")
+    if isinstance(custom_value, dict):
+        min_age = custom_value.get("min_age")
+        max_age = custom_value.get("max_age")
+        if min_age is not None and max_age is not None:
+            labels.append(f"{min_age}-{max_age} 岁")
+    elif isinstance(custom_value, str) and custom_value.strip():
+        labels.append(custom_value.strip())
+    return labels
+
+
+def _draft_confirmation_reply(draft: dict) -> str:
+    title = draft.get("title") or draft.get("activity_type") or "这次活动"
+    activity_type = draft.get("activity_type")
+    city = draft.get("city")
+    location = draft.get("location")
+    preferences = draft.get("preferences") or []
+    constraints = draft.get("constraints") or []
+
+    parts = [f"我帮你整理好了：{title}"]
+    if activity_type and activity_type != title:
+        parts.append(f"类型是 {activity_type}")
+    place = " / ".join([item for item in [city, location] if item])
+    if place:
+        parts.append(f"地点偏向 {place}")
+    if preferences:
+        parts.append(f"偏好：{'、'.join(preferences[:4])}")
+    if constraints:
+        parts.append(f"限制：{'、'.join(constraints[:4])}")
+    return "；".join(parts) + "。确认的话，我就帮你发布找搭子。"
 
 async def _extract_memories_background(user_id: UUID, text: str):
     """后台提取用户 Memory"""
@@ -300,6 +589,10 @@ async def _create_event_from_draft(
             city_normalized=await embedding_service.align_city(city_value),
             preferences=draft.get("preferences", []),
             constraints=draft.get("constraints", []),
+            clarification_answers=draft.get("clarification_answers"),
+            age_filter_min=draft.get("age_filter_min"),
+            age_filter_max=draft.get("age_filter_max"),
+            age_filter_mode=draft.get("age_filter_mode"),
             status="pending",
         )
 
@@ -374,6 +667,14 @@ async def _update_event_from_draft(
             event.preferences = draft["preferences"]
         if "constraints" in draft:
             event.constraints = draft["constraints"]
+        if "clarification_answers" in draft:
+            event.clarification_answers = draft["clarification_answers"]
+        if "age_filter_min" in draft:
+            event.age_filter_min = draft["age_filter_min"]
+        if "age_filter_max" in draft:
+            event.age_filter_max = draft["age_filter_max"]
+        if "age_filter_mode" in draft:
+            event.age_filter_mode = draft["age_filter_mode"]
 
         # 解析时间
         for time_field in ("start_time", "end_time"):
