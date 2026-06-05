@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import json
 from uuid import UUID
 
 from app.services.matching_policy import A2AEvaluation, A2A_MATCH_THRESHOLD
@@ -26,14 +27,31 @@ def parse_a2a_response(
     compatibility = _safe_float(payload.get("compatibility"))
     dialogue_log = _format_dialogue(payload.get("dialogue"))
     reasons = _string_list(payload.get("match_reasons"))
-    issues = _string_list(payload.get("potential_issues"))
-    summary = str(payload.get("summary") or "A2A 未给出摘要")
+    issues = (
+        _string_list(payload.get("conflicts"))
+        + _string_list(payload.get("uncertainties"))
+        + _string_list(payload.get("potential_issues"))
+    )
+    requested_match = bool(payload.get("should_match"))
+    has_blocking_conflict = bool(payload.get("has_blocking_conflict"))
+    should_match = (
+        requested_match
+        and not has_blocking_conflict
+        and compatibility >= A2A_MATCH_THRESHOLD
+        and not _string_list(payload.get("uncertainties"))
+    )
+    chatroom_carryover = str(payload.get("chatroom_carryover") or "").strip()
+    summary = (
+        chatroom_carryover
+        if should_match and chatroom_carryover
+        else str(payload.get("summary") or "A2A 未给出摘要")
+    )
 
     return A2AEvaluation(
         source_event_id=source_event_id,
         candidate_event_id=candidate_event_id,
         compatibility=compatibility,
-        should_match=compatibility >= A2A_MATCH_THRESHOLD,
+        should_match=should_match,
         summary=summary,
         reasons=reasons,
         issues=issues,
@@ -72,14 +90,38 @@ class A2AMatcher:
     async def evaluate(self, source, candidate, db) -> A2AEvaluation:
         try:
             from app.services.llm_service import llm_service
+            from app.services.prompt_builder import PromptBuilder
 
-            prompt = await self._build_prompt(source, candidate, db)
-            payload = await llm_service.chat_json(
-                [{"role": "system", "content": prompt}],
-                temperature=0.3,
-                max_tokens=2048,
+            prompt = PromptBuilder.build_a2a_dialogue_prompt()
+            context = await self._build_a2a_context(source, candidate, db)
+            dialogue: list[dict[str, str]] = []
+            turns = [
+                ("A", "开场：讲清自己这边关键需求，并问一个最影响 match 的问题。"),
+                ("B", "回应 A，并讲清自己这边关键需求；如有必要问一个问题。"),
+                ("A", "根据公开对话补问或收束；如果事件条件已清楚，可以一句轻松闲聊。"),
+                ("B", "根据公开对话补问或收束；不要继续发散。"),
+            ]
+            for side, task in turns:
+                payload = self._build_agent_turn_payload(
+                    side=side,
+                    task=task,
+                    public_events=context["public_events"],
+                    dialogue=dialogue,
+                    self_private=context["private"][side],
+                )
+                result = await self._call_a2a_json(llm_service, prompt, payload)
+                message = str(result.get("message") or "").strip()
+                if message:
+                    dialogue.append({"speaker": side, "content": message})
+
+            judge_payload = self._build_judge_payload(
+                public_events=context["public_events"],
+                dialogue=dialogue,
             )
-            return parse_a2a_response(source.id, candidate.id, payload)
+            judge_result = await self._call_a2a_json(llm_service, prompt, judge_payload)
+            if isinstance(judge_result, dict):
+                judge_result["dialogue"] = dialogue
+            return parse_a2a_response(source.id, candidate.id, judge_result)
         except Exception as e:
             logger.error(f"A2A evaluation failed for {source.id} -> {candidate.id}: {e}")
             return A2AEvaluation(
@@ -91,9 +133,7 @@ class A2AMatcher:
                 issues=[str(e)],
             )
 
-    async def _build_prompt(self, source, candidate, db) -> str:
-        from app.services.prompt_builder import PromptBuilder
-
+    async def _build_a2a_context(self, source, candidate, db) -> dict:
         user_a = await self._get_user(source.user_id, db)
         user_b = await self._get_user(candidate.user_id, db)
         agent_a = await self._get_agent(source.user_id, db)
@@ -101,16 +141,76 @@ class A2AMatcher:
         memories_a = await self._get_memories(source.user_id, db)
         memories_b = await self._get_memories(candidate.user_id, db)
 
-        return PromptBuilder.build_a2a_dialogue_prompt(
-            agent_a_name=agent_a.name if agent_a else "点点",
-            agent_b_name=agent_b.name if agent_b else "点点",
-            event_a=self._event_dict(source),
-            event_b=self._event_dict(candidate),
-            user_a_info=self._user_dict(user_a),
-            user_b_info=self._user_dict(user_b),
-            memories_a=memories_a,
-            memories_b=memories_b,
+        return {
+            "public_events": {
+                "A": self._event_dict(source),
+                "B": self._event_dict(candidate),
+            },
+            "private": {
+                "A": self._private_dict(
+                    agent_name=agent_a.name if agent_a else "AI",
+                    user_info=self._user_dict(user_a),
+                    memories=memories_a,
+                ),
+                "B": self._private_dict(
+                    agent_name=agent_b.name if agent_b else "AI",
+                    user_info=self._user_dict(user_b),
+                    memories=memories_b,
+                ),
+            },
+        }
+
+    @staticmethod
+    async def _call_a2a_json(llm_service, prompt: str, payload: dict) -> dict:
+        result = await llm_service.chat_json(
+            [
+                {"role": "system", "content": prompt},
+                {
+                    "role": "user",
+                    "content": "请按 prompt 的 JSON 结构处理以下输入：\n"
+                    + json.dumps(payload, ensure_ascii=False, indent=2),
+                },
+            ],
+            temperature=0.3,
+            max_tokens=2048,
         )
+        return result if isinstance(result, dict) else {}
+
+    @staticmethod
+    def _build_agent_turn_payload(
+        *,
+        side: str,
+        task: str,
+        public_events: dict,
+        dialogue: list[dict[str, str]],
+        self_private: dict,
+    ) -> dict:
+        return {
+            "mode": "agent_turn",
+            "self_agent": side,
+            "task": task,
+            "public_context": {
+                "events": public_events,
+                "rule": "两边 agent 都能看两个公开事件；每个 agent 只能看自己的 private。",
+                "dialogue_so_far": dialogue,
+            },
+            "self_private": self_private,
+        }
+
+    @staticmethod
+    def _build_judge_payload(
+        *,
+        public_events: dict,
+        dialogue: list[dict[str, str]],
+    ) -> dict:
+        return {
+            "mode": "judge",
+            "public_context": {
+                "events": public_events,
+                "rule": "judge 只能看公开事件和双方 agent 已公开的对话，不直接读取任何私有 memory。",
+            },
+            "public_dialogue": dialogue,
+        }
 
     async def _get_user(self, user_id: UUID, db):
         from sqlalchemy import select
@@ -174,6 +274,22 @@ class A2AMatcher:
             "interests": user.interests or [],
             "bio": user.bio,
             "city": user.city,
+        }
+
+    @staticmethod
+    def _private_dict(
+        *,
+        agent_name: str,
+        user_info: dict,
+        memories: list[tuple[str, str]],
+    ) -> dict:
+        return {
+            "agent_name": agent_name,
+            "profile": user_info,
+            "memory": [
+                {"type": mem_type, "content": content}
+                for mem_type, content in memories
+            ],
         }
 
 

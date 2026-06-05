@@ -10,7 +10,7 @@ from datetime import date, datetime
 from uuid import UUID
 
 VECTOR_MATCH_THRESHOLD = 0.55
-A2A_MATCH_THRESHOLD = 0.65
+A2A_MATCH_THRESHOLD = 0.70
 A2A_WINDOW_SIZE = 3
 MAX_A2A_ROUNDS = 1
 
