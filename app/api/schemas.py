@@ -237,6 +237,7 @@ class ChatRoomMemberResponse(BaseModel):
     name: str
     role: str  # "user" or "agent"
     emoji: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 
 class ChatRoomResponse(BaseModel):

@@ -95,6 +95,25 @@ def _extract_room_agent_reply(raw_reply: str) -> str:
     return text
 
 
+def _chat_room_member_response(member: ChatRoomMember, user: User | None = None, agent: Agent | None = None) -> ChatRoomMemberResponse:
+    if member.role == "agent":
+        return ChatRoomMemberResponse(
+            user_id=member.user_id,
+            name=agent.name if agent else "Agent",
+            role="agent",
+            emoji=agent.emoji if agent else None,
+            avatar_url=agent.avatar_url if agent else None,
+        )
+    return ChatRoomMemberResponse(
+        user_id=member.user_id,
+        name=user.name if user else "用户",
+        role="user",
+        # Backward-compatible: older clients read only emoji.
+        emoji=user.avatar_url if user else None,
+        avatar_url=user.avatar_url if user else None,
+    )
+
+
 @router.get("/rooms", response_model=list[ChatRoomResponse])
 async def list_my_rooms(
     user_id: UUID = Depends(get_current_user_id),
@@ -129,21 +148,11 @@ async def list_my_rooms(
             if m.role == "agent":
                 agent_r = await db.execute(select(Agent).where(Agent.id == m.agent_id))
                 agent = agent_r.scalar_one_or_none()
-                members.append(ChatRoomMemberResponse(
-                    user_id=m.user_id,
-                    name=agent.name if agent else "Agent",
-                    role="agent",
-                    emoji=agent.emoji if agent else None,
-                ))
+                members.append(_chat_room_member_response(m, agent=agent))
             else:
                 user_r = await db.execute(select(User).where(User.id == m.user_id))
                 user = user_r.scalar_one_or_none()
-                members.append(ChatRoomMemberResponse(
-                    user_id=m.user_id,
-                    name=user.name if user else "用户",
-                    role="user",
-                    emoji=None,
-                ))
+                members.append(_chat_room_member_response(m, user=user))
 
         # 加载最新一条消息
         last_msg_r = await db.execute(
