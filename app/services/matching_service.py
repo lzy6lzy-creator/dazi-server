@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from uuid import UUID
 
 from sqlalchemy import select, or_
@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.event import Event, MatchLog, MatchBlocklist
 from app.models.chat import ChatRoom, ChatRoomMember
-from app.models.user import Agent
+from app.models.user import Agent, User
 from app.api.ws import manager as ws_manager
 from app.services.a2a_matcher import a2a_matcher
 from app.services.embedding_service import embedding_service
@@ -29,6 +29,7 @@ from app.services.matching_policy import (
     choose_a2a_winner,
     collect_blocked_event_ids,
     has_time_overlap,
+    is_age_filter_compatible,
     is_event_open_for_matching,
 )
 from app.services.location_policy import is_location_compatible
@@ -78,7 +79,7 @@ class MatchingService:
                 return None
 
             # 硬过滤 + Top3 候选窗口
-            filtered = self._post_filter(event, candidates)
+            filtered = await self._post_filter(event, candidates, db)
             if not filtered:
                 event.status = "pending"
                 event.match_round += 1
@@ -186,18 +187,50 @@ class MatchingService:
         # cosine similarity = 1 - cosine distance
         return [(row[0], 1.0 - row[1]) for row in rows]
 
-    def _post_filter(self, event: Event,
-                     candidates: list[tuple[Event, float]]) -> list[tuple[Event, float]]:
+    async def _post_filter(
+        self,
+        event: Event,
+        candidates: list[tuple[Event, float]],
+        db: AsyncSession,
+    ) -> list[tuple[Event, float]]:
         """硬过滤：时间交集检查，不在这里截断 Top3。"""
+        birth_dates = await self._birth_dates_for_events(
+            event,
+            [candidate for candidate, _ in candidates],
+            db,
+        )
+        today = datetime.now(timezone.utc).date()
         filtered = []
         for cand, score in candidates:
             if not has_time_overlap(event, cand):
                 continue
             if not is_location_compatible(event, cand).should_pass:
                 continue
+            age_decision = is_age_filter_compatible(
+                source_event=event,
+                source_birth_date=birth_dates.get(event.user_id),
+                candidate_event=cand,
+                candidate_birth_date=birth_dates.get(cand.user_id),
+                today=today,
+            )
+            if not age_decision.should_pass:
+                continue
             filtered.append((cand, score))
 
         return filtered
+
+    async def _birth_dates_for_events(
+        self,
+        event: Event,
+        candidates: list[Event],
+        db: AsyncSession,
+    ) -> dict[UUID, date | None]:
+        user_ids = {event.user_id}
+        user_ids.update(candidate.user_id for candidate in candidates)
+        result = await db.execute(
+            select(User.id, User.birth_date).where(User.id.in_(user_ids))
+        )
+        return {row[0]: row[1] for row in result.all()}
 
     async def _blocked_event_ids(
         self,
@@ -370,9 +403,14 @@ class MatchingService:
         await self._ensure_embedding(event)
 
         candidates = await self._vector_search(event, db, k=10)
-        filtered = self._post_filter(event, candidates)
+        filtered = await self._post_filter(event, candidates, db)
         blocked_event_ids = await self._blocked_event_ids(event, filtered, db)
-        detailed = self._post_filter_detailed(event, candidates, blocked_event_ids)
+        birth_dates = await self._birth_dates_for_events(
+            event,
+            [candidate for candidate, _ in candidates],
+            db,
+        )
+        detailed = self._post_filter_detailed(event, candidates, blocked_event_ids, birth_dates)
 
         return {
             "event": self._event_to_dict(event),
@@ -388,10 +426,12 @@ class MatchingService:
         event: Event,
         candidates: list[tuple[Event, float]],
         blocked_event_ids: set[UUID],
+        birth_dates: dict[UUID, date | None],
     ) -> list[dict]:
         """后过滤并返回每个候选的详细状态"""
         results = []
         passed_count = 0
+        today = datetime.now(timezone.utc).date()
         for cand, score in candidates:
             status = "passed"
             filter_reason = None
@@ -408,6 +448,18 @@ class MatchingService:
                         f"地点不兼容: {location_decision.relation}, "
                         f"score={location_decision.score:.2f} < {location_decision.threshold:.2f}"
                     )
+
+            if status == "passed":
+                age_decision = is_age_filter_compatible(
+                    source_event=event,
+                    source_birth_date=birth_dates.get(event.user_id),
+                    candidate_event=cand,
+                    candidate_birth_date=birth_dates.get(cand.user_id),
+                    today=today,
+                )
+                if not age_decision.should_pass:
+                    status = "age_filtered"
+                    filter_reason = "；".join(age_decision.issues) or "年龄条件不兼容"
 
             if status == "passed" and cand.id in blocked_event_ids:
                 status = "blocklisted"

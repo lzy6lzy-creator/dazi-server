@@ -7,7 +7,8 @@ from typing import Any
 
 MAX_QUESTIONS = 3
 MAX_OPTIONS = 6
-_DRAFT_STRING_FIELDS = ("title", "activity_type", "city", "location")
+_CONVERSATION_ACTIONS = {"chat", "clarify", "draft", "cancel"}
+_DRAFT_STRING_FIELDS = ("title", "activity_type", "city", "location", "start_time", "end_time")
 _DRAFT_LIST_FIELDS = ("preferences", "constraints")
 
 
@@ -30,6 +31,36 @@ def normalize_clarification_payload(payload: Any) -> dict:
     draft = _sanitize_draft(payload.get("draft"))
 
     return {
+        "reply": reply,
+        "questions": questions,
+        "draft": draft,
+    }
+
+
+def normalize_conversation_payload(payload: Any) -> dict:
+    """Normalize the main conversation orchestrator JSON into a safe shape."""
+    if not isinstance(payload, dict):
+        return {"action": "chat", "reply": "", "questions": [], "draft": {}}
+
+    action = str(payload.get("action") or "chat").strip().lower()
+    if action not in _CONVERSATION_ACTIONS:
+        action = "chat"
+
+    reply = str(payload.get("reply") or "").strip()
+    draft = _sanitize_draft(payload.get("draft"))
+
+    raw_questions = payload.get("questions") if action == "clarify" else []
+    if not isinstance(raw_questions, list):
+        raw_questions = []
+
+    questions = []
+    for index, raw_question in enumerate(raw_questions[:MAX_QUESTIONS]):
+        question = _normalize_question(raw_question, index)
+        if question:
+            questions.append(question)
+
+    return {
+        "action": action,
         "reply": reply,
         "questions": questions,
         "draft": draft,
@@ -183,11 +214,18 @@ def _merge_generic_answer(merged: dict, question: dict, answer: dict) -> None:
         for option in question.get("options", [])
         if isinstance(option, dict)
     }
-    labels = [
-        str(options[option_id].get("label")).strip()
-        for option_id in option_ids
-        if option_id in options and str(options[option_id].get("label")).strip()
-    ]
+    labels = []
+    for option_id in option_ids:
+        option = options.get(str(option_id))
+        if not option:
+            continue
+        value = option.get("value")
+        if isinstance(value, str) and value.strip():
+            labels.append(value.strip())
+            continue
+        label = str(option.get("label") or "").strip()
+        if label:
+            labels.append(label)
 
     custom_value = answer.get("custom_value")
     if isinstance(custom_value, str) and custom_value.strip():

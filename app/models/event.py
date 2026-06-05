@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import String, Integer, Boolean, Text, ARRAY, TIMESTAMP, Float, ForeignKey, Index
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from pgvector.sqlalchemy import Vector
 
@@ -25,6 +25,10 @@ class Event(Base):
     city: Mapped[str | None] = mapped_column(String(50), index=True)
     preferences: Mapped[list[str] | None] = mapped_column(ARRAY(String), default=list)
     constraints: Mapped[list[str] | None] = mapped_column(ARRAY(String), default=list)
+    clarification_answers: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    age_filter_min: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    age_filter_max: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    age_filter_mode: Mapped[str | None] = mapped_column(String(20), nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="pending", index=True)
     # pending -> matching -> matched -> active -> completed -> cancelled
     matched_event_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))

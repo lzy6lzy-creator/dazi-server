@@ -7,12 +7,14 @@ from uuid import uuid4
 
 from app.services.matching_policy import (
     A2AEvaluation,
+    AgeFilterDecision,
     Candidate,
     VECTOR_MATCH_THRESHOLD,
     build_candidate_windows,
     choose_a2a_winner,
     collect_blocked_event_ids,
     has_time_overlap,
+    is_age_filter_compatible,
     is_event_open_for_matching,
     is_passive_candidate_allowed,
 )
@@ -22,6 +24,13 @@ from app.services.matching_policy import (
 class TimeBox:
     start_time: datetime | None
     end_time: datetime | None
+
+
+@dataclass(frozen=True)
+class AgeFilterBox:
+    age_filter_min: int | None
+    age_filter_max: int | None
+    age_filter_mode: str | None
 
 
 @dataclass(frozen=True)
@@ -199,6 +208,53 @@ class MatchingPolicyTests(unittest.TestCase):
             expires_at=now - timedelta(minutes=1),
             now=now,
         ))
+
+    def test_age_filter_passes_when_candidate_age_is_in_range(self):
+        decision = is_age_filter_compatible(
+            source_event=AgeFilterBox(23, 32, "hard_filter"),
+            source_birth_date=datetime(1998, 6, 4).date(),
+            candidate_event=AgeFilterBox(None, None, None),
+            candidate_birth_date=datetime(2000, 1, 1).date(),
+            today=datetime(2026, 6, 4).date(),
+        )
+
+        self.assertEqual(decision, AgeFilterDecision(should_pass=True, issues=[]))
+
+    def test_age_filter_rejects_known_out_of_range_candidate(self):
+        decision = is_age_filter_compatible(
+            source_event=AgeFilterBox(23, 32, "hard_filter"),
+            source_birth_date=datetime(1998, 6, 4).date(),
+            candidate_event=AgeFilterBox(None, None, None),
+            candidate_birth_date=datetime(1980, 1, 1).date(),
+            today=datetime(2026, 6, 4).date(),
+        )
+
+        self.assertFalse(decision.should_pass)
+        self.assertEqual(decision.issues, ["候选年龄 46 不在要求范围 23-32 岁"])
+
+    def test_age_filter_does_not_reject_unknown_birth_date(self):
+        decision = is_age_filter_compatible(
+            source_event=AgeFilterBox(23, 32, "hard_filter"),
+            source_birth_date=datetime(1998, 6, 4).date(),
+            candidate_event=AgeFilterBox(None, None, None),
+            candidate_birth_date=None,
+            today=datetime(2026, 6, 4).date(),
+        )
+
+        self.assertTrue(decision.should_pass)
+        self.assertEqual(decision.issues, ["候选未填写出生日期，无法验证年龄范围 23-32 岁"])
+
+    def test_age_filter_preference_mode_never_hard_rejects(self):
+        decision = is_age_filter_compatible(
+            source_event=AgeFilterBox(23, 32, "preference"),
+            source_birth_date=datetime(1998, 6, 4).date(),
+            candidate_event=AgeFilterBox(None, None, None),
+            candidate_birth_date=datetime(1980, 1, 1).date(),
+            today=datetime(2026, 6, 4).date(),
+        )
+
+        self.assertTrue(decision.should_pass)
+        self.assertEqual(decision.issues, ["候选年龄 46 不符合偏好范围 23-32 岁"])
 
 
 if __name__ == "__main__":

@@ -36,6 +36,10 @@ async def create_event(
         location=data.location,
         preferences=data.preferences or [],
         constraints=data.constraints or [],
+        clarification_answers=data.clarification_answers,
+        age_filter_min=data.age_filter_min,
+        age_filter_max=data.age_filter_max,
+        age_filter_mode=data.age_filter_mode,
         status="pending",
     )
     db.add(event)

@@ -3,8 +3,9 @@ Agent Chat API - 与 AI Agent 对话
 
 功能：
 - 对话历史持久化（Redis 缓存 + DB 存储）
-- 对话后自动提取 Memory
-- EVENT_READY 时自动提取活动信息并创建 Event
+- 主对话编排 prompt 返回 chat / clarify / draft / cancel
+- 用户确认草稿后确定性创建 Event
+- 发布成功后后台提取长期 Memory
 """
 from __future__ import annotations
 
@@ -27,7 +28,7 @@ from app.services.matching_tasks import schedule_event_matching
 from app.services.prompt_builder import PromptBuilder
 from app.services.clarification_service import (
     merge_clarification_answers,
-    normalize_clarification_payload,
+    normalize_conversation_payload,
 )
 from app.api.schemas import AgentChatRequest, AgentChatResponse, ClarificationAnswerRequest
 
@@ -79,125 +80,49 @@ async def chat_with_agent(
 
     existing_draft = await ChatHistoryCache.get_event_draft(uid_str)
     editing_event_id = await ChatHistoryCache.get_editing_event(uid_str)
-    if not existing_draft and not editing_event_id:
-        pending_response = await _try_answer_pending_clarification_with_free_text(
+    if _can_publish_existing_draft_without_llm(existing_draft, req.message):
+        direct_response = await _publish_existing_draft_without_llm(
             user=user,
             uid_str=uid_str,
             message=req.message,
+            editing_event_id=editing_event_id,
+            user_city=user.city,
             background_tasks=background_tasks,
             db=db,
         )
-        if pending_response:
-            return pending_response
+        if direct_response:
+            return direct_response
 
-        if not _looks_like_confirmation(req.message):
-            clarification_response = await _try_build_clarification_response(
-                user=user,
-                uid_str=uid_str,
-                message=req.message,
-                background_tasks=background_tasks,
-                db=db,
-            )
-            if clarification_response:
-                return clarification_response
-
-    # 3. 构建 system prompt
-    system_prompt = PromptBuilder.build_agent_chat_prompt(
-        agent_name=agent.name,
-        agent_personality=agent.personality or "",
+    latest_clarification = await ChatHistoryCache.get_latest_clarification_session(uid_str)
+    conversation_state = _build_conversation_state(
+        existing_draft=existing_draft,
+        pending_clarification=latest_clarification,
+        editing_event_id=editing_event_id,
+    )
+    system_prompt = PromptBuilder.build_conversation_orchestrator_prompt(
         user_name=user.name,
+        user_city=user.city or "",
         user_interests=user.interests or [],
         user_bio=user.bio or "",
+        birth_date=user.birth_date.isoformat() if user.birth_date else None,
         memories=[(m.type, m.content) for m in memories],
-        user_city=user.city or "",
+        conversation_state=conversation_state,
     )
-
-    # 4. 构建完整消息列表（system + history + 当前消息）
     messages = [{"role": "system", "content": system_prompt}]
     messages.extend(history)
     messages.append({"role": "user", "content": req.message})
 
-    # 5. 调用 LLM
-    reply = await llm_service.chat(messages)
-    logger.info(f"LLM reply for user {user_id}: {reply[:200]}")
+    payload = await llm_service.chat_json(messages, temperature=0.3, max_tokens=2048)
+    decision = normalize_conversation_payload(payload)
+    logger.info(f"Conversation decision for user {user_id}: {decision.get('action')}")
 
-    # 6. 检测 [EVENT_DRAFT] 和 [EVENT_READY]
-    import re
-    import json as json_lib
-
-    event_ready = "[EVENT_READY]" in reply
-    clean_reply = reply.replace("[EVENT_READY]", "").strip()
-
-    # 解析 [EVENT_DRAFT]{...}[/EVENT_DRAFT]，存入 Redis
-    draft_pending = False
-    draft_match = re.search(r'\[EVENT_DRAFT\](.*?)\[/EVENT_DRAFT\]', clean_reply, re.DOTALL)
-    if draft_match:
-        draft_json_str = draft_match.group(1).strip()
-        clean_reply = re.sub(r'\[EVENT_DRAFT\].*?\[/EVENT_DRAFT\]', '', clean_reply, flags=re.DOTALL).strip()
-        try:
-            draft_data = json_lib.loads(draft_json_str)
-            await ChatHistoryCache.set_event_draft(uid_str, draft_data)
-            draft_pending = True
-            logger.info(f"Stored event draft for user {user_id}: {draft_data.get('title')}")
-        except json_lib.JSONDecodeError:
-            logger.warning(f"Failed to parse EVENT_DRAFT JSON: {draft_json_str}")
-
-    # 7. 持久化对话历史到 Redis 和 DB
-    await ChatHistoryCache.append_message(uid_str, "user", req.message)
-    await ChatHistoryCache.append_message(uid_str, "assistant", clean_reply)
-
-    # DB 持久化
-    db.add(AgentChatMessage(user_id=user_id, role="user", content=req.message))
-    db.add(AgentChatMessage(user_id=user_id, role="assistant", content=clean_reply))
-    await db.flush()
-
-    # 8. 后台任务：提取 Memory
-    background_tasks.add_task(
-        _extract_memories_background,
-        user_id=user_id,
-        text=req.message,
-    )
-
-    # 9. 如果 event_ready，从已存储的 draft 创建或更新 Event（不再调 LLM）
-    event_id = None
-    created_new_event = False
-    if event_ready:
-        # 检查是否在编辑模式
-        editing_event_id = await ChatHistoryCache.get_editing_event(uid_str)
-        if editing_event_id:
-            event_id = await _update_event_from_draft(
-                user_id=user_id,
-                uid_str=uid_str,
-                event_id_str=editing_event_id,
-                db=db,
-            )
-            if event_id is None:
-                # 编辑失败（事件不存在/已取消等），清除残留状态，回退到新建
-                await ChatHistoryCache.clear_editing_event(uid_str)
-                event_id = await _create_event_from_draft(
-                    user_id=user_id,
-                    uid_str=uid_str,
-                    user_city=user.city,
-                    db=db,
-                )
-                created_new_event = event_id is not None
-        else:
-            event_id = await _create_event_from_draft(
-                user_id=user_id,
-                uid_str=uid_str,
-                user_city=user.city,
-                db=db,
-            )
-            created_new_event = event_id is not None
-
-    if created_new_event and event_id is not None:
-        schedule_event_matching(background_tasks, event_id)
-
-    return AgentChatResponse(
-        reply=clean_reply,
-        event_ready=event_ready,
-        event_id=event_id,
-        event_draft_pending=draft_pending,
+    return await _apply_conversation_decision(
+        user=user,
+        uid_str=uid_str,
+        message=req.message,
+        decision=decision,
+        pending_clarification=latest_clarification,
+        db=db,
     )
 
 
@@ -290,38 +215,6 @@ async def get_pending_clarification(
 
 # ── 后台任务 ──
 
-async def _try_answer_pending_clarification_with_free_text(
-    *,
-    user: User,
-    uid_str: str,
-    message: str,
-    background_tasks: BackgroundTasks,
-    db: AsyncSession,
-) -> AgentChatResponse | None:
-    free_text = (message or "").strip()
-    if not free_text:
-        return None
-
-    latest = await ChatHistoryCache.get_latest_clarification_session(uid_str)
-    if not latest:
-        return None
-
-    session_id = str(latest.get("session_id") or "")
-    if not session_id:
-        return None
-
-    return await _complete_clarification_session(
-        user=user,
-        uid_str=uid_str,
-        session_id=session_id,
-        session=latest,
-        answers=[],
-        free_text=free_text,
-        background_tasks=background_tasks,
-        db=db,
-    )
-
-
 async def _complete_clarification_session(
     *,
     user: User,
@@ -352,73 +245,137 @@ async def _complete_clarification_session(
     db.add(AgentChatMessage(user_id=user.id, role="assistant", content=reply))
     await db.flush()
 
-    if free_text:
-        background_tasks.add_task(
-            _extract_memories_background,
-            user_id=user.id,
-            text=free_text,
-        )
-
     return AgentChatResponse(
         reply=reply,
         event_draft_pending=True,
     )
 
-async def _try_build_clarification_response(
+
+def _build_conversation_state(
+    *,
+    existing_draft: dict | None,
+    pending_clarification: dict | None,
+    editing_event_id: str | None,
+) -> str:
+    import json as json_lib
+
+    parts = []
+    if editing_event_id:
+        parts.append(f"正在编辑活动，event_id={editing_event_id}")
+    if existing_draft:
+        parts.append("当前已有待确认活动草稿：")
+        parts.append(json_lib.dumps(existing_draft, ensure_ascii=False))
+    if pending_clarification:
+        state = {
+            "reply": pending_clarification.get("reply"),
+            "draft": pending_clarification.get("draft") or {},
+            "questions": pending_clarification.get("questions") or [],
+        }
+        parts.append("当前有待回答的澄清卡片：")
+        parts.append(json_lib.dumps(state, ensure_ascii=False))
+    return "\n".join(parts) if parts else "无待处理状态"
+
+
+async def _persist_agent_exchange(
+    *,
+    user_id: UUID,
+    uid_str: str,
+    user_message: str,
+    assistant_reply: str,
+    db: AsyncSession,
+) -> None:
+    await ChatHistoryCache.append_message(uid_str, "user", user_message)
+    await ChatHistoryCache.append_message(uid_str, "assistant", assistant_reply)
+    db.add(AgentChatMessage(user_id=user_id, role="user", content=user_message))
+    db.add(AgentChatMessage(user_id=user_id, role="assistant", content=assistant_reply))
+    await db.flush()
+
+
+async def _clear_pending_clarification_if_any(uid_str: str, pending_clarification: dict | None) -> None:
+    session_id = str((pending_clarification or {}).get("session_id") or "")
+    if session_id:
+        await ChatHistoryCache.clear_clarification_session(uid_str, session_id)
+
+
+async def _apply_conversation_decision(
     *,
     user: User,
     uid_str: str,
     message: str,
-    background_tasks: BackgroundTasks,
+    decision: dict,
+    pending_clarification: dict | None,
     db: AsyncSession,
-) -> AgentChatResponse | None:
-    """让 LLM 先生成结构化澄清卡片；没有问题时回退到普通聊天。"""
-    prompt = PromptBuilder.build_clarification_questions_prompt(
-        user_name=user.name,
-        user_city=user.city or "",
-        user_interests=user.interests or [],
-        birth_date=user.birth_date.isoformat() if user.birth_date else None,
-    )
-    payload = await llm_service.chat_json([
-        {"role": "system", "content": prompt},
-        {"role": "user", "content": message},
-    ])
-    normalized = normalize_clarification_payload(payload)
-    questions = normalized.get("questions") or []
-    if not questions:
-        return None
+) -> AgentChatResponse:
+    action = decision.get("action") or "chat"
+    reply = decision.get("reply") or "我在，你再跟我说说。"
+    draft = decision.get("draft") or {}
+    questions = decision.get("questions") or []
 
-    session_id = str(uuid4())
-    reply = normalized.get("reply") or "我先帮你确认几个会影响匹配的小问题。"
-    await ChatHistoryCache.set_clarification_session(
-        uid_str,
-        session_id,
-        {
-            "reply": reply,
-            "original_message": message,
-            "draft": normalized.get("draft") or {},
-            "questions": questions,
-        },
-    )
+    if action == "cancel":
+        await _clear_pending_clarification_if_any(uid_str, pending_clarification)
+        await ChatHistoryCache.clear_event_draft(uid_str)
+        await ChatHistoryCache.clear_editing_event(uid_str)
+        await _persist_agent_exchange(
+            user_id=user.id,
+            uid_str=uid_str,
+            user_message=message,
+            assistant_reply=reply,
+            db=db,
+        )
+        return AgentChatResponse(reply=reply)
 
-    await ChatHistoryCache.append_message(uid_str, "user", message)
-    await ChatHistoryCache.append_message(uid_str, "assistant", reply)
-    db.add(AgentChatMessage(user_id=user.id, role="user", content=message))
-    db.add(AgentChatMessage(user_id=user.id, role="assistant", content=reply))
-    await db.flush()
+    if action == "clarify" and questions:
+        await _clear_pending_clarification_if_any(uid_str, pending_clarification)
+        session_id = str(uuid4())
+        await ChatHistoryCache.set_clarification_session(
+            uid_str,
+            session_id,
+            {
+                "reply": reply,
+                "original_message": message,
+                "draft": draft,
+                "questions": questions,
+            },
+        )
+        await _persist_agent_exchange(
+            user_id=user.id,
+            uid_str=uid_str,
+            user_message=message,
+            assistant_reply=reply,
+            db=db,
+        )
+        return AgentChatResponse(
+            reply=reply,
+            clarification_pending=True,
+            clarification_session_id=session_id,
+            clarification_questions=questions,
+        )
 
-    background_tasks.add_task(
-        _extract_memories_background,
+    if action == "draft" and draft:
+        await _clear_pending_clarification_if_any(uid_str, pending_clarification)
+        await ChatHistoryCache.set_event_draft(uid_str, draft)
+        if not decision.get("reply"):
+            reply = _draft_confirmation_reply(draft)
+        await _persist_agent_exchange(
+            user_id=user.id,
+            uid_str=uid_str,
+            user_message=message,
+            assistant_reply=reply,
+            db=db,
+        )
+        return AgentChatResponse(
+            reply=reply,
+            event_draft_pending=True,
+        )
+
+    await _persist_agent_exchange(
         user_id=user.id,
-        text=message,
+        uid_str=uid_str,
+        user_message=message,
+        assistant_reply=reply,
+        db=db,
     )
-
-    return AgentChatResponse(
-        reply=reply,
-        clarification_pending=True,
-        clarification_session_id=session_id,
-        clarification_questions=questions,
-    )
+    return AgentChatResponse(reply=reply)
 
 
 def _looks_like_confirmation(message: str) -> bool:
@@ -430,6 +387,85 @@ def _looks_like_confirmation(message: str) -> bool:
         return True
     confirmation_phrases = ("确认发布", "帮我发布", "发吧", "就这样", "没问题，发布")
     return any(phrase in text for phrase in confirmation_phrases)
+
+
+def _can_publish_existing_draft_without_llm(draft: dict | None, message: str) -> bool:
+    return bool(draft) and _looks_like_confirmation(message)
+
+
+def _build_memory_source_after_publish(*, user_message: str, draft: dict) -> str:
+    title = draft.get("title") or draft.get("activity_type") or "未命名活动"
+    activity_type = draft.get("activity_type") or "未填写"
+    place = " / ".join([item for item in [draft.get("city"), draft.get("location")] if item]) or "未填写"
+    preferences = draft.get("preferences") if isinstance(draft.get("preferences"), list) else []
+    constraints = draft.get("constraints") if isinstance(draft.get("constraints"), list) else []
+    lines = [
+        "用户发布了一次活动，请只提取长期稳定偏好，不要把一次性安排当作长期记忆。",
+        f"用户最后确认消息：{(user_message or '').strip()}",
+        f"活动标题：{title}",
+        f"活动类型：{activity_type}",
+        f"地点：{place}",
+        f"偏好：{'、'.join(preferences) if preferences else '无'}",
+        f"限制：{'、'.join(constraints) if constraints else '无'}",
+    ]
+    return "\n".join(lines)
+
+
+async def _publish_existing_draft_without_llm(
+    *,
+    user: User,
+    uid_str: str,
+    message: str,
+    editing_event_id: str | None,
+    user_city: str | None,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession,
+) -> AgentChatResponse | None:
+    reply = "好，我帮你发布找搭子。"
+    draft = await ChatHistoryCache.get_event_draft(uid_str) or {}
+    await ChatHistoryCache.append_message(uid_str, "user", message)
+    await ChatHistoryCache.append_message(uid_str, "assistant", reply)
+    db.add(AgentChatMessage(user_id=user.id, role="user", content=message))
+    db.add(AgentChatMessage(user_id=user.id, role="assistant", content=reply))
+    await db.flush()
+
+    created_new_event = False
+    if editing_event_id:
+        event_id = await _update_event_from_draft(
+            user_id=user.id,
+            uid_str=uid_str,
+            event_id_str=editing_event_id,
+            db=db,
+        )
+    else:
+        event_id = await _create_event_from_draft(
+            user_id=user.id,
+            uid_str=uid_str,
+            user_city=user_city,
+            db=db,
+        )
+        created_new_event = event_id is not None
+
+    if event_id is None:
+        return AgentChatResponse(reply="发布时出了点问题，请稍后再试。")
+
+    if created_new_event:
+        schedule_event_matching(background_tasks, event_id)
+        if draft:
+            background_tasks.add_task(
+                _extract_memories_background,
+                user_id=user.id,
+                text=_build_memory_source_after_publish(
+                    user_message=message,
+                    draft=draft,
+                ),
+            )
+
+    return AgentChatResponse(
+        reply=reply,
+        event_ready=True,
+        event_id=event_id,
+    )
 
 
 def _clarification_answers_to_text(
@@ -500,6 +536,30 @@ def _draft_confirmation_reply(draft: dict) -> str:
         parts.append(f"限制：{'、'.join(constraints[:4])}")
     return "；".join(parts) + "。确认的话，我就帮你发布找搭子。"
 
+
+def _editing_event_intro_reply(
+    *,
+    title: str,
+    activity_type: str | None,
+    start_time_text: str,
+    place_text: str,
+    preferences: list[str],
+    constraints: list[str],
+) -> str:
+    parts = [f"当前活动是：{title}"]
+    if activity_type:
+        parts.append(f"类型是 {activity_type}")
+    if start_time_text:
+        parts.append(f"时间是 {start_time_text}")
+    if place_text:
+        parts.append(f"地点是 {place_text}")
+    if preferences:
+        parts.append(f"偏好：{'、'.join(preferences[:4])}")
+    if constraints:
+        parts.append(f"限制：{'、'.join(constraints[:4])}")
+    return "；".join(parts) + "。直接告诉我你想改哪里，我会重新整理一版给你确认。"
+
+
 async def _extract_memories_background(user_id: UUID, text: str):
     """后台提取用户 Memory"""
     from app.core.database import async_session
@@ -558,26 +618,12 @@ async def _create_event_from_draft(
     user_city: str | None,
     db: AsyncSession,
 ) -> UUID | None:
-    """从 Redis 中存储的 EVENT_DRAFT 创建 Event，无 draft 时兜底从对话提取"""
+    """从 Redis 中存储的 event draft 创建 Event。"""
     try:
         draft = await ChatHistoryCache.get_event_draft(uid_str)
         if not draft:
-            # 兜底：LLM 跳过了 EVENT_DRAFT，从对话历史提取事件信息
-            logger.info(f"No draft for user {user_id}, extracting from conversation")
-            history = await ChatHistoryCache.get_history(uid_str)
-            if history:
-                conv_text = "\n".join(
-                    f"{m['role']}: {m['content']}" for m in history[-10:]
-                )
-                extract_messages = [
-                    {"role": "system", "content": PromptBuilder.build_event_extraction_prompt()},
-                    {"role": "user", "content": conv_text},
-                ]
-                draft = await llm_service.chat_json(extract_messages)
-            if not draft:
-                logger.warning(f"Failed to extract event from conversation for user {user_id}")
-                return None
-            logger.info(f"Extracted event from conversation for user {user_id}: {draft.get('title')}")
+            logger.warning(f"No event draft found for user {user_id}, skipping event creation")
+            return None
 
         city_value = draft.get("city")
         event = Event(
@@ -717,7 +763,7 @@ async def start_edit_event(
     发起编辑事件：将事件信息加载到对话上下文，进入编辑模式。
 
     Agent 会展示当前事件信息，用户可以告知需要修改的部分，
-    确认后通过 EVENT_DRAFT + EVENT_READY 流程更新事件。
+    确认后通过主对话编排草稿和确认按钮更新事件。
     """
     # 1. 检查事件存在且属于当前用户
     result = await db.execute(
@@ -729,86 +775,53 @@ async def start_edit_event(
     if event.status != "pending":
         raise HTTPException(status_code=400, detail=f"活动状态为 {event.status}，只有待匹配的活动可以编辑")
 
-    # 2. 加载用户和 Agent
+    # 2. 加载用户
     user_result = await db.execute(select(User).where(User.id == user_id))
     user = user_result.scalar_one_or_none()
-    agent_result = await db.execute(select(Agent).where(Agent.user_id == user_id))
-    agent = agent_result.scalar_one_or_none()
-    if not user or not agent:
-        raise HTTPException(status_code=404, detail="用户或 Agent 不存在")
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
 
-    memories_result = await db.execute(
-        select(AgentMemory)
-        .where(AgentMemory.user_id == user_id, AgentMemory.is_active == True)
-    )
-    memories = memories_result.scalars().all()
-
-    # 3. 在 Redis 中标记编辑状态
+    # 3. 在 Redis 中标记编辑状态，并保存当前活动草稿作为后续修改基础
     uid_str = str(user_id)
     await ChatHistoryCache.set_editing_event(uid_str, str(event_id))
+    current_draft = {
+        "title": event.title,
+        "activity_type": event.activity_type,
+        "city": event.city,
+        "location": event.location,
+        "start_time": event.start_time.isoformat() if event.start_time else None,
+        "end_time": event.end_time.isoformat() if event.end_time else None,
+        "preferences": event.preferences or [],
+        "constraints": event.constraints or [],
+        "clarification_answers": event.clarification_answers,
+        "age_filter_min": event.age_filter_min,
+        "age_filter_max": event.age_filter_max,
+        "age_filter_mode": event.age_filter_mode,
+    }
+    await ChatHistoryCache.set_event_draft(uid_str, current_draft)
 
-    # 4. 构建带编辑上下文的消息
-    edit_context = f"""用户想要修改已发布的活动。请展示当前活动信息并询问要修改什么。
-
-当前活动信息：
-- 标题：{event.title}
-- 类型：{event.activity_type}
-- 时间：{event.start_time.strftime('%Y年%m月%d日 %H:%M') if event.start_time else '未设'}
-- 地点：{event.location or '未设'}
-- 偏好：{', '.join(event.preferences) if event.preferences else '无'}
-- 限制：{', '.join(event.constraints) if event.constraints else '无'}
-
-请用自然的方式告诉用户当前活动信息，然后问他想修改哪些部分。
-用户修改确认后，使用和创建时一样的 [EVENT_DRAFT] + [EVENT_READY] 流程来提交修改。"""
-
-    # 5. 构建 system prompt + 发消息给 LLM
-    system_prompt = PromptBuilder.build_agent_chat_prompt(
-        agent_name=agent.name,
-        agent_personality=agent.personality or "",
-        user_name=user.name,
-        user_interests=user.interests or [],
-        user_bio=user.bio or "",
-        memories=[(m.type, m.content) for m in memories],
-        user_city=user.city or "",
+    place_text = " / ".join([item for item in [event.city, event.location] if item]) or "未设"
+    reply = _editing_event_intro_reply(
+        title=event.title,
+        activity_type=event.activity_type,
+        start_time_text=event.start_time.strftime("%Y年%m月%d日 %H:%M") if event.start_time else "未设",
+        place_text=place_text,
+        preferences=event.preferences or [],
+        constraints=event.constraints or [],
     )
+    user_context = f"我要修改活动：{event.title}"
 
-    history = await ChatHistoryCache.get_history(uid_str)
-    messages = [{"role": "system", "content": system_prompt}]
-    messages.extend(history)
-    messages.append({"role": "user", "content": edit_context})
+    # 4. 持久化干净的编辑入口消息，后续 /chat 使用主编排 prompt 接管
+    await ChatHistoryCache.append_message(uid_str, "user", user_context)
+    await ChatHistoryCache.append_message(uid_str, "assistant", reply)
 
-    reply = await llm_service.chat(messages)
-
-    # 解析回复中的 EVENT_DRAFT 和清理标记
-    import re
-    import json as json_lib
-
-    draft_pending = False
-    draft_match = re.search(r'\[EVENT_DRAFT\](.*?)\[/EVENT_DRAFT\]', reply, re.DOTALL)
-    if draft_match:
-        draft_json_str = draft_match.group(1).strip()
-        try:
-            draft_data = json_lib.loads(draft_json_str)
-            await ChatHistoryCache.set_event_draft(uid_str, draft_data)
-            draft_pending = True
-            logger.info(f"Stored edit draft for user {user_id}: {draft_data.get('title')}")
-        except json_lib.JSONDecodeError:
-            logger.warning(f"Failed to parse EVENT_DRAFT JSON in edit: {draft_json_str}")
-
-    clean_reply = reply.replace("[EVENT_READY]", "").strip()
-    clean_reply = re.sub(r'\[EVENT_DRAFT\].*?\[/EVENT_DRAFT\]', '', clean_reply, flags=re.DOTALL).strip()
-
-    # 6. 持久化（存完整 edit_context 以便后续 /chat 调用时 LLM 能看到编辑指令）
-    await ChatHistoryCache.append_message(uid_str, "user", edit_context)
-    await ChatHistoryCache.append_message(uid_str, "assistant", clean_reply)
-
-    db.add(AgentChatMessage(user_id=user_id, role="user", content=edit_context))
-    db.add(AgentChatMessage(user_id=user_id, role="assistant", content=clean_reply))
+    db.add(AgentChatMessage(user_id=user_id, role="user", content=user_context))
+    db.add(AgentChatMessage(user_id=user_id, role="assistant", content=reply))
     await db.flush()
 
     return AgentChatResponse(
-        reply=clean_reply,
+        reply=reply,
         event_ready=False,
         event_id=event_id,
-        event_draft_pending=draft_pending,
+        event_draft_pending=False,
     )

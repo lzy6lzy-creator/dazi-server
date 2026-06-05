@@ -5,6 +5,7 @@ import logging
 import random
 import uuid
 from datetime import datetime, timezone
+from types import SimpleNamespace
 from uuid import UUID
 
 from sqlalchemy import or_, select, text
@@ -16,12 +17,18 @@ from app.models.event import Event
 from app.models.user import Agent, User
 from app.services.location_policy import is_location_compatible
 from app.services.match_blocklist_service import add_match_blocklist
+from app.services.matching_policy import is_age_filter_compatible
 
 logger = logging.getLogger(__name__)
 
 PASSIVE_MATCH_THRESHOLD = 2
 CANDIDATE_TOP_K = 10
 PASSIVE_VECTOR_THRESHOLD = 0.3
+NO_AGE_FILTER_EVENT = SimpleNamespace(
+    age_filter_min=None,
+    age_filter_max=None,
+    age_filter_mode=None,
+)
 
 
 class PassiveMatchingService:
@@ -68,8 +75,8 @@ class PassiveMatchingService:
             "embedding": event.embedding,
         }
 
-        query = text(f"""
-            SELECT u.id, u.name, u.city, u.embedding <=> :embedding AS distance
+        query = text("""
+            SELECT u.id, u.name, u.city, u.birth_date, u.embedding <=> :embedding AS distance
             FROM users u
             WHERE u.id != :event_user_id
               AND u.is_active = TRUE
@@ -96,21 +103,34 @@ class PassiveMatchingService:
         params["limit"] = CANDIDATE_TOP_K
 
         result = await db.execute(query, params)
-        candidates = [
-            row for row in result.all()
-            if 1.0 - row[3] >= PASSIVE_VECTOR_THRESHOLD
-            and is_location_compatible(
+        candidates = []
+        today = datetime.now(timezone.utc).date()
+        for row in result.all():
+            similarity = 1.0 - row[4]
+            if similarity < PASSIVE_VECTOR_THRESHOLD:
+                continue
+            if not is_location_compatible(
                 event,
                 {"activity_type": event.activity_type, "city": row[2], "location": row[2]},
-            ).should_pass
-        ]
+            ).should_pass:
+                continue
+            age_decision = is_age_filter_compatible(
+                source_event=event,
+                source_birth_date=None,
+                candidate_event=NO_AGE_FILTER_EVENT,
+                candidate_birth_date=row[3],
+                today=today,
+            )
+            if not age_decision.should_pass:
+                continue
+            candidates.append(row)
         if not candidates:
             logger.info(f"No passive candidates for event {event.id}")
             return False
 
         chosen = random.choice(candidates)
         chosen_user_id = chosen[0]
-        similarity = 1.0 - chosen[3]
+        similarity = 1.0 - chosen[4]
         target_name = chosen[1]
 
         requester_r = await db.execute(select(User).where(User.id == event.user_id))

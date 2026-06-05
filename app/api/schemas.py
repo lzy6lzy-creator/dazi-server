@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel
 
@@ -34,6 +34,7 @@ class UserCreate(BaseModel):
     phone: Optional[str] = None
     gender: Optional[str] = None
     birth_year: Optional[int] = None
+    birth_date: Optional[date] = None
     bio: Optional[str] = None
     interests: Optional[list[str]] = None
     city: Optional[str] = None
@@ -43,6 +44,7 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     gender: Optional[str] = None
     birth_year: Optional[int] = None
+    birth_date: Optional[date] = None
     bio: Optional[str] = None
     interests: Optional[list[str]] = None
     city: Optional[str] = None
@@ -57,6 +59,7 @@ class UserResponse(BaseModel):
     phone: Optional[str] = None
     gender: Optional[str] = None
     birth_year: Optional[int] = None
+    birth_date: Optional[date] = None
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
     interests: Optional[list[str]] = None
@@ -94,11 +97,44 @@ class AgentChatRequest(BaseModel):
     message: str
 
 
+class ClarificationOption(BaseModel):
+    id: str
+    label: str
+    value: Optional[Any] = None
+
+
+class ClarificationQuestion(BaseModel):
+    id: str
+    type: str = "single_choice"
+    title: str
+    helper_text: Optional[str] = None
+    category: Optional[str] = None
+    required: bool = False
+    allow_custom: bool = True
+    match_filter: Optional[str] = None
+    options: list[ClarificationOption] = []
+
+
+class ClarificationAnswer(BaseModel):
+    question_id: str
+    option_ids: Optional[list[str]] = None
+    custom_value: Optional[Any] = None
+
+
+class ClarificationAnswerRequest(BaseModel):
+    clarification_session_id: str
+    answers: list[ClarificationAnswer] = []
+    free_text: Optional[str] = None
+
+
 class AgentChatResponse(BaseModel):
     reply: str
     event_ready: bool = False
     event_id: Optional[UUID] = None
     event_draft_pending: bool = False
+    clarification_pending: bool = False
+    clarification_session_id: Optional[str] = None
+    clarification_questions: list[ClarificationQuestion] = []
 
 
 # ── Agent Memory ──
@@ -125,6 +161,10 @@ class EventCreate(BaseModel):
     location: Optional[str] = None
     preferences: Optional[list[str]] = None
     constraints: Optional[list[str]] = None
+    clarification_answers: Optional[list[dict[str, Any]]] = None
+    age_filter_min: Optional[int] = None
+    age_filter_max: Optional[int] = None
+    age_filter_mode: Optional[str] = None
 
 
 class EventUpdate(BaseModel):
@@ -136,6 +176,10 @@ class EventUpdate(BaseModel):
     city: Optional[str] = None
     preferences: Optional[list[str]] = None
     constraints: Optional[list[str]] = None
+    clarification_answers: Optional[list[dict[str, Any]]] = None
+    age_filter_min: Optional[int] = None
+    age_filter_max: Optional[int] = None
+    age_filter_mode: Optional[str] = None
 
 
 class EventResponse(BaseModel):
@@ -149,6 +193,10 @@ class EventResponse(BaseModel):
     city: Optional[str] = None
     preferences: Optional[list[str]] = None
     constraints: Optional[list[str]] = None
+    clarification_answers: Optional[list[dict[str, Any]]] = None
+    age_filter_min: Optional[int] = None
+    age_filter_max: Optional[int] = None
+    age_filter_mode: Optional[str] = None
     status: str
     match_score: Optional[float] = None
     created_at: datetime

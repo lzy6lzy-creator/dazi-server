@@ -5,6 +5,7 @@ from datetime import date
 
 from app.services.clarification_service import (
     merge_clarification_answers,
+    normalize_conversation_payload,
     normalize_clarification_payload,
 )
 
@@ -88,6 +89,26 @@ class ClarificationServiceTests(unittest.TestCase):
         self.assertEqual(merged["constraints"], [])
         self.assertEqual(merged["clarification_answers"], [])
 
+    def test_merge_generic_answer_prefers_string_option_value_for_draft_text(self):
+        merged = merge_clarification_answers(
+            draft={"title": "网球", "preferences": [], "constraints": []},
+            questions=[
+                {
+                    "id": "cost",
+                    "type": "single_choice",
+                    "match_filter": "preference",
+                    "options": [
+                        {"id": "aa", "label": "AA 平摊", "value": "场地费 AA"},
+                    ],
+                }
+            ],
+            answers=[{"question_id": "cost", "option_ids": ["aa"]}],
+            user_birth_date=None,
+            today=date(2026, 6, 4),
+        )
+
+        self.assertEqual(merged["preferences"], ["场地费 AA"])
+
     def test_merge_age_answer_unlimited_does_not_store_filter(self):
         draft = {"title": "看电影", "preferences": [], "constraints": []}
         questions = [
@@ -153,6 +174,47 @@ class ClarificationServiceTests(unittest.TestCase):
         self.assertEqual(merged["age_filter_max"], 32)
         self.assertEqual(merged["age_filter_mode"], "preference")
         self.assertIn("年龄偏好 23-32 岁", merged["preferences"])
+
+    def test_normalize_conversation_payload_preserves_draft_and_questions(self):
+        payload = {
+            "action": "clarify",
+            "reply": "我先确认两个点。",
+            "draft": {
+                "title": "今晚火锅",
+                "activity_type": "火锅",
+                "city": "上海",
+                "start_time": "2026-06-05T19:00:00",
+                "end_time": "2026-06-05T21:00:00",
+                "preferences": ["实惠"],
+                "constraints": ["不吃辣"],
+            },
+            "questions": [
+                {
+                    "id": "budget",
+                    "type": "single_choice",
+                    "title": "人均预算？",
+                    "options": [
+                        {"id": "low", "label": "50-80", "value": "50-80"},
+                    ],
+                }
+            ],
+        }
+
+        result = normalize_conversation_payload(payload)
+
+        self.assertEqual(result["action"], "clarify")
+        self.assertEqual(result["reply"], "我先确认两个点。")
+        self.assertEqual(result["draft"]["start_time"], "2026-06-05T19:00:00")
+        self.assertEqual(result["draft"]["constraints"], ["不吃辣"])
+        self.assertEqual(result["questions"][0]["id"], "budget")
+
+    def test_normalize_conversation_payload_defaults_unknown_action_to_chat(self):
+        result = normalize_conversation_payload({"action": "publish_now", "reply": "先聊聊"})
+
+        self.assertEqual(result["action"], "chat")
+        self.assertEqual(result["reply"], "先聊聊")
+        self.assertEqual(result["draft"], {})
+        self.assertEqual(result["questions"], [])
 
 
 if __name__ == "__main__":

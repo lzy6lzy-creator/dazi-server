@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date
 from datetime import datetime, timezone
 
-from sqlalchemy import String, Integer, Float, Boolean, Text, ARRAY, TIMESTAMP, ForeignKey
+from sqlalchemy import String, Integer, Float, Boolean, Text, ARRAY, TIMESTAMP, ForeignKey, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import Vector
@@ -19,6 +20,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     gender: Mapped[str | None] = mapped_column(String(10))
     birth_year: Mapped[int | None] = mapped_column(Integer)
+    birth_date: Mapped[date | None] = mapped_column(Date)
     bio: Mapped[str | None] = mapped_column(Text)
     avatar_url: Mapped[str | None] = mapped_column(Text)
     interests: Mapped[list[str] | None] = mapped_column(ARRAY(String), default=list)

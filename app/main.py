@@ -65,6 +65,7 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.run_sync(Base.metadata.create_all)
+        await _ensure_runtime_schema(conn)
     logging.info("Database tables created.")
 
     # 从 DB 加载 prompt 覆盖到内存
@@ -91,6 +92,19 @@ async def lifespan(app: FastAPI):
     await close_redis()
     await engine.dispose()
     logging.info("Resources cleaned up.")
+
+
+async def _ensure_runtime_schema(conn) -> None:
+    """Backfill additive columns for existing databases.
+
+    The project currently creates tables at startup instead of running Alembic
+    revisions, so additive schema changes need a lightweight runtime guard.
+    """
+    await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS birth_date DATE"))
+    await conn.execute(text("ALTER TABLE events ADD COLUMN IF NOT EXISTS clarification_answers JSONB"))
+    await conn.execute(text("ALTER TABLE events ADD COLUMN IF NOT EXISTS age_filter_min INTEGER"))
+    await conn.execute(text("ALTER TABLE events ADD COLUMN IF NOT EXISTS age_filter_max INTEGER"))
+    await conn.execute(text("ALTER TABLE events ADD COLUMN IF NOT EXISTS age_filter_mode VARCHAR(20)"))
 
 
 app = FastAPI(

@@ -6,7 +6,7 @@ Keep this module free of database and network calls so the matching rules are
 easy to test and reuse from the service layer.
 """
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
 VECTOR_MATCH_THRESHOLD = 0.55
@@ -31,6 +31,12 @@ class A2AEvaluation:
     reasons: list[str] = field(default_factory=list)
     issues: list[str] = field(default_factory=list)
     dialogue_log: str | None = None
+
+
+@dataclass(frozen=True)
+class AgeFilterDecision:
+    should_pass: bool
+    issues: list[str] = field(default_factory=list)
 
 
 def canonical_pair_id(id_a: UUID, id_b: UUID) -> tuple[UUID, UUID]:
@@ -62,6 +68,84 @@ def has_time_overlap(source, candidate) -> bool:
     if not (source.start_time and source.end_time and candidate.start_time and candidate.end_time):
         return True
     return not (source.end_time < candidate.start_time or candidate.end_time < source.start_time)
+
+
+def age_on_date(birth_date: date, today: date) -> int:
+    age = today.year - birth_date.year
+    if (today.month, today.day) < (birth_date.month, birth_date.day):
+        age -= 1
+    return age
+
+
+def is_age_filter_compatible(
+    *,
+    source_event,
+    source_birth_date: date | None,
+    candidate_event,
+    candidate_birth_date: date | None,
+    today: date,
+) -> AgeFilterDecision:
+    """Check both events' age filters without hard rejecting unknown ages."""
+    issues: list[str] = []
+
+    source_decision = _check_one_age_filter(
+        event=source_event,
+        target_birth_date=candidate_birth_date,
+        today=today,
+        target_label="候选",
+    )
+    if not source_decision.should_pass:
+        return source_decision
+    issues.extend(source_decision.issues)
+
+    candidate_decision = _check_one_age_filter(
+        event=candidate_event,
+        target_birth_date=source_birth_date,
+        today=today,
+        target_label="发起方",
+    )
+    if not candidate_decision.should_pass:
+        return candidate_decision
+    issues.extend(candidate_decision.issues)
+
+    return AgeFilterDecision(should_pass=True, issues=issues)
+
+
+def _check_one_age_filter(
+    *,
+    event,
+    target_birth_date: date | None,
+    today: date,
+    target_label: str,
+) -> AgeFilterDecision:
+    min_age = getattr(event, "age_filter_min", None)
+    max_age = getattr(event, "age_filter_max", None)
+    mode = getattr(event, "age_filter_mode", None)
+    if min_age is None or max_age is None or mode not in {"hard_filter", "preference"}:
+        return AgeFilterDecision(should_pass=True, issues=[])
+
+    if target_birth_date is None:
+        if mode == "hard_filter":
+            return AgeFilterDecision(
+                should_pass=True,
+                issues=[f"{target_label}未填写出生日期，无法验证年龄范围 {min_age}-{max_age} 岁"],
+            )
+        return AgeFilterDecision(should_pass=True, issues=[])
+
+    target_age = age_on_date(target_birth_date, today)
+    in_range = min_age <= target_age <= max_age
+    if in_range:
+        return AgeFilterDecision(should_pass=True, issues=[])
+
+    if mode == "hard_filter":
+        return AgeFilterDecision(
+            should_pass=False,
+            issues=[f"{target_label}年龄 {target_age} 不在要求范围 {min_age}-{max_age} 岁"],
+        )
+    return AgeFilterDecision(
+        should_pass=True,
+        issues=[f"{target_label}年龄 {target_age} 不符合偏好范围 {min_age}-{max_age} 岁"],
+    )
 
 
 def build_candidate_windows(
