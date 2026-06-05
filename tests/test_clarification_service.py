@@ -70,10 +70,28 @@ class ClarificationServiceTests(unittest.TestCase):
         })
 
         self.assertEqual(result["draft"], {
-            "city": "上海",
+            "location": "上海",
             "preferences": ["街拍", "胶片"],
             "constraints": [],
         })
+
+    def test_normalize_conversation_payload_uses_location_as_single_place_slot(self):
+        result = normalize_conversation_payload({
+            "action": "draft",
+            "reply": "整理好了。",
+            "draft": {
+                "title": "周六电影",
+                "activity_type": "看电影",
+                "city": "上海",
+                "location": "",
+                "preferences": ["周六下午"],
+                "constraints": ["上海"],
+            },
+        })
+
+        self.assertEqual(result["draft"]["location"], "上海")
+        self.assertNotIn("city", result["draft"])
+        self.assertEqual(result["draft"]["constraints"], [])
 
     def test_merge_free_text_only_answer_into_preferences(self):
         merged = merge_clarification_answers(
@@ -108,6 +126,52 @@ class ClarificationServiceTests(unittest.TestCase):
         )
 
         self.assertEqual(merged["preferences"], ["场地费 AA"])
+
+    def test_merge_location_question_writes_location_not_constraints(self):
+        merged = merge_clarification_answers(
+            draft={"title": "看电影", "preferences": [], "constraints": []},
+            questions=[
+                {
+                    "id": "city",
+                    "type": "single_choice",
+                    "category": "地点",
+                    "match_filter": "hard_filter",
+                    "options": [
+                        {"id": "shanghai", "label": "上海", "value": "上海"},
+                    ],
+                }
+            ],
+            answers=[{"question_id": "city", "option_ids": ["shanghai"]}],
+            user_birth_date=None,
+            today=date(2026, 6, 5),
+        )
+
+        self.assertEqual(merged["location"], "上海")
+        self.assertEqual(merged["preferences"], [])
+        self.assertEqual(merged["constraints"], [])
+
+    def test_merge_area_custom_answer_writes_location(self):
+        merged = merge_clarification_answers(
+            draft={"title": "看电影", "preferences": [], "constraints": []},
+            questions=[
+                {
+                    "id": "area",
+                    "type": "single_choice",
+                    "category": "地点",
+                    "match_filter": "preference",
+                    "options": [
+                        {"id": "xuhui", "label": "徐汇", "value": "徐汇"},
+                    ],
+                }
+            ],
+            answers=[{"question_id": "area", "custom_value": "徐汇/静安"}],
+            user_birth_date=None,
+            today=date(2026, 6, 5),
+        )
+
+        self.assertEqual(merged["location"], "徐汇/静安")
+        self.assertEqual(merged["preferences"], [])
+        self.assertEqual(merged["constraints"], [])
 
     def test_merge_age_answer_unlimited_does_not_store_filter(self):
         draft = {"title": "看电影", "preferences": [], "constraints": []}
@@ -204,6 +268,8 @@ class ClarificationServiceTests(unittest.TestCase):
 
         self.assertEqual(result["action"], "clarify")
         self.assertEqual(result["reply"], "我先确认两个点。")
+        self.assertEqual(result["draft"]["location"], "上海")
+        self.assertNotIn("city", result["draft"])
         self.assertEqual(result["draft"]["start_time"], "2026-06-05T19:00:00")
         self.assertEqual(result["draft"]["constraints"], ["不吃辣"])
         self.assertEqual(result["questions"][0]["id"], "budget")

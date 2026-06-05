@@ -18,6 +18,7 @@ class PromptBuilderTests(unittest.TestCase):
         prompt = PromptBuilder.build_conversation_orchestrator_prompt(
             user_name="小明",
             user_city="上海",
+            current_location="上海 徐汇区",
             user_interests=["火锅"],
             user_bio="",
             birth_date=None,
@@ -26,15 +27,18 @@ class PromptBuilderTests(unittest.TestCase):
         )
 
         self.assertIn("chat|clarify|draft|cancel", prompt)
+        self.assertIn("## 当前时间", prompt)
         self.assertIn("当前已有待确认活动草稿", prompt)
+        self.assertIn("当前位置：上海 徐汇区", prompt)
         self.assertIn("不吃辣", prompt)
+        self.assertNotIn('"city"', prompt)
         self.assertNotIn("[EVENT_DRAFT]", prompt)
         self.assertNotIn("[EVENT_READY]", prompt)
 
-    def test_conversation_orchestrator_prompt_matches_kimi_gate_rules(self):
+    def test_conversation_orchestrator_prompt_uses_location_only_gate_rules(self):
         prompt = PromptBuilder.build_conversation_orchestrator_prompt(
             user_name="小明",
-            user_city="上海",
+            current_location="上海 徐汇区",
             user_interests=["网球"],
             user_bio="",
             birth_date="1998-06-05",
@@ -43,8 +47,11 @@ class PromptBuilderTests(unittest.TestCase):
         )
 
         self.assertIn("action 必须是 clarify，而不是 draft", prompt)
-        self.assertIn("本轮 clarify 只能问 1 个问题：id=city", prompt)
-        self.assertIn("上海更偏向哪片区域？", prompt)
+        self.assertIn("若用户没明说地点，默认使用当前位置写入 draft.location", prompt)
+        self.assertIn("用户明确提到地点时，以用户表述为准", prompt)
+        self.assertIn("只使用 location 一个地点槽位", prompt)
+        self.assertNotIn("id=city", prompt)
+        self.assertNotIn("draft.city", prompt)
         self.assertIn("首轮澄清必须问 time、skill、cost", prompt)
         self.assertIn("新手也行", prompt)
         self.assertIn("场地费 AA", prompt)

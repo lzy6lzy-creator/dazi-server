@@ -1,6 +1,6 @@
 """匹配服务 — 向量召回 + A2A 精排 pipeline
 
-Pipeline: city_normalized 分桶 → pgvector 向量召回 → 硬过滤/黑名单 →
+ Pipeline: pgvector 向量召回 → 地点/硬过滤/黑名单 →
 Top3 A2A 精排 → 匹配决策。
 """
 from __future__ import annotations
@@ -64,7 +64,7 @@ class MatchingService:
         await db.flush()
 
         try:
-            # 确保 embedding 和 city_normalized 存在
+            # 确保 embedding 存在
             await self._ensure_embedding(event)
             if event.embedding is None:
                 logger.warning(f"Event {event_id} has no embedding, skip matching")
@@ -148,20 +148,17 @@ class MatchingService:
             raise
 
     async def _ensure_embedding(self, event: Event):
-        """确保事件有 embedding 和 city_normalized"""
+        """确保事件有 embedding；地点语义只从 location 进入匹配。"""
         if event.embedding is None:
             text = embedding_service.build_event_text(
-                event.title, event.activity_type, event.city,
+                event.title, event.activity_type, None,
                 event.location, event.preferences, event.constraints
             )
             event.embedding = await embedding_service.encode(text)
 
-        if event.city_normalized is None and event.city:
-            event.city_normalized = await embedding_service.align_city(event.city)
-
     async def _vector_search(self, event: Event, db: AsyncSession,
                              k: int = 20) -> list[tuple[Event, float]]:
-        """pgvector 向量搜索：city_normalized 分桶 + cosine distance 排序"""
+        """pgvector 向量搜索：宽召回 + cosine distance 排序"""
         filters = [
             Event.id != event.id,
             Event.user_id != event.user_id,
@@ -171,7 +168,7 @@ class MatchingService:
             or_(Event.start_time.is_(None), Event.start_time > datetime.now(timezone.utc)),
         ]
 
-        # 地点语义已从 city_normalized 分桶移动到 _post_filter。
+        # 地点语义只在 _post_filter 中从 location 判断。
         # 这里保持宽召回，避免「川西」「江浙沪」「东京周边」这类区域表达被 SQL 阶段误杀。
 
         query = (

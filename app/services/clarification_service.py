@@ -8,8 +8,9 @@ from typing import Any
 MAX_QUESTIONS = 3
 MAX_OPTIONS = 6
 _CONVERSATION_ACTIONS = {"chat", "clarify", "draft", "cancel"}
-_DRAFT_STRING_FIELDS = ("title", "activity_type", "city", "location", "start_time", "end_time")
+_DRAFT_STRING_FIELDS = ("title", "activity_type", "location", "start_time", "end_time")
 _DRAFT_LIST_FIELDS = ("preferences", "constraints")
+_LOCATION_QUESTION_IDS = {"city", "location", "area", "place", "district", "region"}
 
 
 def normalize_clarification_payload(payload: Any) -> dict:
@@ -165,9 +166,18 @@ def _sanitize_draft(raw_draft: Any) -> dict:
         if value:
             draft[field] = value
 
+    legacy_city = _clean_string(raw_draft.get("city"))
+    if "location" not in draft and legacy_city:
+        draft["location"] = legacy_city
+
     for field in _DRAFT_LIST_FIELDS:
         if field in raw_draft:
             draft[field] = _clean_string_list(raw_draft.get(field))
+
+    _remove_place_labels_from_lists(
+        draft,
+        _place_labels_for_cleanup(draft.get("location"), legacy_city),
+    )
 
     return draft
 
@@ -231,10 +241,49 @@ def _merge_generic_answer(merged: dict, question: dict, answer: dict) -> None:
     if isinstance(custom_value, str) and custom_value.strip():
         labels.append(custom_value.strip())
 
+    if _is_location_question(question):
+        location = "、".join(dict.fromkeys(labels)).strip()
+        if location:
+            merged["location"] = location
+            _remove_place_labels_from_lists(merged, labels)
+        return
+
     target = "constraints" if question.get("match_filter") == "hard_filter" else "preferences"
     for label in labels:
         if label not in merged[target]:
             merged[target].append(label)
+
+
+def _is_location_question(question: dict) -> bool:
+    question_id = str(question.get("id") or "").strip().lower()
+    if question_id in _LOCATION_QUESTION_IDS:
+        return True
+
+    category = str(question.get("category") or "").strip()
+    title = str(question.get("title") or "").strip()
+    text = f"{category} {title}"
+    return any(keyword in text for keyword in ("地点", "位置", "城市", "区域", "哪片区", "哪里", "在哪"))
+
+
+def _place_labels_for_cleanup(*values: Any) -> list[str]:
+    labels: list[str] = []
+    for value in values:
+        text = _clean_string(value)
+        if text and text not in labels:
+            labels.append(text)
+    return labels
+
+
+def _remove_place_labels_from_lists(draft: dict, labels: list[str]) -> None:
+    if not labels:
+        return
+    label_set = {label.strip() for label in labels if label.strip()}
+    if not label_set:
+        return
+    for field in _DRAFT_LIST_FIELDS:
+        values = draft.get(field)
+        if isinstance(values, list):
+            draft[field] = [item for item in values if item not in label_set]
 
 
 def _merge_age_answer(

@@ -35,7 +35,13 @@ class FakeDb:
 
 
 async def fake_align_city(city):
-    return city or "unknown"
+    if not city:
+        return "unknown"
+    if "上海" in city:
+        return "上海"
+    if "北京" in city:
+        return "北京"
+    return "unknown"
 
 
 async def fake_encode(_text):
@@ -68,24 +74,41 @@ class EventLocationPassthroughTests(unittest.IsolatedAsyncioTestCase):
         for patcher in reversed(self._patches):
             patcher.stop()
 
-    async def test_direct_create_event_keeps_request_city_and_location(self):
+    async def test_direct_create_event_records_only_location(self):
         db = FakeDb()
         user_id = uuid4()
         data = EventCreate(
             title="江浙沪咖啡",
             activity_type="咖啡",
-            city=None,
-            location="江浙沪",
+            city="上海",
+            location="徐汇",
         )
 
         event = await events_api.create_event(data=data, user_id=user_id, db=db)
 
         self.assertIs(event, db.added[0])
         self.assertIsNone(event.city)
-        self.assertEqual(event.location, "江浙沪")
-        self.assertEqual(event.city_normalized, "unknown")
+        self.assertEqual(event.location, "徐汇")
+        self.assertIsNone(event.city_normalized)
 
-    async def test_direct_update_event_keeps_request_city_and_location(self):
+    async def test_direct_create_event_migrates_legacy_city_to_location(self):
+        db = FakeDb()
+        user_id = uuid4()
+        data = EventCreate(
+            title="上海咖啡",
+            activity_type="咖啡",
+            city="上海",
+            location=None,
+        )
+
+        event = await events_api.create_event(data=data, user_id=user_id, db=db)
+
+        self.assertIs(event, db.added[0])
+        self.assertIsNone(event.city)
+        self.assertEqual(event.location, "上海")
+        self.assertIsNone(event.city_normalized)
+
+    async def test_direct_update_event_records_only_location(self):
         user_id = uuid4()
         event = Event(
             user_id=user_id,
@@ -105,9 +128,9 @@ class EventLocationPassthroughTests(unittest.IsolatedAsyncioTestCase):
         self.assertIs(updated, event)
         self.assertIsNone(event.city)
         self.assertEqual(event.location, "江浙沪")
-        self.assertEqual(event.city_normalized, "unknown")
+        self.assertIsNone(event.city_normalized)
 
-    async def test_agent_draft_create_keeps_draft_city_and_location(self):
+    async def test_agent_draft_create_migrates_legacy_city_into_location(self):
         db = FakeDb()
         user_id = uuid4()
         draft = {
@@ -124,14 +147,38 @@ class EventLocationPassthroughTests(unittest.IsolatedAsyncioTestCase):
             await agent_chat_api._create_event_from_draft(
                 user_id=user_id,
                 uid_str=str(user_id),
-                user_city="北京",
+                current_location="北京 朝阳区",
                 db=db,
             )
 
         event = db.added[0]
-        self.assertEqual(event.city, "上海")
-        self.assertIsNone(event.location)
-        self.assertEqual(event.city_normalized, "上海")
+        self.assertIsNone(event.city)
+        self.assertEqual(event.location, "上海")
+        self.assertIsNone(event.city_normalized)
+
+    async def test_agent_draft_create_defaults_missing_location_to_current_location(self):
+        db = FakeDb()
+        user_id = uuid4()
+        draft = {
+            "title": "周六下午看电影",
+            "activity_type": "看电影",
+            "preferences": ["周六下午"],
+            "constraints": [],
+        }
+
+        with mock.patch.object(agent_chat_api.ChatHistoryCache, "get_event_draft", AsyncMock(return_value=draft)), \
+             mock.patch.object(agent_chat_api.ChatHistoryCache, "clear_event_draft", AsyncMock()):
+            await agent_chat_api._create_event_from_draft(
+                user_id=user_id,
+                uid_str=str(user_id),
+                current_location="上海 徐汇区",
+                db=db,
+            )
+
+        event = db.added[0]
+        self.assertIsNone(event.city)
+        self.assertEqual(event.location, "上海 徐汇区")
+        self.assertIsNone(event.city_normalized)
 
     async def test_agent_draft_create_keeps_region_location_without_city(self):
         db = FakeDb()
@@ -150,14 +197,14 @@ class EventLocationPassthroughTests(unittest.IsolatedAsyncioTestCase):
             await agent_chat_api._create_event_from_draft(
                 user_id=user_id,
                 uid_str=str(user_id),
-                user_city="上海",
+                current_location="上海 徐汇区",
                 db=db,
             )
 
         event = db.added[0]
         self.assertIsNone(event.city)
         self.assertEqual(event.location, "江浙沪")
-        self.assertEqual(event.city_normalized, "unknown")
+        self.assertIsNone(event.city_normalized)
 
     async def test_agent_draft_update_can_clear_city_for_region_location(self):
         user_id = uuid4()
@@ -193,7 +240,7 @@ class EventLocationPassthroughTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertIsNone(event.city)
         self.assertEqual(event.location, "江浙沪")
-        self.assertEqual(event.city_normalized, "unknown")
+        self.assertIsNone(event.city_normalized)
 
 
 if __name__ == "__main__":

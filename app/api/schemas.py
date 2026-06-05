@@ -95,6 +95,7 @@ class AgentResponse(BaseModel):
 
 class AgentChatRequest(BaseModel):
     message: str
+    current_location: Optional[str] = None
 
 
 class ClarificationOption(BaseModel):

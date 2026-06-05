@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, patch
 
 from app.core.redis import ChatHistoryCache
@@ -54,6 +55,18 @@ class ClarificationCacheTests(unittest.IsolatedAsyncioTestCase):
 
             latest = await ChatHistoryCache.get_latest_clarification_session("user-1")
             self.assertEqual(latest, {"session_id": "new-session", "reply": "new"})
+
+    async def test_agent_chat_session_start_is_recorded_and_clears_cached_history(self):
+        fake = FakeRedis()
+
+        with patch("app.core.redis.get_redis", new=AsyncMock(return_value=fake)):
+            await ChatHistoryCache.append_message("user-1", "user", "我要发布今晚火锅")
+
+            session_start = datetime(2026, 6, 5, 12, 0, tzinfo=timezone.utc)
+            await ChatHistoryCache.start_new_agent_chat_session("user-1", started_at=session_start)
+
+            self.assertEqual(await ChatHistoryCache.get_history("user-1"), [])
+            self.assertEqual(await ChatHistoryCache.get_agent_chat_session_start("user-1"), session_start)
 
 
 if __name__ == "__main__":

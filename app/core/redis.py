@@ -6,6 +6,7 @@ Redis 连接管理 + Agent 对话历史缓存
 import asyncio
 import json
 import logging
+from datetime import datetime, timezone
 from typing import Optional
 
 import redis.asyncio as aioredis
@@ -51,6 +52,7 @@ class ChatHistoryCache:
     """
 
     PREFIX = "agent_chat"
+    SESSION_START_PREFIX = "agent_chat_session_start"
     MAX_ROUNDS = 20  # 保留最近 20 轮（40 条消息）
     TTL_SECONDS = 86400  # 24 小时
 
@@ -89,6 +91,31 @@ class ChatHistoryCache:
         """清空对话历史"""
         r = await get_redis()
         await r.delete(cls._key(user_id))
+
+    @classmethod
+    async def start_new_agent_chat_session(cls, user_id: str, started_at: datetime | None = None):
+        """记录新的主对话 session 起点，并清空 Redis 中的旧历史。"""
+        r = await get_redis()
+        timestamp = started_at or datetime.now(timezone.utc)
+        if timestamp.tzinfo is None:
+            timestamp = timestamp.replace(tzinfo=timezone.utc)
+        await r.delete(cls._key(user_id))
+        await r.set(f"{cls.SESSION_START_PREFIX}:{user_id}", timestamp.isoformat())
+
+    @classmethod
+    async def get_agent_chat_session_start(cls, user_id: str) -> datetime | None:
+        """获取主对话 session 起点。"""
+        r = await get_redis()
+        value = await r.get(f"{cls.SESSION_START_PREFIX}:{user_id}")
+        if not value:
+            return None
+        try:
+            parsed = datetime.fromisoformat(value)
+        except ValueError:
+            return None
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed
 
     @classmethod
     async def set_history(cls, user_id: str, history: list[dict]):

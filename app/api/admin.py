@@ -829,7 +829,7 @@ async def generate_test_data(
             prefs = random.sample(PREFS_POOL.get(act_type, []), k=random.randint(1, 3))
             cons = random.sample(CONSTRAINTS_POOL, k=random.randint(0, 2))
             locations = LOCATIONS_BY_CITY.get(city, ["市中心"])
-            location = random.choice(locations)
+            location = f"{city} {random.choice(locations)}"
 
             # 随机时间：未来 1~7 天
             start_offset = random.randint(1, 7) * 24 + random.randint(8, 20)
@@ -838,7 +838,7 @@ async def generate_test_data(
 
             title = f"{act_type} - {random.choice(prefs) if prefs else act_type}"
             text = embedding_service.build_event_text(
-                title, act_type, city, location, prefs, cons
+                title, act_type, None, location, prefs, cons
             )
             event = Event(
                 user_id=user.id,
@@ -847,8 +847,8 @@ async def generate_test_data(
                 start_time=start_time,
                 end_time=end_time,
                 location=location,
-                city=city,
-                city_normalized=city,  # 测试数据城市已是标准名
+                city=None,
+                city_normalized=None,
                 preferences=prefs,
                 constraints=cons,
                 status="pending",

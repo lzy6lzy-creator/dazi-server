@@ -10,6 +10,7 @@ Agent Chat API - 与 AI Agent 对话
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
@@ -36,6 +37,9 @@ from app.api.schemas import AgentChatRequest, AgentChatResponse, ClarificationAn
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/agent", tags=["agent-chat"])
+BEIJING_TZ = timezone(timedelta(hours=8))
+SESSION_RESET_ROLE = "session"
+SESSION_RESET_PREFIX = "[SESSION_RESET_AFTER_EVENT]"
 
 
 @router.post("/chat", response_model=AgentChatResponse)
@@ -56,30 +60,21 @@ async def chat_with_agent(
     if not agent:
         raise HTTPException(status_code=404, detail="Agent 不存在")
 
+    current_location = _clean_current_location(req.current_location) or _clean_current_location(user.city)
+
     memories_result = await db.execute(
         select(AgentMemory)
         .where(AgentMemory.user_id == user_id, AgentMemory.is_active == True)
     )
     memories = memories_result.scalars().all()
 
-    # 2. 加载对话历史（先查 Redis，没有则从 DB 恢复）
+    # 2. 加载对话历史（先查 Redis，没有则从 DB session 起点之后恢复）
     uid_str = str(user_id)
-    history = await ChatHistoryCache.get_history(uid_str)
-
-    if not history:
-        # 从 DB 恢复最近对话
-        db_msgs = await db.execute(
-            select(AgentChatMessage)
-            .where(AgentChatMessage.user_id == user_id)
-            .order_by(AgentChatMessage.created_at.desc())
-            .limit(40)
-        )
-        db_messages = list(reversed(db_msgs.scalars().all()))
-        if db_messages:
-            history = [{"role": m.role, "content": m.content} for m in db_messages]
-            await ChatHistoryCache.set_history(uid_str, history)
+    history = await _load_agent_chat_history(user_id=user_id, uid_str=uid_str, db=db)
 
     existing_draft = await ChatHistoryCache.get_event_draft(uid_str)
+    if existing_draft:
+        existing_draft = _draft_with_default_location(existing_draft, current_location)
     editing_event_id = await ChatHistoryCache.get_editing_event(uid_str)
     if _can_publish_existing_draft_without_llm(existing_draft, req.message):
         direct_response = await _publish_existing_draft_without_llm(
@@ -87,7 +82,7 @@ async def chat_with_agent(
             uid_str=uid_str,
             message=req.message,
             editing_event_id=editing_event_id,
-            user_city=user.city,
+            current_location=current_location,
             background_tasks=background_tasks,
             db=db,
         )
@@ -103,6 +98,7 @@ async def chat_with_agent(
     system_prompt = PromptBuilder.build_conversation_orchestrator_prompt(
         user_name=user.name,
         user_city=user.city or "",
+        current_location=current_location or "",
         user_interests=user.interests or [],
         user_bio=user.bio or "",
         birth_date=user.birth_date.isoformat() if user.birth_date else None,
@@ -123,6 +119,7 @@ async def chat_with_agent(
         message=req.message,
         decision=decision,
         pending_clarification=latest_clarification,
+        current_location=current_location,
         db=db,
     )
 
@@ -136,7 +133,10 @@ async def get_chat_history(
     """获取 Agent 对话历史"""
     result = await db.execute(
         select(AgentChatMessage)
-        .where(AgentChatMessage.user_id == user_id)
+        .where(
+            AgentChatMessage.user_id == user_id,
+            AgentChatMessage.role.in_(["user", "assistant"]),
+        )
         .order_by(AgentChatMessage.created_at.desc())
         .limit(limit)
     )
@@ -234,6 +234,7 @@ async def _complete_clarification_session(
         user_birth_date=user.birth_date,
         free_text=free_text,
     )
+    merged = _draft_with_default_location(merged, _clean_current_location(session.get("current_location")))
     await ChatHistoryCache.set_event_draft(uid_str, merged)
     await ChatHistoryCache.clear_clarification_session(uid_str, session_id)
 
@@ -250,6 +251,55 @@ async def _complete_clarification_session(
         reply=reply,
         event_draft_pending=True,
     )
+
+
+async def _load_agent_chat_history(*, user_id: UUID, uid_str: str, db: AsyncSession) -> list[dict]:
+    history = await ChatHistoryCache.get_history(uid_str)
+    if history:
+        return history
+
+    session_start = await _get_agent_chat_session_start(user_id=user_id, uid_str=uid_str, db=db)
+    conditions = [
+        AgentChatMessage.user_id == user_id,
+        AgentChatMessage.role.in_(["user", "assistant"]),
+    ]
+    if session_start:
+        conditions.append(AgentChatMessage.created_at > session_start)
+
+    db_msgs = await db.execute(
+        select(AgentChatMessage)
+        .where(*conditions)
+        .order_by(AgentChatMessage.created_at.desc())
+        .limit(40)
+    )
+    db_messages = list(reversed(db_msgs.scalars().all()))
+    if not db_messages:
+        return []
+
+    history = [{"role": m.role, "content": m.content} for m in db_messages]
+    await ChatHistoryCache.set_history(uid_str, history)
+    return history
+
+
+async def _get_agent_chat_session_start(*, user_id: UUID, uid_str: str, db: AsyncSession) -> datetime | None:
+    session_start = await ChatHistoryCache.get_agent_chat_session_start(uid_str)
+    if session_start:
+        return session_start
+
+    marker = await db.execute(
+        select(AgentChatMessage.created_at)
+        .where(
+            AgentChatMessage.user_id == user_id,
+            AgentChatMessage.role == SESSION_RESET_ROLE,
+            AgentChatMessage.content.like(f"{SESSION_RESET_PREFIX}%"),
+        )
+        .order_by(AgentChatMessage.created_at.desc())
+        .limit(1)
+    )
+    marker_time = marker.scalar_one_or_none()
+    if marker_time:
+        await ChatHistoryCache.start_new_agent_chat_session(uid_str, started_at=marker_time)
+    return marker_time
 
 
 def _build_conversation_state(
@@ -305,11 +355,12 @@ async def _apply_conversation_decision(
     message: str,
     decision: dict,
     pending_clarification: dict | None,
+    current_location: str | None,
     db: AsyncSession,
 ) -> AgentChatResponse:
     action = decision.get("action") or "chat"
     reply = decision.get("reply") or "我在，你再跟我说说。"
-    draft = decision.get("draft") or {}
+    draft = _draft_with_default_location(decision.get("draft") or {}, current_location)
     questions = decision.get("questions") or []
 
     if action == "cancel":
@@ -335,6 +386,7 @@ async def _apply_conversation_decision(
                 "reply": reply,
                 "original_message": message,
                 "draft": draft,
+                "current_location": current_location,
                 "questions": questions,
             },
         )
@@ -394,10 +446,56 @@ def _can_publish_existing_draft_without_llm(draft: dict | None, message: str) ->
     return bool(draft) and _looks_like_confirmation(message)
 
 
+def _clean_current_location(value: object) -> str | None:
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    if not text:
+        return None
+    invalid_values = {
+        "位置未知",
+        "未知位置",
+        "位置获取中",
+        "位置获取中...",
+        "位置获取失败",
+        "位置权限未授予",
+        "未设置",
+        "未填写",
+    }
+    return None if text in invalid_values else text
+
+
+def _draft_with_default_location(draft: dict | None, current_location: str | None) -> dict:
+    if not isinstance(draft, dict):
+        return {}
+    cleaned = dict(draft)
+    legacy_city = _clean_current_location(cleaned.pop("city", None))
+    location = _clean_current_location(cleaned.get("location")) or legacy_city
+    default_location = _clean_current_location(current_location)
+    if not location and default_location:
+        location = default_location
+    if location:
+        cleaned["location"] = location
+        _remove_place_from_draft_lists(cleaned, [location, legacy_city])
+    else:
+        cleaned.pop("location", None)
+    return cleaned
+
+
+def _remove_place_from_draft_lists(draft: dict, labels: list[str | None]) -> None:
+    label_set = {label.strip() for label in labels if isinstance(label, str) and label.strip()}
+    if not label_set:
+        return
+    for field in ("preferences", "constraints"):
+        values = draft.get(field)
+        if isinstance(values, list):
+            draft[field] = [item for item in values if item not in label_set]
+
+
 def _build_memory_source_after_publish(*, user_message: str, draft: dict) -> str:
     title = draft.get("title") or draft.get("activity_type") or "未命名活动"
     activity_type = draft.get("activity_type") or "未填写"
-    place = " / ".join([item for item in [draft.get("city"), draft.get("location")] if item]) or "未填写"
+    place = draft.get("location") or "未填写"
     preferences = draft.get("preferences") if isinstance(draft.get("preferences"), list) else []
     constraints = draft.get("constraints") if isinstance(draft.get("constraints"), list) else []
     lines = [
@@ -418,12 +516,13 @@ async def _publish_existing_draft_without_llm(
     uid_str: str,
     message: str,
     editing_event_id: str | None,
-    user_city: str | None,
+    current_location: str | None,
     background_tasks: BackgroundTasks,
     db: AsyncSession,
 ) -> AgentChatResponse | None:
     reply = "好，我帮你发布找搭子。"
     draft = await ChatHistoryCache.get_event_draft(uid_str) or {}
+    draft = _draft_with_default_location(draft, current_location)
     await ChatHistoryCache.append_message(uid_str, "user", message)
     await ChatHistoryCache.append_message(uid_str, "assistant", reply)
     db.add(AgentChatMessage(user_id=user.id, role="user", content=message))
@@ -436,13 +535,14 @@ async def _publish_existing_draft_without_llm(
             user_id=user.id,
             uid_str=uid_str,
             event_id_str=editing_event_id,
+            current_location=current_location,
             db=db,
         )
     else:
         event_id = await _create_event_from_draft(
             user_id=user.id,
             uid_str=uid_str,
-            user_city=user_city,
+            current_location=current_location,
             db=db,
         )
         created_new_event = event_id is not None
@@ -461,11 +561,35 @@ async def _publish_existing_draft_without_llm(
                 draft=draft,
             )
 
+    await _start_new_agent_chat_session_after_event_ready(
+        user_id=user.id,
+        uid_str=uid_str,
+        event_id=event_id,
+        db=db,
+    )
+
     return AgentChatResponse(
         reply=reply,
         event_ready=True,
         event_id=event_id,
     )
+
+
+async def _start_new_agent_chat_session_after_event_ready(
+    *,
+    user_id: UUID,
+    uid_str: str,
+    event_id: UUID,
+    db: AsyncSession,
+) -> None:
+    marker = AgentChatMessage(
+        user_id=user_id,
+        role=SESSION_RESET_ROLE,
+        content=f"{SESSION_RESET_PREFIX}:{event_id}",
+    )
+    db.add(marker)
+    await db.flush()
+    await ChatHistoryCache.start_new_agent_chat_session(uid_str, started_at=marker.created_at)
 
 
 def _clarification_answers_to_text(
@@ -519,7 +643,6 @@ def _answer_labels(question: dict, answer: dict) -> list[str]:
 def _draft_confirmation_reply(draft: dict) -> str:
     title = draft.get("title") or draft.get("activity_type") or "这次活动"
     activity_type = draft.get("activity_type")
-    city = draft.get("city")
     location = draft.get("location")
     preferences = draft.get("preferences") or []
     constraints = draft.get("constraints") or []
@@ -527,9 +650,8 @@ def _draft_confirmation_reply(draft: dict) -> str:
     parts = [f"我帮你整理好了：{title}"]
     if activity_type and activity_type != title:
         parts.append(f"类型是 {activity_type}")
-    place = " / ".join([item for item in [city, location] if item])
-    if place:
-        parts.append(f"地点偏向 {place}")
+    if location:
+        parts.append(f"地点偏向 {location}")
     if preferences:
         parts.append(f"偏好：{'、'.join(preferences[:4])}")
     if constraints:
@@ -580,10 +702,41 @@ async def _extract_memories_background(
         logger.error(f"Memory extraction failed: {e}")
 
 
+def _event_title_from_draft(draft: dict) -> str:
+    title = _clean_current_location(draft.get("title"))
+    if title and title != "新活动":
+        return title[:200]
+
+    activity_type = _clean_current_location(draft.get("activity_type")) or "其他"
+    preferences = draft.get("preferences") if isinstance(draft.get("preferences"), list) else []
+    time_hint = next(
+        (
+            item
+            for item in preferences
+            if isinstance(item, str)
+            and any(keyword in item for keyword in ("今天", "明天", "周", "晚上", "下午", "上午", "中午"))
+        ),
+        "",
+    )
+    return f"{time_hint}{activity_type}"[:200] if time_hint else activity_type[:200]
+
+
+def _parse_draft_datetime(value: object) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=BEIJING_TZ)
+    return parsed
+
+
 async def _create_event_from_draft(
     user_id: UUID,
     uid_str: str,
-    user_city: str | None,
+    current_location: str | None,
     db: AsyncSession,
 ) -> UUID | None:
     """从 Redis 中存储的 event draft 创建 Event。"""
@@ -593,14 +746,15 @@ async def _create_event_from_draft(
             logger.warning(f"No event draft found for user {user_id}, skipping event creation")
             return None
 
-        city_value = draft.get("city")
+        draft = _draft_with_default_location(draft, current_location)
+        location_value = draft.get("location")
         event = Event(
             user_id=user_id,
-            title=draft.get("title", "新活动"),
+            title=_event_title_from_draft(draft),
             activity_type=draft.get("activity_type", "其他"),
-            location=draft.get("location"),
-            city=city_value,
-            city_normalized=await embedding_service.align_city(city_value),
+            location=location_value,
+            city=None,
+            city_normalized=None,
             preferences=draft.get("preferences", []),
             constraints=draft.get("constraints", []),
             clarification_answers=draft.get("clarification_answers"),
@@ -612,19 +766,16 @@ async def _create_event_from_draft(
 
         # 解析时间（如果 draft 中包含）
         for time_field in ("start_time", "end_time"):
-            if draft.get(time_field):
-                try:
-                    from datetime import datetime
-                    setattr(event, time_field, datetime.fromisoformat(draft[time_field]))
-                except (ValueError, TypeError):
-                    pass
+            parsed_time = _parse_draft_datetime(draft.get(time_field))
+            if parsed_time:
+                setattr(event, time_field, parsed_time)
 
         db.add(event)
         await db.flush()
 
         # 生成 embedding
         text = embedding_service.build_event_text(
-            event.title, event.activity_type, event.city,
+            event.title, event.activity_type, None,
             event.location, event.preferences, event.constraints
         )
         event.embedding = await embedding_service.encode(text)
@@ -645,6 +796,7 @@ async def _update_event_from_draft(
     uid_str: str,
     event_id_str: str,
     db: AsyncSession,
+    current_location: str | None = None,
 ) -> UUID | None:
     """从 Redis 中存储的 EVENT_DRAFT 更新已有 Event（编辑模式）"""
     try:
@@ -652,6 +804,7 @@ async def _update_event_from_draft(
         if not draft:
             logger.warning(f"No event draft found for user {user_id}, skipping event update")
             return None
+        draft = _draft_with_default_location(draft, current_location)
 
         from uuid import UUID as UUIDType
         event_id = UUIDType(event_id_str)
@@ -668,15 +821,13 @@ async def _update_event_from_draft(
 
         # 更新事件字段
         if draft.get("title"):
-            event.title = draft["title"]
+            event.title = _event_title_from_draft(draft)
         if draft.get("activity_type"):
             event.activity_type = draft["activity_type"]
         if "location" in draft:
             event.location = draft["location"]
-        if "city" in draft:
-            event.city = draft["city"]
-        if "city" in draft:
-            event.city_normalized = await embedding_service.align_city(event.city)
+            event.city = None
+            event.city_normalized = None
         if "preferences" in draft:
             event.preferences = draft["preferences"]
         if "constraints" in draft:
@@ -692,16 +843,13 @@ async def _update_event_from_draft(
 
         # 解析时间
         for time_field in ("start_time", "end_time"):
-            if draft.get(time_field):
-                try:
-                    from datetime import datetime
-                    setattr(event, time_field, datetime.fromisoformat(draft[time_field]))
-                except (ValueError, TypeError):
-                    pass
+            parsed_time = _parse_draft_datetime(draft.get(time_field))
+            if parsed_time:
+                setattr(event, time_field, parsed_time)
 
         # 重新生成 embedding
         text = embedding_service.build_event_text(
-            event.title, event.activity_type, event.city,
+            event.title, event.activity_type, None,
             event.location, event.preferences, event.constraints
         )
         event.embedding = await embedding_service.encode(text)
@@ -755,8 +903,7 @@ async def start_edit_event(
     current_draft = {
         "title": event.title,
         "activity_type": event.activity_type,
-        "city": event.city,
-        "location": event.location,
+        "location": event.location or event.city,
         "start_time": event.start_time.isoformat() if event.start_time else None,
         "end_time": event.end_time.isoformat() if event.end_time else None,
         "preferences": event.preferences or [],
@@ -768,7 +915,7 @@ async def start_edit_event(
     }
     await ChatHistoryCache.set_event_draft(uid_str, current_draft)
 
-    place_text = " / ".join([item for item in [event.city, event.location] if item]) or "未设"
+    place_text = event.location or event.city or "未设"
     reply = _editing_event_intro_reply(
         title=event.title,
         activity_type=event.activity_type,
