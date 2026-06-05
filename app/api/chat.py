@@ -60,6 +60,41 @@ async def _broadcast_message_to_room(room_id: UUID, msg: ChatMessage, db: AsyncS
     await ws_manager.broadcast_to_users(user_ids, payload)
 
 
+def _format_room_event_context(event: Event | None, label: str, self_user_id: UUID) -> str:
+    """Format one public event for room-agent context."""
+    if not event:
+        return f"{label}: 未找到事件"
+
+    side = "你这边" if event.user_id == self_user_id else "对方"
+    preferences = "、".join(event.preferences or []) if event.preferences else "无"
+    constraints = "、".join(event.constraints or []) if event.constraints else "无"
+    start_time = event.start_time.isoformat() if event.start_time else "null"
+    end_time = event.end_time.isoformat() if event.end_time else "null"
+    return (
+        f"{label}（{side}）: "
+        f"title={event.title}; "
+        f"activity_type={event.activity_type}; "
+        f"city={event.city or '未填写'}; "
+        f"location={event.location or 'null'}; "
+        f"start_time={start_time}; "
+        f"end_time={end_time}; "
+        f"preferences={preferences}; "
+        f"constraints={constraints}"
+    )
+
+
+def _extract_room_agent_reply(raw_reply: str) -> str:
+    """Room agent prompts return JSON; fall back to raw text for robustness."""
+    text = raw_reply.strip()
+    if text.startswith("{") or text.startswith("```") or ('"reply"' in text and "{" in text):
+        parsed = llm_service._extract_json(text)
+        if isinstance(parsed, dict):
+            reply = parsed.get("reply")
+            if isinstance(reply, str) and reply.strip():
+                return reply.strip()
+    return text
+
+
 @router.get("/rooms", response_model=list[ChatRoomResponse])
 async def list_my_rooms(
     user_id: UUID = Depends(get_current_user_id),
@@ -570,15 +605,24 @@ async def _handle_agent_mention(
                     .limit(10)
                 )
                 recent = list(reversed(recent_r.scalars().all()))
-                context = "\n".join([f"{m.sender_type}: {m.content}" for m in recent])
+                recent_messages_text = "\n".join([f"{m.sender_type}: {m.content}" for m in recent])
 
-                # 获取活动标题
-                event_title = "活动"
+                # 获取双方公开事件；两边 agent 都能看到事件，但只能看到自己的 memory
+                event_a = None
+                event_b = None
                 if room.event_id_a:
-                    ev_r = await db.execute(select(Event).where(Event.id == room.event_id_a))
-                    ev = ev_r.scalar_one_or_none()
-                    if ev:
-                        event_title = ev.title
+                    ev_a_r = await db.execute(select(Event).where(Event.id == room.event_id_a))
+                    event_a = ev_a_r.scalar_one_or_none()
+                if room.event_id_b:
+                    ev_b_r = await db.execute(select(Event).where(Event.id == room.event_id_b))
+                    event_b = ev_b_r.scalar_one_or_none()
+
+                event_titles = [ev.title for ev in (event_a, event_b) if ev]
+                event_title = " / ".join(event_titles) if event_titles else "活动"
+                public_events_text = "\n".join([
+                    _format_room_event_context(event_a, "A", agent.user_id),
+                    _format_room_event_context(event_b, "B", agent.user_id),
+                ])
 
                 # 查询 Agent 所属用户的记忆
                 mem_r = await db.execute(
@@ -614,14 +658,18 @@ async def _handle_agent_mention(
                     mentioned_by=sender_name,
                     user_memories=user_memories,
                     participants=participant_names,
+                    public_events_text=public_events_text,
+                    agent_dialogue=room.agent_dialogue or "",
+                    recent_messages_text=recent_messages_text,
                 )
 
                 messages = [
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"聊天记录:\n{context}\n\n请回复 @{agent.name} 的消息。"},
+                    {"role": "user", "content": f"请回复这次 @{agent.name} 的消息，只返回 JSON。"},
                 ]
 
-                reply = await llm_service.chat(messages, max_tokens=200)
+                raw_reply = await llm_service.chat(messages, max_tokens=300)
+                reply = _extract_room_agent_reply(raw_reply)
 
                 # 保存 Agent 回复（sender_id FK 指向 users.id，用 agent 所属用户的 ID）
                 agent_msg = ChatMessage(
