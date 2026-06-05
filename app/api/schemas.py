@@ -2,7 +2,7 @@ from datetime import date, datetime
 from uuid import UUID
 from typing import Any, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 
 # ── Auth ──
@@ -145,9 +145,34 @@ class MemoryResponse(BaseModel):
     content: str
     confidence: float
     source: str
+    key: Optional[str] = None
+    category: Optional[str] = None
+    scope: str = "long_term"
+    value: Optional[dict[str, Any]] = None
+    occurrence_count: int = 1
+    last_seen_at: Optional[datetime] = None
+    status: str = "active"
+    is_active: bool = True
     created_at: datetime
+    updated_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
+
+
+class MemoryUpdate(BaseModel):
+    content: Optional[str] = None
+    is_active: Optional[bool] = None
+    status: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_change(self):
+        if self.content is None and self.is_active is None and self.status is None:
+            raise ValueError("至少需要修改 content、is_active 或 status")
+        if self.content is not None and not self.content.strip():
+            raise ValueError("content 不能为空")
+        if self.status is not None and self.status not in {"active", "inactive", "conflicted"}:
+            raise ValueError("status 必须是 active、inactive 或 conflicted")
+        return self
 
 
 # ── Event ──

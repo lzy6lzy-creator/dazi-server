@@ -26,6 +26,7 @@ from app.models.event import Event
 from app.services.llm_service import llm_service
 from app.services.matching_tasks import schedule_event_matching
 from app.services.prompt_builder import PromptBuilder
+from app.services.memory_service import extract_and_update_memories_after_publish
 from app.services.clarification_service import (
     merge_clarification_answers,
     normalize_conversation_payload,
@@ -455,10 +456,9 @@ async def _publish_existing_draft_without_llm(
             background_tasks.add_task(
                 _extract_memories_background,
                 user_id=user.id,
-                text=_build_memory_source_after_publish(
-                    user_message=message,
-                    draft=draft,
-                ),
+                event_id=event_id,
+                user_message=message,
+                draft=draft,
             )
 
     return AgentChatResponse(
@@ -560,54 +560,22 @@ def _editing_event_intro_reply(
     return "；".join(parts) + "。直接告诉我你想改哪里，我会重新整理一版给你确认。"
 
 
-async def _extract_memories_background(user_id: UUID, text: str):
-    """后台提取用户 Memory"""
-    from app.core.database import async_session
-
+async def _extract_memories_background(
+    *,
+    user_id: UUID,
+    event_id: UUID,
+    user_message: str,
+    draft: dict,
+):
+    """后台提取事件偏好，并自动更新长期 Memory"""
     try:
-        messages = [
-            {"role": "system", "content": PromptBuilder.build_memory_extraction_prompt()},
-            {"role": "user", "content": text},
-        ]
-        result = await llm_service.chat_json(messages)
-
-        if not result or not isinstance(result, list):
-            return
-
-        async with async_session() as db:
-            for item in result:
-                mem_type = item.get("type", "preference")
-                content = item.get("content", "")
-                if not content:
-                    continue
-
-                # 查重：如果已有相似记忆，增强 confidence
-                import re as _re
-                safe_content = _re.sub(r'[%_\\]', r'\\\g<0>', content[:15])
-                existing = await db.execute(
-                    select(AgentMemory).where(
-                        AgentMemory.user_id == user_id,
-                        AgentMemory.type == mem_type,
-                        AgentMemory.is_active == True,
-                        AgentMemory.content.ilike(f"%{safe_content}%"),
-                    )
-                )
-                existing_mem = existing.scalar_one_or_none()
-
-                if existing_mem:
-                    existing_mem.confidence = min(1.0, existing_mem.confidence + 0.1)
-                else:
-                    db.add(AgentMemory(
-                        user_id=user_id,
-                        type=mem_type,
-                        content=content,
-                        confidence=0.5,
-                        source="chat",
-                    ))
-
-            await db.commit()
-            logger.info(f"Extracted {len(result)} memories for user {user_id}")
-
+        await extract_and_update_memories_after_publish(
+            user_id=user_id,
+            event_id=event_id,
+            user_message=user_message,
+            draft=draft,
+        )
+        logger.info(f"Updated layered memories for user {user_id} event {event_id}")
     except Exception as e:
         logger.error(f"Memory extraction failed: {e}")
 

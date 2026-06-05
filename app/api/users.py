@@ -3,6 +3,7 @@ User & Agent API - 用户信息、Agent 配置
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,7 +17,7 @@ from app.services.embedding_service import embedding_service
 from app.api.schemas import (
     UserResponse, UserUpdate,
     AgentResponse, AgentUpdate,
-    MemoryResponse,
+    MemoryResponse, MemoryUpdate,
 )
 
 router = APIRouter(prefix="/api/v1", tags=["users"])
@@ -102,10 +103,61 @@ async def get_my_memories(
 ):
     result = await db.execute(
         select(AgentMemory)
-        .where(AgentMemory.user_id == user_id, AgentMemory.is_active == True)
+        .where(
+            AgentMemory.user_id == user_id,
+            AgentMemory.is_active == True,
+            AgentMemory.status != "inactive",
+        )
         .order_by(AgentMemory.confidence.desc())
     )
     return result.scalars().all()
+
+
+@router.patch("/agents/me/memories/{memory_id}", response_model=MemoryResponse)
+async def update_my_memory(
+    memory_id: UUID,
+    data: MemoryUpdate,
+    user_id: UUID = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(AgentMemory).where(AgentMemory.id == memory_id, AgentMemory.user_id == user_id)
+    )
+    memory = result.scalar_one_or_none()
+    if not memory:
+        raise HTTPException(status_code=404, detail="记忆不存在")
+
+    if data.content is not None:
+        memory.content = data.content.strip()
+    if data.status is not None:
+        memory.status = data.status
+        memory.is_active = data.status == "active"
+    if data.is_active is not None:
+        memory.is_active = data.is_active
+        memory.status = "active" if data.is_active else "inactive"
+    memory.updated_at = datetime.now(timezone.utc)
+    await db.flush()
+    return memory
+
+
+@router.delete("/agents/me/memories/{memory_id}")
+async def delete_my_memory(
+    memory_id: UUID,
+    user_id: UUID = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(AgentMemory).where(AgentMemory.id == memory_id, AgentMemory.user_id == user_id)
+    )
+    memory = result.scalar_one_or_none()
+    if not memory:
+        raise HTTPException(status_code=404, detail="记忆不存在")
+
+    memory.is_active = False
+    memory.status = "inactive"
+    memory.updated_at = datetime.now(timezone.utc)
+    await db.flush()
+    return {"ok": True}
 
 
 # ── Helpers ──

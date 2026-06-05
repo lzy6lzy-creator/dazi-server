@@ -20,7 +20,7 @@ from app.services.embedding_service import embedding_service
 from app.services.scheduler import match_scheduler
 
 # 导入所有 model 以确保建表时能发现它们
-from app.models.user import User, Agent, AgentMemory, AgentChatMessage  # noqa: F401
+from app.models.user import User, Agent, AgentMemory, EventMemory, MemoryEvidence, AgentChatMessage  # noqa: F401
 from app.models.event import Event, MatchLog, MatchBlocklist  # noqa: F401
 from app.models.chat import ChatRoom, ChatRoomMember, ChatMessage, ChatRoomVote, PassiveMatchRequest  # noqa: F401
 from app.models.prompt import PromptTemplate  # noqa: F401
@@ -105,6 +105,15 @@ async def _ensure_runtime_schema(conn) -> None:
     await conn.execute(text("ALTER TABLE events ADD COLUMN IF NOT EXISTS age_filter_min INTEGER"))
     await conn.execute(text("ALTER TABLE events ADD COLUMN IF NOT EXISTS age_filter_max INTEGER"))
     await conn.execute(text("ALTER TABLE events ADD COLUMN IF NOT EXISTS age_filter_mode VARCHAR(20)"))
+    await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS key VARCHAR(100)"))
+    await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS category VARCHAR(40)"))
+    await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS scope VARCHAR(20) DEFAULT 'long_term'"))
+    await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS value JSONB"))
+    await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS occurrence_count INTEGER DEFAULT 1"))
+    await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ"))
+    await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ"))
+    await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'active'"))
+    await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS superseded_by_id UUID"))
 
 
 app = FastAPI(

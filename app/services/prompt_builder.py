@@ -355,6 +355,7 @@ profile/memory 不能替代本次事件字段。用户常在哪、喜欢什么�
                 "preference": "偏好",
                 "constraint": "限制",
                 "behavior": "习惯",
+                "style": "风格",
                 "feedback": "反馈",
             }.get(mem_type, mem_type)
             safe_content = (
@@ -420,7 +421,7 @@ profile/memory 不能替代本次事件字段。用户常在哪、喜欢什么�
             for mem_type, content in user_memories:
                 type_label = {
                     "preference": "偏好", "constraint": "限制",
-                    "behavior": "习惯", "feedback": "反馈",
+                    "behavior": "习惯", "style": "风格", "feedback": "反馈",
                 }.get(mem_type, mem_type)
                 memory_lines.append(f"- [{type_label}] {content}")
             memory_text = "\n".join(memory_lines)
