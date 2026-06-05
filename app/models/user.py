@@ -38,6 +38,20 @@ class User(Base):
     memories: Mapped[list["AgentMemory"]] = relationship(back_populates="user", lazy="selectin")
 
 
+class PushDeviceToken(Base):
+    __tablename__ = "push_device_tokens"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    token: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
+    platform: Mapped[str] = mapped_column(String(20), nullable=False, default="ios")
+    environment: Mapped[str] = mapped_column(String(20), nullable=False, default="production")
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+    last_seen_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+
 class Agent(Base):
     __tablename__ = "agents"
 

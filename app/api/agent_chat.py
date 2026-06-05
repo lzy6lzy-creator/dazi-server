@@ -10,10 +10,12 @@ Agent Chat API - 与 AI Agent 对话
 from __future__ import annotations
 
 import logging
+from collections.abc import AsyncIterator, Iterator
 from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -24,13 +26,21 @@ from app.core.security import get_current_user_id
 from app.core.redis import ChatHistoryCache
 from app.models.user import User, Agent, AgentMemory, AgentChatMessage
 from app.models.event import Event
-from app.services.llm_service import llm_service
+from app.services.agent_server import agent_server
+from app.services.agent_stream_parser import (
+    AgentStreamParser,
+    QuestionJSONStreamExtractor,
+    parse_conversation_tag_payload,
+    parse_draft_tag_payload,
+)
 from app.services.matching_tasks import schedule_event_matching
 from app.services.prompt_builder import PromptBuilder
+from app.services.sse import sse_event
 from app.services.memory_service import extract_and_update_memories_after_publish
 from app.services.clarification_service import (
     merge_clarification_answers,
     normalize_conversation_payload,
+    normalize_draft_payload,
 )
 from app.api.schemas import AgentChatRequest, AgentChatResponse, ClarificationAnswerRequest
 
@@ -49,79 +59,125 @@ async def chat_with_agent(
     user_id: UUID = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    # 1. 加载用户、Agent、Memory
-    user_result = await db.execute(select(User).where(User.id == user_id))
-    user = user_result.scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=404, detail="用户不存在")
-
-    agent_result = await db.execute(select(Agent).where(Agent.user_id == user_id))
-    agent = agent_result.scalar_one_or_none()
-    if not agent:
-        raise HTTPException(status_code=404, detail="Agent 不存在")
-
-    current_location = _clean_current_location(req.current_location) or _clean_current_location(user.city)
-
-    memories_result = await db.execute(
-        select(AgentMemory)
-        .where(AgentMemory.user_id == user_id, AgentMemory.is_active == True)
-    )
-    memories = memories_result.scalars().all()
-
-    # 2. 加载对话历史（先查 Redis，没有则从 DB session 起点之后恢复）
-    uid_str = str(user_id)
-    history = await _load_agent_chat_history(user_id=user_id, uid_str=uid_str, db=db)
-
-    existing_draft = await ChatHistoryCache.get_event_draft(uid_str)
-    if existing_draft:
-        existing_draft = _draft_with_default_location(existing_draft, current_location)
-    editing_event_id = await ChatHistoryCache.get_editing_event(uid_str)
-    if _can_publish_existing_draft_without_llm(existing_draft, req.message):
+    context = await _build_agent_chat_context(req=req, user_id=user_id, db=db)
+    if _can_publish_existing_draft_without_llm(context["existing_draft"], req.message):
         direct_response = await _publish_existing_draft_without_llm(
-            user=user,
-            uid_str=uid_str,
+            user=context["user"],
+            uid_str=context["uid_str"],
             message=req.message,
-            editing_event_id=editing_event_id,
-            current_location=current_location,
+            editing_event_id=context["editing_event_id"],
             background_tasks=background_tasks,
             db=db,
         )
         if direct_response:
             return direct_response
 
-    latest_clarification = await ChatHistoryCache.get_latest_clarification_session(uid_str)
-    conversation_state = _build_conversation_state(
-        existing_draft=existing_draft,
-        pending_clarification=latest_clarification,
-        editing_event_id=editing_event_id,
-    )
-    system_prompt = PromptBuilder.build_conversation_orchestrator_prompt(
-        user_name=user.name,
-        user_city=user.city or "",
-        current_location=current_location or "",
-        user_interests=user.interests or [],
-        user_bio=user.bio or "",
-        birth_date=user.birth_date.isoformat() if user.birth_date else None,
-        memories=[(m.type, m.content) for m in memories],
-        conversation_state=conversation_state,
-    )
-    messages = [{"role": "system", "content": system_prompt}]
-    messages.extend(history)
-    messages.append({"role": "user", "content": req.message})
-
-    payload = await llm_service.chat_json(messages, temperature=0.3, max_tokens=2048)
+    payload = await _collect_conversation_payload(context["messages"])
     decision = normalize_conversation_payload(payload)
     logger.info(f"Conversation decision for user {user_id}: {decision.get('action')}")
 
     return await _apply_conversation_decision(
-        user=user,
-        uid_str=uid_str,
+        user=context["user"],
+        uid_str=context["uid_str"],
         message=req.message,
         decision=decision,
-        pending_clarification=latest_clarification,
-        current_location=current_location,
+        pending_clarification=context["pending_clarification"],
+        current_location=context["current_location"],
         db=db,
     )
+
+
+@router.post("/chat/stream")
+async def chat_with_agent_stream(
+    req: AgentChatRequest,
+    background_tasks: BackgroundTasks,
+    user_id: UUID = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    async def generate() -> AsyncIterator[str]:
+        try:
+            context = await _build_agent_chat_context(req=req, user_id=user_id, db=db)
+            if _can_publish_existing_draft_without_llm(context["existing_draft"], req.message):
+                direct_response = await _publish_existing_draft_without_llm(
+                    user=context["user"],
+                    uid_str=context["uid_str"],
+                    message=req.message,
+                    editing_event_id=context["editing_event_id"],
+                    background_tasks=background_tasks,
+                    db=db,
+                )
+                if direct_response:
+                    if direct_response.reply:
+                        yield sse_event("reply_delta", {"text": direct_response.reply})
+                    if direct_response.event_ready:
+                        yield sse_event(
+                            "event_ready",
+                            {
+                                "event_ready": True,
+                                "event_id": str(direct_response.event_id) if direct_response.event_id else None,
+                            },
+                        )
+                    yield sse_event("done", {})
+                    return
+
+            parser = AgentStreamParser(visible_tags={"reply"})
+            question_extractor = QuestionJSONStreamExtractor()
+            clarify_stream_session_id = str(uuid4())
+            streamed_question_ids: set[str] = set()
+            visible_text_emitted = False
+            async for chunk in agent_server.stream_chat(
+                context["messages"],
+                purpose="conversation",
+                temperature=0.3,
+                max_tokens=2048,
+            ):
+                for visible in parser.feed(chunk):
+                    visible_text_emitted = True
+                    yield sse_event("reply_delta", {"text": visible})
+                for raw_question in question_extractor.feed(chunk):
+                    question = _normalize_stream_question(raw_question)
+                    if not question:
+                        continue
+                    question_id = str(question.get("id") or "")
+                    if not question_id or question_id in streamed_question_ids:
+                        continue
+                    streamed_question_ids.add(question_id)
+                    yield sse_event(
+                        "clarify_question_delta",
+                        {
+                            "session_id": clarify_stream_session_id,
+                            "question": question,
+                        },
+                    )
+
+            decision = normalize_conversation_payload(
+                parse_conversation_tag_payload(parser.raw_text)
+            )
+            response = await _apply_conversation_decision(
+                user=context["user"],
+                uid_str=context["uid_str"],
+                message=req.message,
+                decision=decision,
+                pending_clarification=context["pending_clarification"],
+                current_location=context["current_location"],
+                db=db,
+                session_id_override=clarify_stream_session_id,
+            )
+            if not await _commit_db_write(db, context="streaming agent conversation"):
+                yield sse_event("error", {"message": "保存失败，请稍后重试"})
+                yield sse_event("done", {})
+                return
+            for event_name, payload in _events_from_agent_response(
+                response,
+                include_reply=not visible_text_emitted,
+            ):
+                yield sse_event(event_name, payload)
+        except Exception:
+            logger.exception("Streaming agent chat failed for user %s", user_id)
+            yield sse_event("error", {"message": "生成失败，请稍后重试"})
+            yield sse_event("done", {})
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
 
 
 @router.get("/history")
@@ -197,6 +253,56 @@ async def answer_clarification(
     )
 
 
+@router.post("/clarification/answer/stream")
+async def answer_clarification_stream(
+    req: ClarificationAnswerRequest,
+    background_tasks: BackgroundTasks,
+    user_id: UUID = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    async def generate() -> AsyncIterator[str]:
+        try:
+            context = await _build_clarification_draft_context(req=req, user_id=user_id, db=db)
+            prompt = PromptBuilder.build_event_draft_prompt(**context["prompt_args"])
+            parser = AgentStreamParser(visible_tags={"draft_reply"})
+            visible_text_emitted = False
+            async for chunk in agent_server.stream_chat(
+                [{"role": "system", "content": prompt}],
+                purpose="draft",
+                temperature=0.3,
+                max_tokens=2048,
+            ):
+                for visible in parser.feed(chunk):
+                    visible_text_emitted = True
+                    yield sse_event("draft_delta", {"text": visible})
+
+            payload = normalize_draft_payload(parse_draft_tag_payload(parser.raw_text))
+            await _apply_stream_draft_state(
+                user=context["user"],
+                uid_str=context["uid_str"],
+                session_id=req.clarification_session_id,
+                user_answer_text=context["user_answer_text"],
+                reply=payload["reply"],
+                draft=payload["draft"],
+                db=db,
+            )
+            if not await _commit_db_write(db, context="streaming clarification draft"):
+                yield sse_event("error", {"message": "草稿保存失败，请稍后重试"})
+                yield sse_event("done", {})
+                return
+            for event_name, body in _events_from_draft_payload(
+                payload=payload,
+                include_reply=not visible_text_emitted,
+            ):
+                yield sse_event(event_name, body)
+        except Exception:
+            logger.exception("Streaming clarification answer failed for user %s", user_id)
+            yield sse_event("error", {"message": "草稿生成失败，请稍后重试"})
+            yield sse_event("done", {})
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
+
+
 @router.get("/clarification/pending", response_model=AgentChatResponse)
 async def get_pending_clarification(
     user_id: UUID = Depends(get_current_user_id),
@@ -216,6 +322,172 @@ async def get_pending_clarification(
 
 # ── 后台任务 ──
 
+async def _build_agent_chat_context(*, req: AgentChatRequest, user_id: UUID, db: AsyncSession) -> dict:
+    user_result = await db.execute(select(User).where(User.id == user_id))
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+
+    agent_result = await db.execute(select(Agent).where(Agent.user_id == user_id))
+    agent = agent_result.scalar_one_or_none()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent 不存在")
+
+    current_location = _clean_current_location(req.current_location) or _clean_current_location(user.city)
+
+    memories_result = await db.execute(
+        select(AgentMemory)
+        .where(AgentMemory.user_id == user_id, AgentMemory.is_active == True)
+    )
+    memories = memories_result.scalars().all()
+
+    uid_str = str(user_id)
+    history = await _load_agent_chat_history(user_id=user_id, uid_str=uid_str, db=db)
+    existing_draft = await ChatHistoryCache.get_event_draft(uid_str)
+    editing_event_id = await ChatHistoryCache.get_editing_event(uid_str)
+    latest_clarification = await ChatHistoryCache.get_latest_clarification_session(uid_str)
+    conversation_state = _build_conversation_state(
+        existing_draft=existing_draft,
+        pending_clarification=latest_clarification,
+        editing_event_id=editing_event_id,
+    )
+    system_prompt = PromptBuilder.build_conversation_orchestrator_prompt(
+        user_name=user.name,
+        user_city=user.city or "",
+        current_location=current_location or "",
+        user_interests=user.interests or [],
+        user_bio=user.bio or "",
+        birth_date=user.birth_date.isoformat() if user.birth_date else None,
+        memories=[(m.type, m.content) for m in memories],
+        conversation_state=conversation_state,
+    )
+    messages = [{"role": "system", "content": system_prompt}]
+    messages.extend(history)
+    messages.append({"role": "user", "content": req.message})
+    return {
+        "user": user,
+        "uid_str": uid_str,
+        "messages": messages,
+        "current_location": current_location,
+        "existing_draft": existing_draft,
+        "editing_event_id": editing_event_id,
+        "pending_clarification": latest_clarification,
+    }
+
+
+async def _collect_conversation_payload(messages: list[dict[str, str]]) -> dict:
+    raw = ""
+    async for chunk in agent_server.stream_chat(
+        messages,
+        purpose="conversation",
+        temperature=0.3,
+        max_tokens=2048,
+    ):
+        raw += chunk
+    return parse_conversation_tag_payload(raw)
+
+
+async def _build_clarification_draft_context(
+    *,
+    req: ClarificationAnswerRequest,
+    user_id: UUID,
+    db: AsyncSession,
+) -> dict:
+    user_result = await db.execute(select(User).where(User.id == user_id))
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+
+    uid_str = str(user_id)
+    session = await ChatHistoryCache.get_clarification_session(
+        uid_str,
+        req.clarification_session_id,
+    )
+    if not session:
+        raise HTTPException(status_code=404, detail="澄清卡片已过期，请重新描述需求")
+
+    answers = [answer.model_dump(exclude_none=True) for answer in req.answers]
+    user_answer_text = _clarification_answers_to_text(session.get("questions") or [], answers, req.free_text)
+    return {
+        "user": user,
+        "uid_str": uid_str,
+        "session": session,
+        "user_answer_text": user_answer_text,
+        "prompt_args": {
+            "user_name": user.name,
+            "current_location": str(session.get("current_location") or user.city or ""),
+            "original_message": str(session.get("original_message") or ""),
+            "draft_seed": session.get("draft") or {},
+            "questions": session.get("questions") or [],
+            "answers": answers,
+            "free_text": req.free_text,
+        },
+    }
+
+
+async def _apply_stream_draft_state(
+    *,
+    user: User,
+    uid_str: str,
+    session_id: str,
+    user_answer_text: str,
+    reply: str,
+    draft: dict,
+    db: AsyncSession,
+) -> None:
+    if not draft:
+        raise HTTPException(status_code=422, detail="草稿生成失败")
+    await ChatHistoryCache.clear_clarification_session(uid_str, session_id)
+    await ChatHistoryCache.set_event_draft(uid_str, draft)
+    await ChatHistoryCache.append_message(uid_str, "user", user_answer_text)
+    await ChatHistoryCache.append_message(uid_str, "assistant", reply)
+    db.add(AgentChatMessage(user_id=user.id, role="user", content=user_answer_text))
+    db.add(AgentChatMessage(user_id=user.id, role="assistant", content=reply))
+    await db.flush()
+
+
+def _events_from_conversation_decision(*, decision: dict, session_id: str | None) -> Iterator[tuple[str, dict]]:
+    action = decision.get("action") or "chat"
+    questions = decision.get("questions") or []
+    if action == "draft":
+        yield "draft_ready", {"event_draft_pending": True}
+        yield "done", {}
+        return
+    if action == "clarify" and questions and session_id:
+        yield "clarify", {"session_id": session_id, "questions": questions}
+    yield "done", {}
+
+
+def _events_from_draft_payload(*, payload: dict, include_reply: bool = False) -> Iterator[tuple[str, dict]]:
+    if include_reply and payload.get("reply"):
+        yield "draft_delta", {"text": payload["reply"]}
+    if payload.get("draft"):
+        yield "draft_ready", {"event_draft_pending": True}
+    yield "done", {}
+
+
+def _events_from_agent_response(
+    response: AgentChatResponse,
+    *,
+    include_reply: bool = False,
+) -> Iterator[tuple[str, dict]]:
+    if include_reply and response.reply:
+        yield "reply_delta", {"text": response.reply}
+    if response.clarification_pending and response.clarification_session_id:
+        yield "clarify", {
+            "session_id": response.clarification_session_id,
+            "questions": [q.model_dump(mode="json") for q in response.clarification_questions],
+        }
+    if response.event_draft_pending:
+        yield "draft_ready", {"event_draft_pending": True}
+    if response.event_ready:
+        yield "event_ready", {
+            "event_ready": True,
+            "event_id": str(response.event_id) if response.event_id else None,
+        }
+    yield "done", {}
+
+
 async def _complete_clarification_session(
     *,
     user: User,
@@ -234,11 +506,10 @@ async def _complete_clarification_session(
         user_birth_date=user.birth_date,
         free_text=free_text,
     )
-    merged = _draft_with_default_location(merged, _clean_current_location(session.get("current_location")))
-    await ChatHistoryCache.set_event_draft(uid_str, merged)
     await ChatHistoryCache.clear_clarification_session(uid_str, session_id)
 
     user_answer_text = _clarification_answers_to_text(session.get("questions") or [], answers, free_text)
+    await ChatHistoryCache.set_event_draft(uid_str, merged)
     reply = _draft_confirmation_reply(merged)
 
     await ChatHistoryCache.append_message(uid_str, "user", user_answer_text)
@@ -357,10 +628,11 @@ async def _apply_conversation_decision(
     pending_clarification: dict | None,
     current_location: str | None,
     db: AsyncSession,
+    session_id_override: str | None = None,
 ) -> AgentChatResponse:
     action = decision.get("action") or "chat"
     reply = decision.get("reply") or "我在，你再跟我说说。"
-    draft = _draft_with_default_location(decision.get("draft") or {}, current_location)
+    draft = decision.get("draft") or {}
     questions = decision.get("questions") or []
 
     if action == "cancel":
@@ -378,7 +650,7 @@ async def _apply_conversation_decision(
 
     if action == "clarify" and questions:
         await _clear_pending_clarification_if_any(uid_str, pending_clarification)
-        session_id = str(uuid4())
+        session_id = session_id_override or str(uuid4())
         await ChatHistoryCache.set_clarification_session(
             uid_str,
             session_id,
@@ -431,6 +703,15 @@ async def _apply_conversation_decision(
     return AgentChatResponse(reply=reply)
 
 
+def _normalize_stream_question(raw_question: dict) -> dict | None:
+    normalized = normalize_conversation_payload({
+        "action": "clarify",
+        "questions": [raw_question],
+    })
+    questions = normalized.get("questions") or []
+    return questions[0] if questions else None
+
+
 def _looks_like_confirmation(message: str) -> bool:
     text = (message or "").strip().lower()
     if not text:
@@ -465,15 +746,12 @@ def _clean_current_location(value: object) -> str | None:
     return None if text in invalid_values else text
 
 
-def _draft_with_default_location(draft: dict | None, current_location: str | None) -> dict:
+def _draft_with_location_cleanup(draft: dict | None) -> dict:
     if not isinstance(draft, dict):
         return {}
     cleaned = dict(draft)
     legacy_city = _clean_current_location(cleaned.pop("city", None))
     location = _clean_current_location(cleaned.get("location")) or legacy_city
-    default_location = _clean_current_location(current_location)
-    if not location and default_location:
-        location = default_location
     if location:
         cleaned["location"] = location
         _remove_place_from_draft_lists(cleaned, [location, legacy_city])
@@ -516,13 +794,12 @@ async def _publish_existing_draft_without_llm(
     uid_str: str,
     message: str,
     editing_event_id: str | None,
-    current_location: str | None,
     background_tasks: BackgroundTasks,
     db: AsyncSession,
 ) -> AgentChatResponse | None:
     reply = "好，我帮你发布找搭子。"
     draft = await ChatHistoryCache.get_event_draft(uid_str) or {}
-    draft = _draft_with_default_location(draft, current_location)
+    draft = _draft_with_location_cleanup(draft)
     await ChatHistoryCache.append_message(uid_str, "user", message)
     await ChatHistoryCache.append_message(uid_str, "assistant", reply)
     db.add(AgentChatMessage(user_id=user.id, role="user", content=message))
@@ -535,20 +812,30 @@ async def _publish_existing_draft_without_llm(
             user_id=user.id,
             uid_str=uid_str,
             event_id_str=editing_event_id,
-            current_location=current_location,
             db=db,
         )
     else:
         event_id = await _create_event_from_draft(
             user_id=user.id,
             uid_str=uid_str,
-            current_location=current_location,
             db=db,
         )
         created_new_event = event_id is not None
 
     if event_id is None:
         return AgentChatResponse(reply="发布时出了点问题，请稍后再试。")
+
+    await _start_new_agent_chat_session_after_event_ready(
+        user_id=user.id,
+        uid_str=uid_str,
+        event_id=event_id,
+        db=db,
+    )
+
+    if not await _commit_db_write(db, context="agent publish"):
+        return AgentChatResponse(reply="发布时出了点问题，请稍后再试。")
+
+    await _clear_published_draft_state(uid_str=uid_str, editing_event_id=editing_event_id)
 
     if created_new_event:
         schedule_event_matching(background_tasks, event_id)
@@ -561,18 +848,30 @@ async def _publish_existing_draft_without_llm(
                 draft=draft,
             )
 
-    await _start_new_agent_chat_session_after_event_ready(
-        user_id=user.id,
-        uid_str=uid_str,
-        event_id=event_id,
-        db=db,
-    )
-
     return AgentChatResponse(
         reply=reply,
         event_ready=True,
         event_id=event_id,
     )
+
+
+async def _commit_db_write(db: AsyncSession, *, context: str) -> bool:
+    try:
+        await db.commit()
+        return True
+    except Exception:
+        logger.exception("DB commit failed for %s", context)
+        await db.rollback()
+        return False
+
+
+async def _clear_published_draft_state(*, uid_str: str, editing_event_id: str | None) -> None:
+    try:
+        await ChatHistoryCache.clear_event_draft(uid_str)
+        if editing_event_id:
+            await ChatHistoryCache.clear_editing_event(uid_str)
+    except Exception:
+        logger.exception("Failed to clear published draft state for user %s", uid_str)
 
 
 async def _start_new_agent_chat_session_after_event_ready(
@@ -736,7 +1035,6 @@ def _parse_draft_datetime(value: object) -> datetime | None:
 async def _create_event_from_draft(
     user_id: UUID,
     uid_str: str,
-    current_location: str | None,
     db: AsyncSession,
 ) -> UUID | None:
     """从 Redis 中存储的 event draft 创建 Event。"""
@@ -746,7 +1044,7 @@ async def _create_event_from_draft(
             logger.warning(f"No event draft found for user {user_id}, skipping event creation")
             return None
 
-        draft = _draft_with_default_location(draft, current_location)
+        draft = _draft_with_location_cleanup(draft)
         location_value = draft.get("location")
         event = Event(
             user_id=user_id,
@@ -780,9 +1078,6 @@ async def _create_event_from_draft(
         )
         event.embedding = await embedding_service.encode(text)
 
-        # 清除已使用的 draft
-        await ChatHistoryCache.clear_event_draft(uid_str)
-
         logger.info(f"Created event {event.id} from draft for user {user_id}: {event.title}")
         return event.id
 
@@ -796,7 +1091,6 @@ async def _update_event_from_draft(
     uid_str: str,
     event_id_str: str,
     db: AsyncSession,
-    current_location: str | None = None,
 ) -> UUID | None:
     """从 Redis 中存储的 EVENT_DRAFT 更新已有 Event（编辑模式）"""
     try:
@@ -804,7 +1098,7 @@ async def _update_event_from_draft(
         if not draft:
             logger.warning(f"No event draft found for user {user_id}, skipping event update")
             return None
-        draft = _draft_with_default_location(draft, current_location)
+        draft = _draft_with_location_cleanup(draft)
 
         from uuid import UUID as UUIDType
         event_id = UUIDType(event_id_str)
@@ -855,10 +1149,6 @@ async def _update_event_from_draft(
         event.embedding = await embedding_service.encode(text)
 
         await db.flush()
-
-        # 清除 draft 和编辑状态
-        await ChatHistoryCache.clear_event_draft(uid_str)
-        await ChatHistoryCache.clear_editing_event(uid_str)
 
         logger.info(f"Updated event {event.id} from draft for user {user_id}: {event.title}")
         return event.id

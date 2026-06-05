@@ -18,6 +18,7 @@ from app.models.user import Agent, User
 from app.services.location_policy import is_location_compatible
 from app.services.match_blocklist_service import add_match_blocklist
 from app.services.matching_policy import is_age_filter_compatible
+from app.services.push_notification_service import push_notification_service
 
 logger = logging.getLogger(__name__)
 
@@ -217,6 +218,16 @@ class PassiveMatchingService:
                 "type": "room_created",
                 "room_id": str(room_id),
             })
+        await push_notification_service.send_to_users(
+            db,
+            [request.requester_user_id, request.target_user_id],
+            title="聊天室已创建",
+            body="被动邀请已确认，新的搭子聊天室已开启。",
+            data={
+                "type": "room_created",
+                "room_id": str(room_id),
+            },
+        )
         return {"status": "accepted", "room_id": str(room_id)}
 
     async def _create_passive_room(

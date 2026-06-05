@@ -5,12 +5,12 @@ from datetime import date
 from typing import Any
 
 
-MAX_QUESTIONS = 3
 MAX_OPTIONS = 6
 _CONVERSATION_ACTIONS = {"chat", "clarify", "draft", "cancel"}
 _DRAFT_STRING_FIELDS = ("title", "activity_type", "location", "start_time", "end_time")
 _DRAFT_LIST_FIELDS = ("preferences", "constraints")
 _LOCATION_QUESTION_IDS = {"city", "location", "area", "place", "district", "region"}
+_EVENT_QUESTION_IDS = {"event", "activity", "activity_type"}
 
 
 def normalize_clarification_payload(payload: Any) -> dict:
@@ -24,7 +24,7 @@ def normalize_clarification_payload(payload: Any) -> dict:
         raw_questions = []
 
     questions = []
-    for index, raw_question in enumerate(raw_questions[:MAX_QUESTIONS]):
+    for index, raw_question in enumerate(raw_questions):
         question = _normalize_question(raw_question, index)
         if question:
             questions.append(question)
@@ -55,7 +55,7 @@ def normalize_conversation_payload(payload: Any) -> dict:
         raw_questions = []
 
     questions = []
-    for index, raw_question in enumerate(raw_questions[:MAX_QUESTIONS]):
+    for index, raw_question in enumerate(raw_questions):
         question = _normalize_question(raw_question, index)
         if question:
             questions.append(question)
@@ -65,6 +65,16 @@ def normalize_conversation_payload(payload: Any) -> dict:
         "reply": reply,
         "questions": questions,
         "draft": draft,
+    }
+
+
+def normalize_draft_payload(payload: Any) -> dict:
+    """Normalize LLM draft-generation output into a safe reply plus draft."""
+    if not isinstance(payload, dict):
+        return {"reply": "", "draft": {}}
+    return {
+        "reply": str(payload.get("reply") or "").strip(),
+        "draft": _sanitize_draft(payload.get("draft")),
     }
 
 
@@ -153,6 +163,10 @@ def _normalize_question(raw_question: Any, index: int) -> dict | None:
         "allow_custom": bool(raw_question.get("allow_custom", True)),
         "match_filter": match_filter,
         "options": options,
+        "default_option_ids": _normalize_default_option_ids(
+            raw_question.get("default_option_ids"),
+            options,
+        ),
     }
 
 
@@ -214,6 +228,18 @@ def _normalize_option(raw_option: Any, index: int) -> dict | None:
     }
 
 
+def _normalize_default_option_ids(value: Any, options: list[dict]) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    valid_ids = {str(option.get("id")) for option in options if option.get("id")}
+    result: list[str] = []
+    for item in value:
+        option_id = str(item).strip()
+        if option_id in valid_ids and option_id not in result:
+            result.append(option_id)
+    return result
+
+
 def _merge_generic_answer(merged: dict, question: dict, answer: dict) -> None:
     option_ids = answer.get("option_ids")
     if not isinstance(option_ids, list):
@@ -230,6 +256,9 @@ def _merge_generic_answer(merged: dict, question: dict, answer: dict) -> None:
         if not option:
             continue
         value = option.get("value")
+        if isinstance(value, dict):
+            _apply_draft_value(merged, value)
+            continue
         if isinstance(value, str) and value.strip():
             labels.append(value.strip())
             continue
@@ -238,8 +267,16 @@ def _merge_generic_answer(merged: dict, question: dict, answer: dict) -> None:
             labels.append(label)
 
     custom_value = answer.get("custom_value")
-    if isinstance(custom_value, str) and custom_value.strip():
+    if isinstance(custom_value, dict):
+        _apply_draft_value(merged, custom_value)
+    elif isinstance(custom_value, str) and custom_value.strip():
         labels.append(custom_value.strip())
+
+    if _is_event_question(question):
+        activity_type = "、".join(dict.fromkeys(labels)).strip()
+        if activity_type:
+            merged["activity_type"] = activity_type
+        return
 
     if _is_location_question(question):
         location = "、".join(dict.fromkeys(labels)).strip()
@@ -252,6 +289,34 @@ def _merge_generic_answer(merged: dict, question: dict, answer: dict) -> None:
     for label in labels:
         if label not in merged[target]:
             merged[target].append(label)
+
+
+def _apply_draft_value(merged: dict, value: dict) -> None:
+    for field in _DRAFT_STRING_FIELDS:
+        text = _clean_string(value.get(field))
+        if text:
+            merged[field] = text
+    for field in _DRAFT_LIST_FIELDS:
+        additions = _clean_string_list(value.get(field))
+        if additions:
+            merged.setdefault(field, [])
+            for item in additions:
+                if item not in merged[field]:
+                    merged[field].append(item)
+    _remove_place_labels_from_lists(
+        merged,
+        _place_labels_for_cleanup(value.get("location")),
+    )
+
+
+def _is_event_question(question: dict) -> bool:
+    question_id = str(question.get("id") or "").strip().lower()
+    if question_id in _EVENT_QUESTION_IDS:
+        return True
+    title = str(question.get("title") or "").strip()
+    category = str(question.get("category") or "").strip()
+    text = f"{category} {title}"
+    return any(keyword in text for keyword in ("事件", "活动", "想做什么", "项目"))
 
 
 def _is_location_question(question: dict) -> bool:

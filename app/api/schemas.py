@@ -2,7 +2,7 @@ from datetime import date, datetime
 from uuid import UUID
 from typing import Any, Optional
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 # ── Auth ──
@@ -72,6 +72,45 @@ class UserResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# ── Notifications ──
+
+class PushDeviceTokenRequest(BaseModel):
+    token: str
+    platform: str = "ios"
+    environment: str = "production"
+
+    @field_validator("token", mode="before")
+    @classmethod
+    def normalize_token(cls, value):
+        token = str(value or "").strip()
+        if not token:
+            raise ValueError("token 不能为空")
+        return token
+
+    @field_validator("platform", "environment", mode="before")
+    @classmethod
+    def normalize_label(cls, value):
+        return str(value or "").strip().lower()
+
+    @field_validator("platform")
+    @classmethod
+    def validate_platform(cls, value):
+        if value not in {"ios"}:
+            raise ValueError("platform 目前只支持 ios")
+        return value
+
+    @field_validator("environment")
+    @classmethod
+    def validate_environment(cls, value):
+        if value not in {"production", "sandbox"}:
+            raise ValueError("environment 必须是 production 或 sandbox")
+        return value
+
+
+class PushDeviceTokenResponse(BaseModel):
+    registered: bool
+
+
 # ── Agent ──
 
 class AgentUpdate(BaseModel):
@@ -113,7 +152,8 @@ class ClarificationQuestion(BaseModel):
     required: bool = False
     allow_custom: bool = True
     match_filter: Optional[str] = None
-    options: list[ClarificationOption] = []
+    options: list[ClarificationOption] = Field(default_factory=list)
+    default_option_ids: list[str] = Field(default_factory=list)
 
 
 class ClarificationAnswer(BaseModel):
@@ -126,6 +166,10 @@ class ClarificationAnswerRequest(BaseModel):
     clarification_session_id: str
     answers: list[ClarificationAnswer] = []
     free_text: Optional[str] = None
+
+
+class ClarificationStreamAnswerRequest(ClarificationAnswerRequest):
+    pass
 
 
 class AgentChatResponse(BaseModel):

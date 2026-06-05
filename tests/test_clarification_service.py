@@ -7,10 +7,29 @@ from app.services.clarification_service import (
     merge_clarification_answers,
     normalize_conversation_payload,
     normalize_clarification_payload,
+    normalize_draft_payload,
 )
 
 
 class ClarificationServiceTests(unittest.TestCase):
+    def test_normalize_draft_payload_accepts_reply_and_draft(self):
+        result = normalize_draft_payload({
+            "reply": "我整理好了，确认后就发布。",
+            "draft": {
+                "title": "周六羽毛球",
+                "activity_type": "羽毛球",
+                "location": "上海市徐汇区",
+                "start_time": "2026-06-06T19:00:00+08:00",
+                "end_time": "2026-06-06T21:00:00+08:00",
+                "preferences": ["女生优先", "中等水平"],
+                "constraints": [],
+            },
+        })
+
+        self.assertEqual(result["reply"], "我整理好了，确认后就发布。")
+        self.assertEqual(result["draft"]["activity_type"], "羽毛球")
+        self.assertEqual(result["draft"]["preferences"], ["女生优先", "中等水平"])
+
     def test_normalize_payload_keeps_compact_valid_questions(self):
         payload = {
             "reply": "我把需要确认的点整理成卡片。",
@@ -40,6 +59,27 @@ class ClarificationServiceTests(unittest.TestCase):
         self.assertEqual(len(result["questions"]), 1)
         self.assertEqual(result["questions"][0]["id"], "photo_style")
         self.assertEqual(result["questions"][0]["options"][0]["label"], "街拍")
+
+    def test_normalize_payload_keeps_all_questions_and_default_option_ids(self):
+        result = normalize_conversation_payload({
+            "action": "clarify",
+            "reply": "我先确认几个点。",
+            "questions": [
+                {"id": "gender", "title": "搭子性别偏好？", "options": [{"id": "any", "label": "不限"}]},
+                {"id": "time", "title": "几点方便？", "options": [{"id": "night", "label": "晚上"}]},
+                {"id": "skill", "title": "水平要求？", "options": [{"id": "any", "label": "都行"}]},
+                {"id": "cost", "title": "费用怎么分？", "options": [{"id": "aa", "label": "AA"}]},
+                {
+                    "id": "preference",
+                    "title": "特殊偏好？",
+                    "default_option_ids": ["quiet"],
+                    "options": [{"id": "quiet", "label": "安静一点", "value": "安静一点"}],
+                },
+            ],
+        })
+
+        self.assertEqual([q["id"] for q in result["questions"]], ["gender", "time", "skill", "cost", "preference"])
+        self.assertEqual(result["questions"][-1]["default_option_ids"], ["quiet"])
 
     def test_normalize_payload_rejects_malformed_questions_safely(self):
         result = normalize_clarification_payload({
@@ -126,6 +166,103 @@ class ClarificationServiceTests(unittest.TestCase):
         )
 
         self.assertEqual(merged["preferences"], ["场地费 AA"])
+
+    def test_merge_default_field_card_answer_updates_draft_fields(self):
+        merged = merge_clarification_answers(
+            draft={"title": "周日下午看电影", "preferences": [], "constraints": []},
+            questions=[
+                {
+                    "id": "event",
+                    "type": "single_choice",
+                    "options": [
+                        {"id": "movie", "label": "看电影", "value": {"activity_type": "看电影"}},
+                    ],
+                },
+                {
+                    "id": "time",
+                    "type": "single_choice",
+                    "options": [
+                        {
+                            "id": "sun_afternoon",
+                            "label": "周日 14:00-17:00",
+                            "value": {
+                                "start_time": "2026-06-07T14:00:00+08:00",
+                                "end_time": "2026-06-07T17:00:00+08:00",
+                            },
+                        },
+                    ],
+                },
+            ],
+            answers=[
+                {"question_id": "event", "option_ids": ["movie"]},
+                {"question_id": "time", "option_ids": ["sun_afternoon"]},
+            ],
+            user_birth_date=None,
+            today=date(2026, 6, 5),
+        )
+
+        self.assertEqual(merged["activity_type"], "看电影")
+        self.assertEqual(merged["start_time"], "2026-06-07T14:00:00+08:00")
+        self.assertEqual(merged["end_time"], "2026-06-07T17:00:00+08:00")
+        self.assertEqual(merged["preferences"], [])
+
+    def test_merge_time_custom_value_updates_start_and_end_time(self):
+        merged = merge_clarification_answers(
+            draft={"title": "周日下午看电影", "preferences": [], "constraints": []},
+            questions=[
+                {
+                    "id": "time",
+                    "type": "single_choice",
+                    "options": [
+                        {
+                            "id": "default_time",
+                            "label": "周日 14:00-17:00",
+                            "value": {
+                                "start_time": "2026-06-07T14:00:00+08:00",
+                                "end_time": "2026-06-07T17:00:00+08:00",
+                            },
+                        },
+                    ],
+                },
+            ],
+            answers=[
+                {
+                    "question_id": "time",
+                    "option_ids": ["default_time"],
+                    "custom_value": {
+                        "start_time": "2026-06-07T15:00:00+08:00",
+                        "end_time": "2026-06-07T18:00:00+08:00",
+                    },
+                },
+            ],
+            user_birth_date=None,
+            today=date(2026, 6, 5),
+        )
+
+        self.assertEqual(merged["start_time"], "2026-06-07T15:00:00+08:00")
+        self.assertEqual(merged["end_time"], "2026-06-07T18:00:00+08:00")
+        self.assertEqual(merged["preferences"], [])
+
+    def test_merge_gender_answer_records_partner_gender_preference(self):
+        merged = merge_clarification_answers(
+            draft={"title": "看电影", "preferences": [], "constraints": []},
+            questions=[
+                {
+                    "id": "gender",
+                    "type": "single_choice",
+                    "match_filter": "preference",
+                    "options": [
+                        {"id": "female_preferred", "label": "女生优先", "value": "搭子性别偏好：女生优先"},
+                    ],
+                }
+            ],
+            answers=[{"question_id": "gender", "option_ids": ["female_preferred"]}],
+            user_birth_date=None,
+            today=date(2026, 6, 5),
+        )
+
+        self.assertEqual(merged["preferences"], ["搭子性别偏好：女生优先"])
+        self.assertEqual(merged["constraints"], [])
 
     def test_merge_location_question_writes_location_not_constraints(self):
         merged = merge_clarification_answers(

@@ -52,6 +52,10 @@ services:
       ASC_INTERNAL_GROUP_NAME: ${ASC_INTERNAL_GROUP_NAME:-搭子test}
       ASC_INTERNAL_GROUP_ID: ${ASC_INTERNAL_GROUP_ID:-}
       ASC_INVITE_ROLE: ${ASC_INVITE_ROLE:-MARKETING}
+      APNS_KEY_ID: ${APNS_KEY_ID:-}
+      APNS_TEAM_ID: ${APNS_TEAM_ID:-}
+      APNS_PRIVATE_KEY_PATH: ${APNS_PRIVATE_KEY_PATH:-}
+      APNS_BUNDLE_ID: ${APNS_BUNDLE_ID:-com.linke.dazi}
     volumes:
       - ./app:/code/app
       - .:/code/runtime-config

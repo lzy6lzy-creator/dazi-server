@@ -14,7 +14,7 @@ class PromptBuilderTests(unittest.TestCase):
         self.assertNotIn("clarification_questions", prompt_names)
         self.assertNotIn("event_extraction", prompt_names)
 
-    def test_conversation_orchestrator_prompt_includes_state_and_json_actions(self):
+    def test_conversation_orchestrator_prompt_includes_state_and_tag_actions(self):
         prompt = PromptBuilder.build_conversation_orchestrator_prompt(
             user_name="小明",
             user_city="上海",
@@ -27,6 +27,9 @@ class PromptBuilderTests(unittest.TestCase):
         )
 
         self.assertIn("chat|clarify|draft|cancel", prompt)
+        self.assertIn("<reply>", prompt)
+        self.assertIn("<question_json>", prompt)
+        self.assertIn("逐项输出", prompt)
         self.assertIn("## 当前时间", prompt)
         self.assertIn("当前已有待确认活动草稿", prompt)
         self.assertIn("当前位置：上海 徐汇区", prompt)
@@ -47,14 +50,69 @@ class PromptBuilderTests(unittest.TestCase):
         )
 
         self.assertIn("action 必须是 clarify，而不是 draft", prompt)
-        self.assertIn("若用户没明说地点，默认使用当前位置写入 draft.location", prompt)
+        self.assertIn("服务端不会用规则补 event/time/location/gender/preferences", prompt)
+        self.assertIn("不要依赖服务端补字段", prompt)
+        self.assertIn("如果地点未明确", prompt)
         self.assertIn("用户明确提到地点时，以用户表述为准", prompt)
         self.assertIn("只使用 location 一个地点槽位", prompt)
         self.assertNotIn("id=city", prompt)
         self.assertNotIn("draft.city", prompt)
-        self.assertIn("首轮澄清必须问 time、skill、cost", prompt)
+        self.assertIn("time 永远展示", prompt)
+        self.assertIn("不是服务端固定默认时间", prompt)
         self.assertIn("新手也行", prompt)
         self.assertIn("场地费 AA", prompt)
+
+    def test_conversation_orchestrator_prompt_skips_already_explicit_gender_card(self):
+        prompt = PromptBuilder.build_conversation_orchestrator_prompt(
+            user_name="小明",
+            current_location="上海 徐汇区",
+            user_interests=["电影"],
+            user_bio="",
+            birth_date=None,
+            memories=[],
+            conversation_state="无待处理状态",
+        )
+
+        self.assertIn("性别不是每次都展示的卡片", prompt)
+        self.assertIn("不再重复展示 gender 卡片", prompt)
+        self.assertIn("id=gender", prompt)
+        self.assertIn("用户自己的 profile gender 不能替代本次活动的搭子性别偏好", prompt)
+
+    def test_conversation_orchestrator_prompt_combines_extraction_with_default_cards(self):
+        prompt = PromptBuilder.build_conversation_orchestrator_prompt(
+            user_name="小明",
+            current_location="上海 徐汇区",
+            user_interests=["电影"],
+            user_bio="",
+            birth_date=None,
+            memories=[],
+            conversation_state="无待处理状态",
+        )
+
+        self.assertIn("clarify 同时做信息抽取和结构化确认", prompt)
+        self.assertIn("不要限制 questions 数量", prompt)
+        self.assertIn("default_option_ids", prompt)
+        self.assertIn("start_time 和 end_time", prompt)
+        self.assertIn("LLM 要根据用户表达推断具体 start_time/end_time", prompt)
+        self.assertIn("前端固定默认时间", prompt)
+        self.assertIn("小/中/大多个候选", prompt)
+
+    def test_draft_prompt_builder_outputs_tag_format(self):
+        prompt = PromptBuilder.build_event_draft_prompt(
+            user_name="小明",
+            current_location="上海市徐汇区",
+            original_message="周六晚上想打羽毛球，女生优先",
+            draft_seed={"activity_type": "羽毛球", "preferences": ["女生优先"]},
+            questions=[{"id": "time", "title": "时间", "options": []}],
+            answers=[{"question_id": "time", "custom_value": {"start_time": "2026-06-06T19:00:00+08:00", "end_time": "2026-06-06T21:00:00+08:00"}}],
+            free_text=None,
+        )
+
+        self.assertIn("生成最终事件草稿", prompt)
+        self.assertIn("<draft_reply>", prompt)
+        self.assertIn("<draft_json>", prompt)
+        self.assertIn("周六晚上想打羽毛球", prompt)
+        self.assertIn("女生优先", prompt)
 
     def test_room_agent_prompt_uses_public_room_context_and_private_boundary(self):
         prompt = PromptBuilder.build_room_agent_reply_prompt(

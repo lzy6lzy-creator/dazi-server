@@ -147,7 +147,6 @@ class EventLocationPassthroughTests(unittest.IsolatedAsyncioTestCase):
             await agent_chat_api._create_event_from_draft(
                 user_id=user_id,
                 uid_str=str(user_id),
-                current_location="北京 朝阳区",
                 db=db,
             )
 
@@ -156,7 +155,7 @@ class EventLocationPassthroughTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(event.location, "上海")
         self.assertIsNone(event.city_normalized)
 
-    async def test_agent_draft_create_defaults_missing_location_to_current_location(self):
+    async def test_agent_draft_create_does_not_default_missing_location_to_current_location(self):
         db = FakeDb()
         user_id = uuid4()
         draft = {
@@ -171,13 +170,12 @@ class EventLocationPassthroughTests(unittest.IsolatedAsyncioTestCase):
             await agent_chat_api._create_event_from_draft(
                 user_id=user_id,
                 uid_str=str(user_id),
-                current_location="上海 徐汇区",
                 db=db,
             )
 
         event = db.added[0]
         self.assertIsNone(event.city)
-        self.assertEqual(event.location, "上海 徐汇区")
+        self.assertIsNone(event.location)
         self.assertIsNone(event.city_normalized)
 
     async def test_agent_draft_create_keeps_region_location_without_city(self):
@@ -197,7 +195,6 @@ class EventLocationPassthroughTests(unittest.IsolatedAsyncioTestCase):
             await agent_chat_api._create_event_from_draft(
                 user_id=user_id,
                 uid_str=str(user_id),
-                current_location="上海 徐汇区",
                 db=db,
             )
 

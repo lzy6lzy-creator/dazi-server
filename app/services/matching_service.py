@@ -33,6 +33,7 @@ from app.services.matching_policy import (
     is_event_open_for_matching,
 )
 from app.services.location_policy import is_location_compatible
+from app.services.push_notification_service import push_notification_service
 
 logger = logging.getLogger(__name__)
 
@@ -546,6 +547,21 @@ class MatchingService:
                 "event_id": str(eid),
                 "status": "matched",
             })
+            await ws_manager.send_to_user(str(uid), {
+                "type": "room_created",
+                "room_id": str(room.id),
+            })
+
+        await push_notification_service.send_to_users(
+            db,
+            [event_a.user_id, event_b.user_id],
+            title="匹配成功，聊天室已创建",
+            body="新的搭子聊天室已开启，去打个招呼吧。",
+            data={
+                "type": "room_created",
+                "room_id": str(room.id),
+            },
+        )
 
         return room.id
 

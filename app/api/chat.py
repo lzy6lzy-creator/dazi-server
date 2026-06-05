@@ -29,6 +29,7 @@ from app.api.schemas import (
 )
 from app.api.chat_helpers import room_event_ids
 from app.api.ws import manager as ws_manager
+from app.services.push_notification_service import push_notification_service
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,79 @@ async def _broadcast_message_to_room(room_id: UUID, msg: ChatMessage, db: AsyncS
         },
     }
     await ws_manager.broadcast_to_users(user_ids, payload)
+
+
+async def _push_message_to_room(
+    room_id: UUID,
+    msg: ChatMessage,
+    db: AsyncSession,
+    *,
+    exclude_user_ids: set[UUID] | None = None,
+) -> None:
+    members_r = await db.execute(
+        select(ChatRoomMember).where(
+            ChatRoomMember.room_id == room_id,
+            ChatRoomMember.role == "user",
+        )
+    )
+    exclude_user_ids = exclude_user_ids or set()
+    user_ids = [
+        member.user_id
+        for member in members_r.scalars().all()
+        if member.user_id not in exclude_user_ids
+    ]
+    if not user_ids:
+        return
+
+    room_title = await _room_push_title(room_id, db)
+    sender_name = await _message_sender_name(msg, db)
+    content = _truncate_push_text(msg.content)
+    title = room_title
+    if sender_name:
+        title = f"{sender_name} · {room_title}"
+    body = content or "有一条新消息"
+
+    await push_notification_service.send_to_users(
+        db,
+        user_ids,
+        title=title,
+        body=body,
+        data={
+            "type": "new_message",
+            "room_id": str(room_id),
+            "message_id": str(msg.id),
+        },
+    )
+
+
+async def _room_push_title(room_id: UUID, db: AsyncSession) -> str:
+    room_r = await db.execute(select(ChatRoom).where(ChatRoom.id == room_id))
+    room = room_r.scalar_one_or_none()
+    if room and room.event_id_a:
+        event_r = await db.execute(select(Event).where(Event.id == room.event_id_a))
+        event = event_r.scalar_one_or_none()
+        if event and event.title:
+            return event.title
+    return "聊天室"
+
+
+async def _message_sender_name(msg: ChatMessage, db: AsyncSession) -> str:
+    if msg.sender_type == "system":
+        return "系统"
+    if msg.sender_type == "agent":
+        agent_r = await db.execute(select(Agent).where(Agent.user_id == msg.sender_id))
+        agent = agent_r.scalar_one_or_none()
+        return agent.name if agent else "AI"
+    user_r = await db.execute(select(User).where(User.id == msg.sender_id))
+    user = user_r.scalar_one_or_none()
+    return user.name if user else "用户"
+
+
+def _truncate_push_text(text: str, limit: int = 90) -> str:
+    cleaned = (text or "").strip()
+    if len(cleaned) <= limit:
+        return cleaned
+    return cleaned[:limit] + "..."
 
 
 def _format_room_event_context(event: Event | None, label: str, self_user_id: UUID) -> str:
@@ -304,6 +378,7 @@ async def send_message(
 
     # WebSocket 广播消息给聊天室成员
     await _broadcast_message_to_room(room_id, msg, db)
+    await _push_message_to_room(room_id, msg, db, exclude_user_ids={user_id})
 
     # 检测 @Agent，触发 Agent 回复
     if data.mentions:
@@ -417,6 +492,7 @@ async def submit_vote(
             db.add(close_msg)
             await db.flush()
             await _broadcast_message_to_room(room_id, close_msg, db)
+            await _push_message_to_room(room_id, close_msg, db)
 
             # 事件回退
             await _handle_vote_rejection(room, db)
@@ -453,6 +529,7 @@ async def submit_vote(
             db.add(match_msg)
             await db.flush()
             await _broadcast_message_to_room(room_id, match_msg, db)
+            await _push_message_to_room(room_id, match_msg, db)
 
             # 通知双方
             members_r = await db.execute(
@@ -692,6 +769,7 @@ async def _handle_agent_mention(
 
                 # WebSocket 广播 Agent 回复
                 await _broadcast_message_to_room(room_id, agent_msg, db)
+                await _push_message_to_room(room_id, agent_msg, db)
 
             await db.commit()
 

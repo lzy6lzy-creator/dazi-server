@@ -16,11 +16,12 @@ from app.core.config import settings
 from app.core.redis import close_redis
 from app.core.log_buffer import log_buffer
 from app.services.llm_service import llm_service
+from app.services.agent_server import agent_server
 from app.services.embedding_service import embedding_service
 from app.services.scheduler import match_scheduler
 
 # 导入所有 model 以确保建表时能发现它们
-from app.models.user import User, Agent, AgentMemory, EventMemory, MemoryEvidence, AgentChatMessage  # noqa: F401
+from app.models.user import User, Agent, AgentMemory, EventMemory, MemoryEvidence, AgentChatMessage, PushDeviceToken  # noqa: F401
 from app.models.event import Event, MatchLog, MatchBlocklist  # noqa: F401
 from app.models.chat import ChatRoom, ChatRoomMember, ChatMessage, ChatRoomVote, PassiveMatchRequest  # noqa: F401
 from app.models.prompt import PromptTemplate  # noqa: F401
@@ -37,6 +38,7 @@ from app.api.beta import router as beta_router
 from app.api.feedback import router as feedback_router
 from app.api.admin import router as admin_router
 from app.api.ws import router as ws_router
+from app.api.notifications import router as notifications_router
 
 # 配置日志 + 内存缓冲区
 log_buffer.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
@@ -80,6 +82,7 @@ async def lifespan(app: FastAPI):
 
     # 初始化 LLM httpx 客户端
     llm_service.start()
+    agent_server.start()
 
     # 启动定时匹配任务（每小时扫描 pending 事件）
     match_scheduler.start()
@@ -87,6 +90,7 @@ async def lifespan(app: FastAPI):
     yield
     # 关闭时清理资源
     await match_scheduler.stop()
+    await agent_server.close()
     await llm_service.close()
     await embedding_service.close()
     await close_redis()
@@ -114,6 +118,8 @@ async def _ensure_runtime_schema(conn) -> None:
     await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ"))
     await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'active'"))
     await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS superseded_by_id UUID"))
+    await conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_push_device_tokens_token_unique ON push_device_tokens(token)"))
+    await conn.execute(text("CREATE INDEX IF NOT EXISTS ix_push_device_tokens_user_active ON push_device_tokens(user_id, is_active)"))
 
 
 app = FastAPI(
@@ -149,6 +155,7 @@ app.include_router(beta_router)
 app.include_router(feedback_router)
 app.include_router(admin_router)
 app.include_router(ws_router)
+app.include_router(notifications_router)
 
 # 静态文件
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

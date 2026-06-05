@@ -36,6 +36,13 @@ class Settings(BaseSettings):
     ASC_INTERNAL_GROUP_ID: str = ""
     ASC_INVITE_ROLE: str = "MARKETING"
 
+    # Apple Push Notification service (APNs) for iOS remote notifications.
+    # TestFlight and App Store builds use production APNs; DEBUG builds use sandbox.
+    APNS_KEY_ID: str = ""
+    APNS_TEAM_ID: str = ""
+    APNS_PRIVATE_KEY_PATH: str = ""
+    APNS_BUNDLE_ID: str = "com.linke.dazi"
+
     # LLM
     LLM_API_KEY: str = ""
     LLM_BASE_URL: str = "https://api.moonshot.cn/v1"
@@ -43,6 +50,16 @@ class Settings(BaseSettings):
     LLM_MAX_CONCURRENT_REQUESTS: int = 1
     LLM_MIN_INTERVAL_SECONDS: float = 2.0
     LLM_RETRIES: int = 5
+
+    # Agent model routing. Empty values fall back to LLM_* settings.
+    AGENT_MODEL_PROVIDER: str = ""
+    AGENT_MODEL: str = ""
+    AGENT_BASE_URL: str = ""
+    AGENT_API_KEY: str = ""
+    AGENT_DRAFT_MODEL_PROVIDER: str = ""
+    AGENT_DRAFT_MODEL: str = ""
+    AGENT_DRAFT_BASE_URL: str = ""
+    AGENT_DRAFT_API_KEY: str = ""
 
     # Embedding
     EMBEDDING_MODEL: str = "BAAI/bge-base-zh-v1.5"
