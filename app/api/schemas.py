@@ -72,6 +72,23 @@ class UserResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class PublicUserProfileResponse(BaseModel):
+    id: UUID
+    name: str
+    gender: Optional[str] = None
+    birth_year: Optional[int] = None
+    birth_date: Optional[date] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+    interests: Optional[list[str]] = None
+    city: Optional[str] = None
+    occupation: Optional[str] = None
+    custom_interests: Optional[str] = None
+    welcome_disturb: bool = False
+
+    model_config = {"from_attributes": True}
+
+
 # ── Notifications ──
 
 class PushDeviceTokenRequest(BaseModel):

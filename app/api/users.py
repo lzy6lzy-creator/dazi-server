@@ -18,6 +18,7 @@ from app.api.schemas import (
     UserResponse, UserUpdate,
     AgentResponse, AgentUpdate,
     MemoryResponse, MemoryUpdate,
+    PublicUserProfileResponse,
 )
 
 router = APIRouter(prefix="/api/v1", tags=["users"])
@@ -58,6 +59,21 @@ async def update_me(
         user.embedding = await _generate_user_embedding(user)
 
     await db.flush()
+    return user
+
+
+@router.get("/users/{profile_user_id}/profile", response_model=PublicUserProfileResponse)
+async def get_public_user_profile(
+    profile_user_id: UUID,
+    _viewer_id: UUID = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(User).where(User.id == profile_user_id, User.is_active == True)
+    )
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
     return user
 
 
