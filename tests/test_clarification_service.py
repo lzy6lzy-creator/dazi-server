@@ -264,6 +264,39 @@ class ClarificationServiceTests(unittest.TestCase):
         self.assertEqual(merged["preferences"], ["搭子性别偏好：女生优先"])
         self.assertEqual(merged["constraints"], [])
 
+    def test_merge_gender_answer_supports_strict_and_preferred_options(self):
+        questions = [
+            {
+                "id": "gender",
+                "type": "single_choice",
+                "match_filter": "preference",
+                "options": [
+                    {"id": "male", "label": "男", "value": {"constraints": ["搭子性别：男"]}},
+                    {"id": "female_preferred", "label": "优先女", "value": {"preferences": ["搭子性别偏好：女生优先"]}},
+                ],
+            }
+        ]
+
+        strict = merge_clarification_answers(
+            draft={"title": "看电影", "preferences": [], "constraints": []},
+            questions=questions,
+            answers=[{"question_id": "gender", "option_ids": ["male"]}],
+            user_birth_date=None,
+            today=date(2026, 6, 5),
+        )
+        preferred = merge_clarification_answers(
+            draft={"title": "看电影", "preferences": [], "constraints": []},
+            questions=questions,
+            answers=[{"question_id": "gender", "option_ids": ["female_preferred"]}],
+            user_birth_date=None,
+            today=date(2026, 6, 5),
+        )
+
+        self.assertEqual(strict["constraints"], ["搭子性别：男"])
+        self.assertEqual(strict["preferences"], [])
+        self.assertEqual(preferred["preferences"], ["搭子性别偏好：女生优先"])
+        self.assertEqual(preferred["constraints"], [])
+
     def test_merge_location_question_writes_location_not_constraints(self):
         merged = merge_clarification_answers(
             draft={"title": "看电影", "preferences": [], "constraints": []},
@@ -375,6 +408,22 @@ class ClarificationServiceTests(unittest.TestCase):
         self.assertEqual(merged["age_filter_max"], 32)
         self.assertEqual(merged["age_filter_mode"], "preference")
         self.assertIn("年龄偏好 23-32 岁", merged["preferences"])
+
+    def test_normalize_draft_payload_preserves_age_filter_fields(self):
+        result = normalize_draft_payload({
+            "reply": "草稿好了。",
+            "draft": {
+                "title": "咖啡",
+                "activity_type": "咖啡",
+                "age_filter_min": 23,
+                "age_filter_max": 32,
+                "age_filter_mode": "preference",
+            },
+        })
+
+        self.assertEqual(result["draft"]["age_filter_min"], 23)
+        self.assertEqual(result["draft"]["age_filter_max"], 32)
+        self.assertEqual(result["draft"]["age_filter_mode"], "preference")
 
     def test_normalize_conversation_payload_preserves_draft_and_questions(self):
         payload = {

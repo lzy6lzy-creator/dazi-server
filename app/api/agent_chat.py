@@ -277,6 +277,10 @@ async def answer_clarification_stream(
                     yield sse_event("draft_delta", {"text": visible})
 
             payload = normalize_draft_payload(parse_draft_tag_payload(parser.raw_text))
+            payload["draft"] = _merge_stream_draft_with_structured_answers(
+                context["deterministic_draft"],
+                payload["draft"],
+            )
             await _apply_stream_draft_state(
                 user=context["user"],
                 uid_str=context["uid_str"],
@@ -407,17 +411,25 @@ async def _build_clarification_draft_context(
         raise HTTPException(status_code=404, detail="澄清卡片已过期，请重新描述需求")
 
     answers = [answer.model_dump(exclude_none=True) for answer in req.answers]
+    deterministic_draft = merge_clarification_answers(
+        draft=session.get("draft") or {},
+        questions=session.get("questions") or [],
+        answers=answers,
+        user_birth_date=user.birth_date,
+        free_text=req.free_text,
+    )
     user_answer_text = _clarification_answers_to_text(session.get("questions") or [], answers, req.free_text)
     return {
         "user": user,
         "uid_str": uid_str,
         "session": session,
         "user_answer_text": user_answer_text,
+        "deterministic_draft": deterministic_draft,
         "prompt_args": {
             "user_name": user.name,
             "current_location": str(session.get("current_location") or user.city or ""),
             "original_message": str(session.get("original_message") or ""),
-            "draft_seed": session.get("draft") or {},
+            "draft_seed": deterministic_draft,
             "questions": session.get("questions") or [],
             "answers": answers,
             "free_text": req.free_text,
@@ -464,6 +476,45 @@ def _events_from_draft_payload(*, payload: dict, include_reply: bool = False) ->
     if payload.get("draft"):
         yield "draft_ready", {"event_draft_pending": True}
     yield "done", {}
+
+
+def _merge_stream_draft_with_structured_answers(
+    structured_draft: dict | None,
+    llm_draft: dict | None,
+) -> dict:
+    """Keep deterministic card answers when the streaming draft model omits them."""
+    structured = structured_draft if isinstance(structured_draft, dict) else {}
+    llm = llm_draft if isinstance(llm_draft, dict) else {}
+    merged = dict(structured)
+
+    for field in ("title", "activity_type", "location", "start_time", "end_time"):
+        value = llm.get(field)
+        if isinstance(value, str) and value.strip():
+            merged[field] = value.strip()
+
+    for field in ("preferences", "constraints"):
+        values: list[str] = []
+        for source in (structured.get(field), llm.get(field)):
+            if not isinstance(source, list):
+                continue
+            for item in source:
+                if isinstance(item, str):
+                    text = item.strip()
+                    if text and text not in values:
+                        values.append(text)
+        if values:
+            merged[field] = values
+
+    for field in ("age_filter_min", "age_filter_max", "age_filter_mode"):
+        if structured.get(field) is not None:
+            merged[field] = structured[field]
+        elif llm.get(field) is not None:
+            merged[field] = llm[field]
+
+    if isinstance(structured.get("clarification_answers"), list):
+        merged["clarification_answers"] = structured["clarification_answers"]
+
+    return merged
 
 
 def _events_from_agent_response(

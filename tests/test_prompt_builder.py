@@ -62,18 +62,23 @@ class PromptBuilderTests(unittest.TestCase):
         self.assertIn("新手也行", prompt)
         self.assertIn("场地费 AA", prompt)
 
-    def test_conversation_orchestrator_prompt_skips_already_explicit_gender_card(self):
+    def test_conversation_orchestrator_prompt_includes_age_and_gender_cards(self):
         prompt = PromptBuilder.build_conversation_orchestrator_prompt(
             user_name="小明",
             current_location="上海 徐汇区",
             user_interests=["电影"],
             user_bio="",
-            birth_date=None,
+            birth_date="1998-06-05",
             memories=[],
             conversation_state="无待处理状态",
         )
 
-        self.assertIn("性别不是每次都展示的卡片", prompt)
+        self.assertIn("年龄和性别是常规匹配确认项", prompt)
+        self.assertIn("id=age", prompt)
+        self.assertIn("type=age_range", prompt)
+        self.assertIn("-5 到 +5", prompt)
+        self.assertIn("default_option_ids", prompt)
+        self.assertIn("男、女、优先男、优先女、不限", prompt)
         self.assertIn("不再重复展示 gender 卡片", prompt)
         self.assertIn("id=gender", prompt)
         self.assertIn("用户自己的 profile gender 不能替代本次活动的搭子性别偏好", prompt)

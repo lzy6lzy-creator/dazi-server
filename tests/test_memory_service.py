@@ -8,6 +8,7 @@ from app.services.memory_service import (
     build_event_memory_candidates,
     derive_long_term_memory_actions,
     format_memory_context,
+    memory_updated_payload,
 )
 
 
@@ -81,6 +82,50 @@ class MemoryServiceTests(unittest.TestCase):
         self.assertEqual(len(reinforce), 1)
         self.assertEqual(reinforce[0].target_memory_id, existing.id)
 
+    def test_activity_type_event_memory_uses_stable_key(self):
+        user_id = uuid4()
+        first = build_event_memory_candidates(
+            user_id=user_id,
+            event_id=uuid4(),
+            draft={"activity_type": "火锅"},
+        )
+        second = build_event_memory_candidates(
+            user_id=user_id,
+            event_id=uuid4(),
+            draft={"activity_type": "火锅"},
+        )
+
+        self.assertEqual(first[0].key, "event.activity_type.火锅")
+        self.assertEqual(first[0].key, second[0].key)
+
+    def test_repeated_activity_type_reinforces_single_memory(self):
+        user_id = uuid4()
+        existing = AgentMemory(
+            user_id=user_id,
+            type="preference",
+            content="经常发起火锅活动",
+            key="event.activity_type.火锅",
+            category="activity",
+            occurrence_count=2,
+            confidence=0.55,
+        )
+        event_memories = build_event_memory_candidates(
+            user_id=user_id,
+            event_id=uuid4(),
+            draft={"activity_type": "火锅"},
+        )
+
+        actions = derive_long_term_memory_actions(
+            text="周末继续吃火锅",
+            event_memories=event_memories,
+            existing_memories=[existing],
+        )
+
+        reinforce = [action for action in actions if action.action == "reinforce"]
+        self.assertEqual(len(reinforce), 1)
+        self.assertEqual(reinforce[0].target_memory_id, existing.id)
+        self.assertEqual(reinforce[0].key, "event.activity_type.火锅")
+
     def test_style_memory_context_is_supported(self):
         memory = AgentMemory(
             user_id=uuid4(),
@@ -94,6 +139,27 @@ class MemoryServiceTests(unittest.TestCase):
 
         self.assertIn("[风格][style]", text)
         self.assertIn("喜欢直接总结后确认", text)
+
+    def test_memory_updated_payload_includes_app_toast_fields(self):
+        memory = AgentMemory(
+            id=uuid4(),
+            user_id=uuid4(),
+            type="preference",
+            content="经常发起火锅活动",
+            key="event.activity_type.火锅",
+            category="activity",
+            occurrence_count=3,
+            confidence=0.71,
+            status="active",
+        )
+
+        payload = memory_updated_payload(memory, action="reinforce")
+
+        self.assertEqual(payload["type"], "memory_updated")
+        self.assertEqual(payload["action"], "reinforce")
+        self.assertEqual(payload["memory"]["id"], str(memory.id))
+        self.assertEqual(payload["memory"]["content"], "经常发起火锅活动")
+        self.assertEqual(payload["memory"]["occurrence_count"], 3)
 
 
 if __name__ == "__main__":

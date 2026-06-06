@@ -4,6 +4,7 @@ import logging
 import json
 from uuid import UUID
 
+from app.services.agent_server import agent_server
 from app.services.matching_policy import A2AEvaluation, A2A_MATCH_THRESHOLD
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ def parse_a2a_response(
         + _string_list(payload.get("uncertainties"))
         + _string_list(payload.get("potential_issues"))
     )
+    score_breakdown = _score_breakdown(payload.get("score_breakdown"))
     requested_match = bool(payload.get("should_match"))
     has_blocking_conflict = bool(payload.get("has_blocking_conflict"))
     should_match = (
@@ -55,6 +57,7 @@ def parse_a2a_response(
         summary=summary,
         reasons=reasons,
         issues=issues,
+        score_breakdown=score_breakdown,
         dialogue_log=dialogue_log,
     )
 
@@ -70,6 +73,25 @@ def _string_list(value) -> list[str]:
     if not isinstance(value, list):
         return []
     return [str(item) for item in value if str(item).strip()]
+
+
+def _score_breakdown(value) -> list[dict]:
+    if not isinstance(value, list):
+        return []
+    rows: list[dict] = []
+    for item in value:
+        if not isinstance(item, dict):
+            continue
+        dimension = str(item.get("dimension") or "").strip()
+        if not dimension:
+            continue
+        rows.append({
+            "dimension": dimension,
+            "score": _safe_float(item.get("score")),
+            "reason": str(item.get("reason") or "").strip(),
+            "blocking": bool(item.get("blocking")),
+        })
+    return rows
 
 
 def _format_dialogue(dialogue) -> str | None:
@@ -89,7 +111,6 @@ def _format_dialogue(dialogue) -> str | None:
 class A2AMatcher:
     async def evaluate(self, source, candidate, db) -> A2AEvaluation:
         try:
-            from app.services.llm_service import llm_service
             from app.services.prompt_builder import PromptBuilder
 
             prompt = PromptBuilder.build_a2a_dialogue_prompt()
@@ -109,7 +130,7 @@ class A2AMatcher:
                     dialogue=dialogue,
                     self_private=context["private"][side],
                 )
-                result = await self._call_a2a_json(llm_service, prompt, payload)
+                result = await self._call_a2a_json(prompt, payload)
                 message = str(result.get("message") or "").strip()
                 if message:
                     dialogue.append({"speaker": side, "content": message})
@@ -118,7 +139,7 @@ class A2AMatcher:
                 public_events=context["public_events"],
                 dialogue=dialogue,
             )
-            judge_result = await self._call_a2a_json(llm_service, prompt, judge_payload)
+            judge_result = await self._call_a2a_json(prompt, judge_payload)
             if isinstance(judge_result, dict):
                 judge_result["dialogue"] = dialogue
             return parse_a2a_response(source.id, candidate.id, judge_result)
@@ -161,8 +182,8 @@ class A2AMatcher:
         }
 
     @staticmethod
-    async def _call_a2a_json(llm_service, prompt: str, payload: dict) -> dict:
-        result = await llm_service.chat_json(
+    async def _call_a2a_json(prompt: str, payload: dict) -> dict:
+        result = await agent_server.chat_json(
             [
                 {"role": "system", "content": prompt},
                 {
@@ -171,6 +192,7 @@ class A2AMatcher:
                     + json.dumps(payload, ensure_ascii=False, indent=2),
                 },
             ],
+            purpose="conversation",
             temperature=0.3,
             max_tokens=2048,
         )

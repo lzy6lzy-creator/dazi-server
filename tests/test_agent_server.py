@@ -43,6 +43,13 @@ class FakeClient:
 
 
 class AgentServerTests(unittest.IsolatedAsyncioTestCase):
+    def test_extract_json_handles_markdown_and_embedded_payload(self):
+        payload = AgentServer.extract_json('```json\n{"reply":"你好"}\n```')
+        self.assertEqual(payload, {"reply": "你好"})
+
+        embedded = AgentServer.extract_json('模型输出：{"reply":"可以"}')
+        self.assertEqual(embedded, {"reply": "可以"})
+
     async def test_kimi_k2_payload_disables_thinking_and_uses_k2_temperature(self):
         server = AgentServer(
             conversation_config=AgentModelConfig(

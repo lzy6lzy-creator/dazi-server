@@ -9,6 +9,7 @@ MAX_OPTIONS = 6
 _CONVERSATION_ACTIONS = {"chat", "clarify", "draft", "cancel"}
 _DRAFT_STRING_FIELDS = ("title", "activity_type", "location", "start_time", "end_time")
 _DRAFT_LIST_FIELDS = ("preferences", "constraints")
+_AGE_FILTER_MODE_VALUES = {"preference", "hard_filter"}
 _LOCATION_QUESTION_IDS = {"city", "location", "area", "place", "district", "region"}
 _EVENT_QUESTION_IDS = {"event", "activity", "activity_type"}
 
@@ -187,6 +188,16 @@ def _sanitize_draft(raw_draft: Any) -> dict:
     for field in _DRAFT_LIST_FIELDS:
         if field in raw_draft:
             draft[field] = _clean_string_list(raw_draft.get(field))
+
+    age_min = _safe_int(raw_draft.get("age_filter_min"))
+    age_max = _safe_int(raw_draft.get("age_filter_max"))
+    if age_min is not None and age_max is not None:
+        if age_min > age_max:
+            age_min, age_max = age_max, age_min
+        draft["age_filter_min"] = age_min
+        draft["age_filter_max"] = age_max
+        mode = _clean_string(raw_draft.get("age_filter_mode")) or "preference"
+        draft["age_filter_mode"] = mode if mode in _AGE_FILTER_MODE_VALUES else "preference"
 
     _remove_place_labels_from_lists(
         draft,

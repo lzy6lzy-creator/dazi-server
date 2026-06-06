@@ -51,6 +51,7 @@ class MatchLog(Base):
     score: Mapped[float] = mapped_column(Float, default=0.0)
     reasons: Mapped[list[str] | None] = mapped_column(ARRAY(String))
     issues: Mapped[list[str] | None] = mapped_column(ARRAY(String))
+    score_breakdown: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     dialogue_log: Mapped[str | None] = mapped_column(Text)
     result: Mapped[str] = mapped_column(String(20), default="pending")  # pending / accepted / rejected
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), default=lambda: datetime.now(timezone.utc))

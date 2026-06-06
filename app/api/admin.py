@@ -77,6 +77,27 @@ def append_internal_test_phone(phone: str | None, *, name: str, email: str) -> s
         raise HTTPException(status_code=500, detail=f"写入内测手机号白名单失败: {exc}") from exc
 
 
+def admin_event_detail_payload(event: Event, user: User | None = None) -> dict:
+    return {
+        "id": str(event.id),
+        "user_id": str(event.user_id),
+        "user_name": user.name if user else None,
+        "title": event.title,
+        "activity_type": event.activity_type,
+        "status": event.status,
+        "city": event.city,
+        "city_normalized": event.city_normalized,
+        "location": event.location,
+        "start_time": event.start_time.isoformat() if event.start_time else None,
+        "end_time": event.end_time.isoformat() if event.end_time else None,
+        "preferences": event.preferences or [],
+        "constraints": event.constraints or [],
+        "match_score": float(event.match_score) if event.match_score else None,
+        "matched_event_id": str(event.matched_event_id) if event.matched_event_id else None,
+        "created_at": event.created_at.isoformat(),
+    }
+
+
 # ── 系统状态 ──
 
 @router.get("/status")
@@ -214,6 +235,120 @@ async def preview_match(
     """查看事件的匹配候选 top10 评分详情（不执行匹配）"""
     from app.services.matching_service import matching_service
     return await matching_service.preview_match(event_id, db)
+
+
+@router.get("/match/detail/{event_id}/{candidate_id}")
+async def match_pair_detail(
+    event_id: UUID,
+    candidate_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """查看一对候选事件的 A2A 对话、日志、打分和黑名单记录。"""
+    event = await db.get(Event, event_id)
+    candidate = await db.get(Event, candidate_id)
+    if not event or not candidate:
+        raise HTTPException(status_code=404, detail="事件或候选事件不存在")
+
+    users_r = await db.execute(
+        select(User).where(User.id.in_({event.user_id, candidate.user_id}))
+    )
+    users_by_id = {user.id: user for user in users_r.scalars().all()}
+
+    pair_filter = or_(
+        (MatchLog.event_a_id == event_id) & (MatchLog.event_b_id == candidate_id),
+        (MatchLog.event_a_id == candidate_id) & (MatchLog.event_b_id == event_id),
+    )
+    logs_r = await db.execute(
+        select(MatchLog)
+        .where(pair_filter)
+        .order_by(MatchLog.created_at.desc())
+    )
+    logs = [
+        {
+            "id": str(log.id),
+            "event_a_id": str(log.event_a_id),
+            "event_b_id": str(log.event_b_id),
+            "stage": log.stage,
+            "score": float(log.score or 0),
+            "reasons": log.reasons or [],
+            "issues": log.issues or [],
+            "score_breakdown": log.score_breakdown or [],
+            "dialogue_log": log.dialogue_log,
+            "result": log.result,
+            "created_at": log.created_at.isoformat(),
+        }
+        for log in logs_r.scalars().all()
+    ]
+
+    blocklist_r = await db.execute(
+        select(MatchBlocklist)
+        .where(
+            or_(
+                (MatchBlocklist.event_a_id == event_id) & (MatchBlocklist.event_b_id == candidate_id),
+                (MatchBlocklist.event_a_id == candidate_id) & (MatchBlocklist.event_b_id == event_id),
+            )
+        )
+        .order_by(MatchBlocklist.created_at.desc())
+    )
+    blocklists = [
+        {
+            "id": str(row.id),
+            "event_a_id": str(row.event_a_id) if row.event_a_id else None,
+            "event_b_id": str(row.event_b_id) if row.event_b_id else None,
+            "user_a_id": str(row.user_a_id),
+            "user_b_id": str(row.user_b_id),
+            "reason": row.reason,
+            "source_room_id": str(row.source_room_id) if row.source_room_id else None,
+            "source_request_id": str(row.source_request_id) if row.source_request_id else None,
+            "created_at": row.created_at.isoformat(),
+        }
+        for row in blocklist_r.scalars().all()
+    ]
+
+    rooms_r = await db.execute(
+        select(ChatRoom)
+        .where(
+            or_(
+                (ChatRoom.event_id_a == event_id) & (ChatRoom.event_id_b == candidate_id),
+                (ChatRoom.event_id_a == candidate_id) & (ChatRoom.event_id_b == event_id),
+            )
+        )
+        .order_by(ChatRoom.created_at.desc())
+    )
+    rooms = [
+        {
+            "id": str(room.id),
+            "event_id_a": str(room.event_id_a) if room.event_id_a else None,
+            "event_id_b": str(room.event_id_b) if room.event_id_b else None,
+            "match_type": room.match_type,
+            "match_summary": room.match_summary,
+            "is_active": room.is_active,
+            "created_at": room.created_at.isoformat(),
+        }
+        for room in rooms_r.scalars().all()
+    ]
+
+    latest_a2a = next((log for log in logs if log["stage"].startswith("a2a")), None)
+    latest_log = logs[0] if logs else None
+
+    return {
+        "event": admin_event_detail_payload(event, users_by_id.get(event.user_id)),
+        "candidate": admin_event_detail_payload(candidate, users_by_id.get(candidate.user_id)),
+        "summary": {
+            "log_count": len(logs),
+            "latest_stage": latest_log["stage"] if latest_log else None,
+            "latest_score": latest_log["score"] if latest_log else None,
+            "latest_result": latest_log["result"] if latest_log else None,
+            "a2a_score": latest_a2a["score"] if latest_a2a else None,
+            "a2a_result": latest_a2a["result"] if latest_a2a else None,
+            "blocklisted": bool(blocklists),
+            "room_count": len(rooms),
+        },
+        "logs": logs,
+        "latest_a2a": latest_a2a,
+        "blocklists": blocklists,
+        "rooms": rooms,
+    }
 
 
 # ── 手动触发：单个事件匹配 ──
@@ -412,6 +547,7 @@ async def get_match_logs(
             "score": l.score,
             "reasons": l.reasons,
             "issues": l.issues,
+            "score_breakdown": l.score_breakdown or [],
             "result": l.result,
             "created_at": l.created_at.isoformat(),
         }

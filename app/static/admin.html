@@ -280,6 +280,12 @@ td {
   vertical-align: top;
 }
 tr:hover td { background: #171e27; }
+tr.click-row { cursor: pointer; }
+.detail-btn {
+  min-height: 26px;
+  padding: 0 8px;
+  font-size: 12px;
+}
 .table-wrap {
   overflow: auto;
   max-height: 62vh;
@@ -310,7 +316,7 @@ tr:hover td { background: #171e27; }
 }
 .badge-pending { color: #ffe0a3; border-color: rgba(224, 168, 61, .45); }
 .badge-matching { color: #cce6ff; border-color: rgba(90, 167, 255, .45); }
-.badge-matched, .badge-a2a_round_1 { color: #cbffd9; border-color: rgba(75, 196, 123, .45); }
+.badge-matched, .badge-matched_pair, .badge-a2a_round_1 { color: #cbffd9; border-color: rgba(75, 196, 123, .45); }
 .badge-active { color: #d7caff; border-color: rgba(167, 139, 250, .45); }
 .badge-completed { color: #d6dde8; }
 .badge-cancelled, .badge-hard_filtered, .badge-location_filtered, .badge-blocklisted { color: #ffc2c0; border-color: rgba(239, 100, 97, .45); }
@@ -392,10 +398,28 @@ label.field {
   width: 0;
   background: var(--blue);
 }
-.score-val {
-  min-width: 38px;
-  text-align: right;
+  .score-val {
+    min-width: 38px;
+    text-align: right;
+    font-weight: 650;
+  }
+.score-breakdown {
+  display: grid;
+  gap: 8px;
+}
+.score-item {
+  display: grid;
+  grid-template-columns: 92px minmax(120px, 1fr) minmax(180px, 2fr);
+  gap: 10px;
+  align-items: center;
+}
+.score-dimension {
   font-weight: 650;
+  color: #dbe6f3;
+}
+.score-reason {
+  color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
 .empty, .loading, .error-box {
@@ -433,6 +457,70 @@ label.field {
 .log-line.ERROR { color: #ff9f9c; }
 .log-line.WARNING { color: #ffd78a; }
 .log-line.INFO { color: #aab4c2; }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: none;
+  align-items: stretch;
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, .48);
+}
+.modal-overlay.active { display: flex; }
+.detail-modal {
+  width: min(980px, 100vw);
+  height: 100vh;
+  border-left: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: -18px 0 48px rgba(0, 0, 0, .35);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.detail-head {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.detail-content {
+  padding: 14px;
+  overflow: auto;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+.detail-box {
+  border: 1px solid #202832;
+  background: #11161d;
+  border-radius: 8px;
+  padding: 10px;
+}
+.detail-box h3 { margin-bottom: 8px; }
+.detail-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 5px;
+}
+.detail-label { color: var(--muted); }
+.detail-pre {
+  margin: 0;
+  max-height: 300px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #cbd6e3;
+}
+.detail-section { margin-top: 12px; }
 
 .toast {
   position: fixed;
@@ -478,6 +566,9 @@ label.field {
   .split { grid-template-columns: 1fr; }
   .preview-top { grid-template-columns: 1fr; }
   .token-field { width: 100%; }
+  .modal-overlay { align-items: stretch; }
+  .detail-modal { width: 100vw; }
+  .score-item { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -796,6 +887,19 @@ label.field {
   </main>
 </div>
 
+<div id="matchDetailOverlay" class="modal-overlay" onclick="closeMatchDetail()">
+  <div class="detail-modal" onclick="event.stopPropagation()">
+    <div class="detail-head">
+      <div>
+        <h2 id="matchDetailTitle">匹配详情</h2>
+        <div id="matchDetailSub" class="subtle">A2A 对话、日志和评分</div>
+      </div>
+      <button onclick="closeMatchDetail()">关闭</button>
+    </div>
+    <div id="matchDetailContent" class="detail-content"><div class="empty">选择候选后展示详情</div></div>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 
 <script>
@@ -804,11 +908,13 @@ const state = {
   activePanel: 'overview',
   status: null,
   events: [],
+  eventOptions: [],
   users: [],
   betaSignups: [],
   feedback: [],
   prompts: [],
   selectedPrompt: null,
+  matchDetailCandidates: {},
   busy: false,
 };
 
@@ -1002,12 +1108,29 @@ async function loadEvents(_force = false, renderRecentOnly = false) {
   if (!data) return;
   state.events = data;
   setNavCount('events', data.length);
-  fillEventSelects();
+  if (status) {
+    await loadEventOptions(true);
+  } else {
+    state.eventOptions = data;
+    fillEventSelects();
+  }
   if (renderRecentOnly) {
     renderRecentEvents();
   } else {
     renderEventsTable();
   }
+}
+
+async function loadEventOptions(force = false) {
+  if (!force && state.eventOptions.length) {
+    fillEventSelects();
+    return state.eventOptions;
+  }
+  const data = await guarded(null, async () => requestAdmin('/api/admin/events'));
+  if (!data) return state.eventOptions;
+  state.eventOptions = data;
+  fillEventSelects();
+  return state.eventOptions;
 }
 
 function renderRecentEvents() {
@@ -1068,7 +1191,8 @@ function eventsTableHTML(rows, compact = false) {
 }
 
 function fillEventSelects() {
-  const opts = state.events.map(event =>
+  const source = state.eventOptions.length ? state.eventOptions : state.events;
+  const opts = source.map(event =>
     `<option value="${escapeAttr(event.id)}">[${escapeHtml(event.status)}] ${escapeHtml(event.title)} - ${escapeHtml(event.user_name || shortId(event.user_id))}</option>`
   ).join('');
   ['previewEventSelect', 'manualEventA', 'manualEventB'].forEach(id => {
@@ -1384,7 +1508,7 @@ async function downloadFeedbackCsv() {
 }
 
 async function loadMatchingPanel() {
-  if (!state.events.length) await loadEvents(false, true);
+  await loadEventOptions(true);
   await loadMatchLogs();
 }
 
@@ -1442,12 +1566,11 @@ async function manualMatch() {
   if (data) renderJsonBox('manualMatchResult', data);
 }
 
-function previewEvent(eventId) {
+async function previewEvent(eventId) {
   openPanel('matching');
-  setTimeout(() => {
-    $('#previewEventSelect').value = eventId;
-    loadMatchPreview();
-  }, 0);
+  await loadEventOptions();
+  $('#previewEventSelect').value = eventId;
+  await loadMatchPreview();
 }
 
 async function loadMatchPreview() {
@@ -1486,7 +1609,36 @@ function renderSinglePreview(data) {
         </div>
       </div>
     </div>
-    ${renderCandidateTable(candidates)}
+    ${renderMatchedEventPreview(data.matched_event, event.id)}
+    ${renderCandidateTable(candidates, event.id)}
+  </div>`;
+}
+
+function renderMatchedEventPreview(matchedEvent, sourceEventId) {
+  if (!matchedEvent) return '';
+  const event = matchedEvent.event || {};
+  return `<div class="preview-card">
+    <div class="preview-top">
+      <div>
+        <div class="cell-strong">已匹配事件</div>
+        <div class="preview-meta">
+          <span>${escapeHtml(event.title || '-')}</span>
+          <span>${escapeHtml(event.activity_type || '-')}</span>
+          <span>${escapeHtml(event.city || '-')} / ${escapeHtml(event.location || '-')}</span>
+          <span>${fmtTime(event.start_time)}</span>
+        </div>
+      </div>
+      ${scoreHTML(matchedEvent.similarity)}
+      ${statusBadge('matched_pair')}
+    </div>
+    <div class="preview-body">
+      <div class="toolbar" style="margin-bottom:8px;">
+        <span class="chip">当前已匹配</span>
+        <span class="chip">偏好 ${(event.preferences || []).length}</span>
+        <span class="chip">约束 ${(event.constraints || []).length}</span>
+      </div>
+      ${renderCandidateTable([matchedEvent], sourceEventId)}
+    </div>
   </div>`;
 }
 
@@ -1510,27 +1662,31 @@ function renderPreviewCards(previews) {
         ${scoreHTML(best)}
         <span class="chip">${fmtNum(preview.total_recalled)} 召回 / ${fmtNum(preview.total_passed)} A2A</span>
       </div>
-      <div class="preview-body">${renderCandidateTable(candidates)}</div>
+      <div class="preview-body">${renderCandidateTable(candidates, event.id)}</div>
     </div>`;
   }).join('')}</div>`;
 }
 
-function renderCandidateTable(candidates) {
+function renderCandidateTable(candidates, sourceEventId) {
   if (!candidates || !candidates.length) return '<div class="empty">无候选</div>';
   return `<div class="table-wrap" style="max-height:360px;"><table>
     <thead><tr>
       <th style="width:48px;">#</th>
-      <th style="width:24%;">候选事件</th>
+      <th style="width:22%;">候选事件</th>
       <th style="width:10%;">活动</th>
       <th style="width:14%;">城市/地点</th>
       <th style="width:12%;">时间</th>
       <th style="width:12%;">相似度</th>
-      <th style="width:12%;">状态</th>
+      <th style="width:11%;">状态</th>
+      <th style="width:8%;">详情</th>
       <th>原因</th>
     </tr></thead>
     <tbody>${candidates.map((candidate, index) => {
       const event = candidate.event || {};
-      return `<tr>
+      const cacheKey = `${sourceEventId || '-'}:${event.id || index}`;
+      state.matchDetailCandidates[cacheKey] = candidate;
+      const detailAction = `openMatchDetail('${escapeAttr(sourceEventId || '')}', '${escapeAttr(event.id || '')}', state.matchDetailCandidates['${escapeAttr(cacheKey)}'])`;
+      return `<tr class="click-row" onclick="${detailAction}">
         <td class="mono">${index + 1}</td>
         <td><div class="cell-strong truncate">${escapeHtml(event.title || '-')}</div><div class="subtle mono">${shortId(event.id)}</div></td>
         <td>${escapeHtml(event.activity_type || '-')}</td>
@@ -1538,10 +1694,158 @@ function renderCandidateTable(candidates) {
         <td class="nowrap">${fmtTime(event.start_time)}</td>
         <td>${scoreHTML(candidate.similarity)}</td>
         <td>${statusBadge(candidate.status || (candidate.passed ? 'passed' : 'filtered'))}</td>
+        <td><button class="blue detail-btn" onclick="event.stopPropagation();${detailAction}">详情</button></td>
         <td>${escapeHtml(candidate.filter_reason || '-')}</td>
       </tr>`;
     }).join('')}</tbody>
   </table></div>`;
+}
+
+function closeMatchDetail() {
+  $('#matchDetailOverlay').classList.remove('active');
+}
+
+async function openMatchDetail(sourceEventId, candidateId, candidate = null) {
+  if (!sourceEventId || !candidateId) return showToast('缺少事件 id，无法查看详情', true);
+  $('#matchDetailOverlay').classList.add('active');
+  $('#matchDetailTitle').textContent = '匹配详情';
+  $('#matchDetailSub').textContent = `${shortId(sourceEventId)} / ${shortId(candidateId)}`;
+  const target = $('#matchDetailContent');
+  const path = `/api/admin/match/detail/${encodeURIComponent(sourceEventId)}/${encodeURIComponent(candidateId)}`;
+  const data = await guarded(target, async () => requestAdmin(path));
+  if (!data) return;
+  $('#matchDetailTitle').textContent = `${data.event?.title || '-'} ↔ ${data.candidate?.title || '-'}`;
+  $('#matchDetailSub').textContent = `${shortId(data.event?.id)} / ${shortId(data.candidate?.id)}`;
+  target.innerHTML = renderMatchDetail(data, candidate);
+}
+
+function fmtScoreValue(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n.toFixed(4) : '-';
+}
+
+function renderDetailEventBox(title, event) {
+  const prefs = event?.preferences || [];
+  const constraints = event?.constraints || [];
+  return `<div class="detail-box">
+    <h3>${escapeHtml(title)}</h3>
+    <div class="detail-row"><span class="detail-label">标题</span><span>${escapeHtml(event?.title || '-')}</span></div>
+    <div class="detail-row"><span class="detail-label">用户</span><span>${escapeHtml(event?.user_name || shortId(event?.user_id))}</span></div>
+    <div class="detail-row"><span class="detail-label">活动</span><span>${escapeHtml(event?.activity_type || '-')}</span></div>
+    <div class="detail-row"><span class="detail-label">地点</span><span>${escapeHtml(event?.location || event?.city || '-')}</span></div>
+    <div class="detail-row"><span class="detail-label">时间</span><span>${fmtTime(event?.start_time)} - ${fmtTime(event?.end_time)}</span></div>
+    <div class="detail-row"><span class="detail-label">状态</span><span>${statusBadge(event?.status)}</span></div>
+    <div class="detail-row"><span class="detail-label">偏好</span><span>${tags(prefs)}</span></div>
+    <div class="detail-row"><span class="detail-label">约束</span><span>${tags(constraints)}</span></div>
+  </div>`;
+}
+
+function renderMatchDetail(data, candidate) {
+  const summary = data.summary || {};
+  const logs = data.logs || [];
+  const latestA2A = data.latest_a2a || {};
+  const dialogueSource = latestA2A.dialogue_log ? latestA2A : (logs.find(log => log.dialogue_log) || {});
+  const dialogueLog = dialogueSource.dialogue_log || '';
+  const previewStatus = candidate?.status || (candidate?.passed ? 'passed' : null);
+  return `<div class="detail-grid">
+    ${renderDetailEventBox('源事件', data.event || {})}
+    ${renderDetailEventBox('候选事件', data.candidate || {})}
+    <div class="detail-box">
+      <h3>打分概览</h3>
+      <div class="detail-row"><span class="detail-label">向量相似</span><span>${scoreHTML(candidate?.similarity ?? summary.latest_score)}</span></div>
+      <div class="detail-row"><span class="detail-label">预览状态</span><span>${previewStatus ? statusBadge(previewStatus) : '<span class="subtle">-</span>'}</span></div>
+      <div class="detail-row"><span class="detail-label">A2A 分数</span><span>${fmtScoreValue(summary.a2a_score)}</span></div>
+      <div class="detail-row"><span class="detail-label">A2A 结果</span><span>${escapeHtml(summary.a2a_result || '-')}</span></div>
+      <div class="detail-row"><span class="detail-label">最新阶段</span><span>${summary.latest_stage ? statusBadge(summary.latest_stage) : '<span class="subtle">-</span>'}</span></div>
+      <div class="detail-row"><span class="detail-label">最新结果</span><span>${escapeHtml(summary.latest_result || '-')}</span></div>
+      <div class="detail-row"><span class="detail-label">黑名单</span><span>${summary.blocklisted ? statusBadge('blocklisted') : '<span class="subtle">无</span>'}</span></div>
+      <div class="detail-row"><span class="detail-label">聊天室</span><span>${fmtNum(summary.room_count)}</span></div>
+    </div>
+  </div>
+  <div class="detail-section detail-box">
+    <h3>A2A 对话</h3>
+    <pre class="detail-pre">${escapeHtml(dialogueLog || '暂无 A2A 对话')}</pre>
+  </div>
+  <div class="detail-section detail-box">
+    <h3>细项分数</h3>
+    ${renderScoreBreakdown(latestA2A.score_breakdown || [])}
+  </div>
+  <div class="detail-section detail-grid">
+    <div class="detail-box">
+      <h3>匹配理由</h3>
+      ${tags(latestA2A.reasons || [])}
+    </div>
+    <div class="detail-box">
+      <h3>潜在问题</h3>
+      ${tags(latestA2A.issues || [])}
+    </div>
+    <div class="detail-box">
+      <h3>预览原因</h3>
+      <div>${escapeHtml(candidate?.filter_reason || '-')}</div>
+    </div>
+  </div>
+  <div class="detail-section detail-box">
+    <h3>匹配日志</h3>
+    ${renderMatchDetailLogs(logs)}
+  </div>
+  <div class="detail-section detail-grid">
+    <div class="detail-box">
+      <h3>事件黑名单</h3>
+      ${renderMatchBlocklists(data.blocklists || [])}
+    </div>
+    <div class="detail-box">
+      <h3>聊天室记录</h3>
+      ${renderMatchRooms(data.rooms || [])}
+    </div>
+  </div>`;
+}
+
+function renderMatchDetailLogs(logs) {
+  if (!logs.length) return '<div class="empty">暂无匹配日志</div>';
+  return `<div class="table-wrap" style="max-height:320px;"><table>
+    <thead><tr><th>阶段</th><th>分数</th><th>结果</th><th>原因</th><th>问题</th><th>时间</th></tr></thead>
+    <tbody>${logs.map(log => `<tr>
+      <td>${statusBadge(log.stage)}</td>
+      <td>${fmtScoreValue(log.score)}</td>
+      <td>${escapeHtml(log.result || '-')}</td>
+      <td>${escapeHtml((log.reasons || []).join('；') || '-')}</td>
+      <td>${escapeHtml((log.issues || []).join('；') || '-')}</td>
+      <td class="nowrap">${fmtTime(log.created_at)}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function dimensionLabel(dimension) {
+  const labels = {
+    time: '时间',
+    location: '地点',
+    activity: '活动',
+    budget: '预算',
+    preference: '偏好',
+    constraint: '限制',
+  };
+  return labels[dimension] || dimension || '-';
+}
+
+function renderScoreBreakdown(rows) {
+  if (!rows.length) return '<div class="empty">暂无细项分数</div>';
+  return `<div class="score-breakdown">${rows.map(row => `
+    <div class="score-item">
+      <div class="score-dimension">${escapeHtml(dimensionLabel(row.dimension))}${row.blocking ? ' ' + statusBadge('blocklisted') : ''}</div>
+      <div>${scoreHTML(row.score)}</div>
+      <div class="score-reason">${escapeHtml(row.reason || '-')}</div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function renderMatchBlocklists(rows) {
+  if (!rows.length) return '<span class="subtle">无</span>';
+  return `<div class="tags">${rows.map(row => `<span class="tag">${escapeHtml(row.reason || '-')} ${fmtTime(row.created_at)}</span>`).join('')}</div>`;
+}
+
+function renderMatchRooms(rooms) {
+  if (!rooms.length) return '<span class="subtle">无</span>';
+  return `<div class="tags">${rooms.map(room => `<span class="tag">${escapeHtml(room.match_type || '-')} ${shortId(room.id)}</span>`).join('')}</div>`;
 }
 
 async function loadMatchLogs() {

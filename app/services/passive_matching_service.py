@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-import random
 import uuid
 from datetime import datetime, timezone
 from types import SimpleNamespace
@@ -17,7 +16,11 @@ from app.models.event import Event
 from app.models.user import Agent, User
 from app.services.location_policy import is_location_compatible
 from app.services.match_blocklist_service import add_match_blocklist
-from app.services.matching_policy import is_age_filter_compatible
+from app.services.matching_policy import (
+    adjusted_candidate_score,
+    is_age_filter_compatible,
+    is_gender_filter_compatible,
+)
 from app.services.push_notification_service import push_notification_service
 
 logger = logging.getLogger(__name__)
@@ -29,6 +32,10 @@ NO_AGE_FILTER_EVENT = SimpleNamespace(
     age_filter_min=None,
     age_filter_max=None,
     age_filter_mode=None,
+)
+NO_GENDER_FILTER_EVENT = SimpleNamespace(
+    preferences=[],
+    constraints=[],
 )
 
 
@@ -76,8 +83,11 @@ class PassiveMatchingService:
             "embedding": event.embedding,
         }
 
+        requester_r = await db.execute(select(User).where(User.id == event.user_id))
+        requester = requester_r.scalar_one_or_none()
+
         query = text("""
-            SELECT u.id, u.name, u.city, u.birth_date, u.embedding <=> :embedding AS distance
+            SELECT u.id, u.name, u.city, u.birth_date, u.gender, u.embedding <=> :embedding AS distance
             FROM users u
             WHERE u.id != :event_user_id
               AND u.is_active = TRUE
@@ -91,9 +101,8 @@ class PassiveMatchingService:
               )
               AND NOT EXISTS (
                   SELECT 1 FROM match_blocklists mb
-                  WHERE mb.event_a_id = :event_id
-                     OR mb.event_b_id = :event_id
-                     OR (
+                  WHERE (mb.event_a_id = :event_id OR mb.event_b_id = :event_id)
+                    AND (
                          (mb.user_a_id = :event_user_id AND mb.user_b_id = u.id)
                          OR (mb.user_b_id = :event_user_id AND mb.user_a_id = u.id)
                      )
@@ -107,9 +116,7 @@ class PassiveMatchingService:
         candidates = []
         today = datetime.now(timezone.utc).date()
         for row in result.all():
-            similarity = 1.0 - row[4]
-            if similarity < PASSIVE_VECTOR_THRESHOLD:
-                continue
+            similarity = 1.0 - row[5]
             if not is_location_compatible(
                 event,
                 {"activity_type": event.activity_type, "city": row[2], "location": row[2]},
@@ -124,18 +131,27 @@ class PassiveMatchingService:
             )
             if not age_decision.should_pass:
                 continue
-            candidates.append(row)
+            gender_decision = is_gender_filter_compatible(
+                source_event=event,
+                source_gender=requester.gender if requester else None,
+                candidate_event=NO_GENDER_FILTER_EVENT,
+                candidate_gender=row[4],
+            )
+            if not gender_decision.should_pass:
+                continue
+            adjusted_similarity = adjusted_candidate_score(similarity, age_decision, gender_decision)
+            if adjusted_similarity < PASSIVE_VECTOR_THRESHOLD:
+                continue
+            candidates.append((row, adjusted_similarity))
         if not candidates:
             logger.info(f"No passive candidates for event {event.id}")
             return False
 
-        chosen = random.choice(candidates)
+        candidates.sort(key=lambda item: item[1], reverse=True)
+        chosen, similarity = candidates[0]
         chosen_user_id = chosen[0]
-        similarity = 1.0 - chosen[4]
         target_name = chosen[1]
 
-        requester_r = await db.execute(select(User).where(User.id == event.user_id))
-        requester = requester_r.scalar_one_or_none()
         message = (
             f"{requester.name if requester else '有人'} 想约「{event.title}」。"
             "如果你有兴趣，确认后会创建聊天室。"
@@ -218,16 +234,19 @@ class PassiveMatchingService:
                 "type": "room_created",
                 "room_id": str(room_id),
             })
-        await push_notification_service.send_to_users(
-            db,
-            [request.requester_user_id, request.target_user_id],
-            title="聊天室已创建",
-            body="被动邀请已确认，新的搭子聊天室已开启。",
-            data={
-                "type": "room_created",
-                "room_id": str(room_id),
-            },
-        )
+        try:
+            await push_notification_service.send_to_users(
+                db,
+                [request.requester_user_id, request.target_user_id],
+                title="聊天室已创建",
+                body="被动邀请已确认，新的搭子聊天室已开启。",
+                data={
+                    "type": "room_created",
+                    "room_id": str(room_id),
+                },
+            )
+        except Exception as exc:
+            logger.warning("Passive room created but push notification failed: %s", exc)
         return {"status": "accepted", "room_id": str(room_id)}
 
     async def _create_passive_room(

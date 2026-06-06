@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from uuid import UUID
@@ -7,6 +8,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.ws import manager as ws_manager
 from app.core.database import async_session
 from app.models.user import AgentMemory, EventMemory, MemoryEvidence
 
@@ -49,31 +51,53 @@ def build_event_memory_candidates(
 ) -> list[EventMemoryCandidate]:
     candidates: list[EventMemoryCandidate] = []
 
-    def add(content: str, mem_type: str = "preference", source: str = "draft") -> None:
+    def add(
+        content: str,
+        mem_type: str = "preference",
+        source: str = "draft",
+        *,
+        key: str | None = None,
+        category: str | None = None,
+        value: dict | None = None,
+    ) -> None:
         cleaned = _clean_content(content)
         if not cleaned:
             return
-        category = _category_for_text(cleaned)
+        resolved_category = category or _category_for_text(cleaned)
         candidates.append(
             EventMemoryCandidate(
                 user_id=user_id,
                 event_id=event_id,
-                key=_key_for_text(cleaned, category),
+                key=key or _key_for_text(cleaned, resolved_category),
                 type=mem_type,
-                category=category,
+                category=resolved_category,
                 content=cleaned,
-                value=_value_for_text(cleaned, category),
+                value=value if value is not None else _value_for_text(cleaned, resolved_category),
                 source=source,
                 confidence=0.85 if mem_type == "constraint" else 0.75,
             )
         )
 
     if draft.get("activity_type"):
-        add(f"本次活动：{draft['activity_type']}", "preference")
-    if draft.get("city"):
-        add(f"本次城市：{draft['city']}", "preference")
+        activity_type = _clean_content(str(draft["activity_type"]))
+        if activity_type:
+            add(
+                f"本次活动：{activity_type}",
+                "preference",
+                key=f"event.activity_type.{_stable_key_part(activity_type)}",
+                category="activity",
+                value={"activity_type": activity_type},
+            )
     if draft.get("location"):
-        add(str(draft["location"]), "preference")
+        location = _clean_content(str(draft["location"]))
+        if location:
+            add(
+                location,
+                "preference",
+                key=f"event.location.{_stable_key_part(location)}",
+                category="location",
+                value={"location": location},
+            )
 
     preferences = draft.get("preferences") if isinstance(draft.get("preferences"), list) else []
     constraints = draft.get("constraints") if isinstance(draft.get("constraints"), list) else []
@@ -250,6 +274,7 @@ async def apply_long_term_memory_actions(
                 confidence_delta=action.confidence_delta,
             )
         )
+        await ws_manager.send_to_user(str(user_id), memory_updated_payload(memory, action=action.action))
 
 
 async def extract_and_update_memories_after_publish(
@@ -316,6 +341,30 @@ def format_memory_context(memories: list[AgentMemory]) -> str:
         confidence = memory.confidence if memory.confidence is not None else 0.5
         lines.append(f"- [{type_label}][{category}][confidence={confidence:.2f}] {memory.content}")
     return "\n".join(lines)
+
+
+def memory_updated_payload(memory: AgentMemory, *, action: str) -> dict:
+    return {
+        "type": "memory_updated",
+        "action": action,
+        "memory": {
+            "id": str(memory.id),
+            "type": memory.type,
+            "content": memory.content,
+            "confidence": memory.confidence,
+            "source": memory.source,
+            "key": memory.key,
+            "category": memory.category,
+            "scope": memory.scope,
+            "value": memory.value,
+            "occurrence_count": memory.occurrence_count or 1,
+            "last_seen_at": memory.last_seen_at.isoformat() if memory.last_seen_at else None,
+            "status": memory.status,
+            "is_active": memory.is_active,
+            "created_at": memory.created_at.isoformat() if memory.created_at else None,
+            "updated_at": memory.updated_at.isoformat() if memory.updated_at else None,
+        },
+    }
 
 
 def _explicit_long_term_actions(text: str, existing_memories: list[AgentMemory]) -> list[MemoryAction]:
@@ -386,6 +435,10 @@ def _find_existing(key: str, existing_memories: list[AgentMemory]) -> AgentMemor
 
 
 def _long_term_content(candidate: EventMemoryCandidate) -> str:
+    if candidate.category == "activity":
+        activity_type = str((candidate.value or {}).get("activity_type") or "").strip()
+        if activity_type:
+            return f"经常发起{activity_type}活动"
     if candidate.category == "budget" and "AA" in candidate.content.upper():
         return "偏好场地费 AA"
     return candidate.content
@@ -418,7 +471,14 @@ def _key_for_text(text: str, category: str) -> str:
         return "sport.skill_level"
     if "总结" in text or "表单" in text:
         return "style.confirmation"
-    return f"{category}.{abs(hash(text)) % 100000}"
+    digest = hashlib.sha1(text.encode("utf-8")).hexdigest()[:10]
+    return f"{category}.{digest}"
+
+
+def _stable_key_part(text: str) -> str:
+    cleaned = _clean_content(text) or "unknown"
+    collapsed = "_".join(cleaned.split())
+    return collapsed[:60]
 
 
 def _value_for_text(text: str, category: str) -> dict | None:

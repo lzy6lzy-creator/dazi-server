@@ -24,6 +24,10 @@ class A2AMatcherTests(unittest.TestCase):
                 "has_blocking_conflict": False,
                 "match_reasons": ["时间匹配", "偏好一致"],
                 "potential_issues": ["地点还要确认"],
+                "score_breakdown": [
+                    {"dimension": "time", "score": 0.9, "reason": "时间重叠", "blocking": False},
+                    {"dimension": "preference", "score": "0.8", "reason": "偏好接近", "blocking": False},
+                ],
                 "chatroom_carryover": "已确认周六下午看电影，时间地点合适。",
                 "summary": "两人都想看科幻片，时间合适。",
             },
@@ -35,6 +39,9 @@ class A2AMatcherTests(unittest.TestCase):
         self.assertTrue(parsed.should_match)
         self.assertEqual(parsed.reasons, ["时间匹配", "偏好一致"])
         self.assertEqual(parsed.issues, ["地点还要确认"])
+        self.assertEqual(parsed.score_breakdown[0]["dimension"], "time")
+        self.assertEqual(parsed.score_breakdown[0]["score"], 0.9)
+        self.assertEqual(parsed.score_breakdown[1]["score"], 0.8)
         self.assertEqual(parsed.summary, "已确认周六下午看电影，时间地点合适。")
         self.assertIn("点点: 时间都在周六下午。", parsed.dialogue_log)
 
@@ -87,6 +94,11 @@ class A2AMatcherTests(unittest.TestCase):
         self.assertIn("不可变信息边界", prompt)
         self.assertIn("公开事件中 `start_time` 或 `end_time` 为 null", prompt)
         self.assertIn("compatibility>=0.70", prompt)
+        self.assertIn("score_breakdown", prompt)
+        self.assertIn("鸳鸯锅", prompt)
+        self.assertIn("不是硬冲突", prompt)
+        self.assertIn("具体店铺", prompt)
+        self.assertIn("不要放入 `uncertainties`", prompt)
         self.assertIn("chatroom_carryover", prompt)
 
     def test_agent_payload_only_contains_self_private_memory(self):

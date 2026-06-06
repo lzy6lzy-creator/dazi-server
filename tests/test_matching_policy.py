@@ -9,13 +9,16 @@ from app.services.matching_policy import (
     A2AEvaluation,
     AgeFilterDecision,
     Candidate,
+    GenderFilterDecision,
     VECTOR_MATCH_THRESHOLD,
+    adjusted_candidate_score,
     build_candidate_windows,
     choose_a2a_winner,
     collect_blocked_event_ids,
     has_time_overlap,
     is_age_filter_compatible,
     is_event_open_for_matching,
+    is_gender_filter_compatible,
     is_passive_candidate_allowed,
 )
 
@@ -31,6 +34,15 @@ class AgeFilterBox:
     age_filter_min: int | None
     age_filter_max: int | None
     age_filter_mode: str | None
+
+
+@dataclass(frozen=True)
+class MatchPreferenceBox:
+    preferences: list[str] | None
+    constraints: list[str] | None
+    age_filter_min: int | None = None
+    age_filter_max: int | None = None
+    age_filter_mode: str | None = None
 
 
 @dataclass(frozen=True)
@@ -116,23 +128,17 @@ class MatchingPolicyTests(unittest.TestCase):
         self.assertIsNotNone(winner)
         self.assertEqual(winner.candidate_event_id, best)
 
-    def test_collect_blocked_event_ids_uses_event_pair_and_user_pair(self):
+    def test_collect_blocked_event_ids_uses_only_event_pair_not_user_pair(self):
         source_event_id = uuid4()
         source_user_id = uuid4()
         blocked_event_by_pair = uuid4()
-        allowed_event = uuid4()
-        blocked_user_event = uuid4()
-        blocked_user_id = uuid4()
-        allowed_user_id = uuid4()
+        candidate_user_id = uuid4()
         event_pair_user_id = uuid4()
+        old_source_event_id = uuid4()
+        old_candidate_event_id = uuid4()
 
         blocked = collect_blocked_event_ids(
             source_event_id=source_event_id,
-            source_user_id=source_user_id,
-            candidate_events_by_user={
-                blocked_user_id: [blocked_user_event],
-                allowed_user_id: [allowed_event],
-            },
             blocklist_rows=[
                 BlocklistRow(
                     event_a_id=source_event_id,
@@ -143,13 +149,19 @@ class MatchingPolicyTests(unittest.TestCase):
                 BlocklistRow(
                     event_a_id=None,
                     event_b_id=None,
-                    user_a_id=blocked_user_id,
+                    user_a_id=candidate_user_id,
                     user_b_id=source_user_id,
+                ),
+                BlocklistRow(
+                    event_a_id=old_source_event_id,
+                    event_b_id=old_candidate_event_id,
+                    user_a_id=source_user_id,
+                    user_b_id=candidate_user_id,
                 ),
             ],
         )
 
-        self.assertEqual(blocked, {blocked_event_by_pair, blocked_user_event})
+        self.assertEqual(blocked, {blocked_event_by_pair})
 
     def test_collect_blocked_event_ids_skips_a2a_rejected_event_pair(self):
         source_event_id = uuid4()
@@ -159,8 +171,6 @@ class MatchingPolicyTests(unittest.TestCase):
 
         blocked = collect_blocked_event_ids(
             source_event_id=source_event_id,
-            source_user_id=source_user_id,
-            candidate_events_by_user={candidate_user_id: [candidate_event_id]},
             blocklist_rows=[
                 BlocklistRow(
                     event_a_id=source_event_id,
@@ -220,6 +230,19 @@ class MatchingPolicyTests(unittest.TestCase):
 
         self.assertEqual(decision, AgeFilterDecision(should_pass=True, issues=[]))
 
+    def test_age_filter_preference_mode_adds_boost_when_candidate_is_in_range(self):
+        decision = is_age_filter_compatible(
+            source_event=AgeFilterBox(23, 32, "preference"),
+            source_birth_date=datetime(1998, 6, 4).date(),
+            candidate_event=AgeFilterBox(None, None, None),
+            candidate_birth_date=datetime(2000, 1, 1).date(),
+            today=datetime(2026, 6, 4).date(),
+        )
+
+        self.assertTrue(decision.should_pass)
+        self.assertGreater(decision.score_boost, 0)
+        self.assertEqual(decision.issues, [])
+
     def test_age_filter_rejects_known_out_of_range_candidate(self):
         decision = is_age_filter_compatible(
             source_event=AgeFilterBox(23, 32, "hard_filter"),
@@ -255,6 +278,89 @@ class MatchingPolicyTests(unittest.TestCase):
 
         self.assertTrue(decision.should_pass)
         self.assertEqual(decision.issues, ["候选年龄 46 不符合偏好范围 23-32 岁"])
+        self.assertEqual(decision.score_boost, 0)
+
+    def test_gender_filter_rejects_known_mismatch_for_strict_requirement(self):
+        decision = is_gender_filter_compatible(
+            source_event=MatchPreferenceBox(
+                preferences=[],
+                constraints=["搭子性别：女"],
+            ),
+            source_gender="男",
+            candidate_event=MatchPreferenceBox(preferences=[], constraints=[]),
+            candidate_gender="男",
+        )
+
+        self.assertEqual(
+            decision,
+            GenderFilterDecision(
+                should_pass=False,
+                issues=["候选性别 男 不符合要求：女"],
+            ),
+        )
+
+    def test_gender_filter_rejects_unknown_gender_for_strict_requirement(self):
+        decision = is_gender_filter_compatible(
+            source_event=MatchPreferenceBox(
+                preferences=[],
+                constraints=["搭子性别：男"],
+            ),
+            source_gender="女",
+            candidate_event=MatchPreferenceBox(preferences=[], constraints=[]),
+            candidate_gender=None,
+        )
+
+        self.assertFalse(decision.should_pass)
+        self.assertEqual(decision.issues, ["候选未填写性别，无法满足性别要求：男"])
+
+    def test_gender_filter_soft_preference_adds_boost_without_rejecting_others(self):
+        matched = is_gender_filter_compatible(
+            source_event=MatchPreferenceBox(
+                preferences=["搭子性别偏好：女生优先"],
+                constraints=[],
+            ),
+            source_gender="男",
+            candidate_event=MatchPreferenceBox(preferences=[], constraints=[]),
+            candidate_gender="女",
+        )
+        unmatched = is_gender_filter_compatible(
+            source_event=MatchPreferenceBox(
+                preferences=["搭子性别偏好：女生优先"],
+                constraints=[],
+            ),
+            source_gender="男",
+            candidate_event=MatchPreferenceBox(preferences=[], constraints=[]),
+            candidate_gender="男",
+        )
+
+        self.assertTrue(matched.should_pass)
+        self.assertGreater(matched.score_boost, 0)
+        self.assertTrue(unmatched.should_pass)
+        self.assertEqual(unmatched.score_boost, 0)
+        self.assertEqual(unmatched.issues, ["候选性别 男 不符合偏好：女"])
+
+    def test_gender_filter_checks_candidate_requirement_against_source_gender(self):
+        decision = is_gender_filter_compatible(
+            source_event=MatchPreferenceBox(preferences=[], constraints=[]),
+            source_gender="男",
+            candidate_event=MatchPreferenceBox(
+                preferences=[],
+                constraints=["搭子性别：女"],
+            ),
+            candidate_gender="女",
+        )
+
+        self.assertFalse(decision.should_pass)
+        self.assertEqual(decision.issues, ["发起方性别 男 不符合要求：女"])
+
+    def test_adjusted_candidate_score_combines_age_and_gender_boosts(self):
+        score = adjusted_candidate_score(
+            0.96,
+            AgeFilterDecision(should_pass=True, score_boost=0.03),
+            GenderFilterDecision(should_pass=True, score_boost=0.04),
+        )
+
+        self.assertEqual(score, 1.0)
 
 
 if __name__ == "__main__":

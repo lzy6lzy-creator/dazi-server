@@ -21,7 +21,7 @@ from app.core.security import get_current_user_id
 from app.models.chat import ChatRoom, ChatRoomMember, ChatMessage, ChatRoomVote, PassiveMatchRequest
 from app.models.user import User, Agent, AgentMemory
 from app.models.event import Event
-from app.services.llm_service import llm_service
+from app.services.agent_server import agent_server
 from app.services.prompt_builder import PromptBuilder
 from app.api.schemas import (
     ChatRoomResponse, ChatRoomMemberResponse, MessageCreate, MessageResponse,
@@ -161,12 +161,23 @@ def _extract_room_agent_reply(raw_reply: str) -> str:
     """Room agent prompts return JSON; fall back to raw text for robustness."""
     text = raw_reply.strip()
     if text.startswith("{") or text.startswith("```") or ('"reply"' in text and "{" in text):
-        parsed = llm_service._extract_json(text)
+        parsed = agent_server.extract_json(text)
         if isinstance(parsed, dict):
             reply = parsed.get("reply")
             if isinstance(reply, str) and reply.strip():
                 return reply.strip()
     return text
+
+
+async def _room_agent_reply(messages: list[dict[str, str]]) -> str:
+    raw_reply = ""
+    async for piece in agent_server.stream_chat(
+        messages,
+        purpose="conversation",
+        max_tokens=300,
+    ):
+        raw_reply += piece
+    return _extract_room_agent_reply(raw_reply)
 
 
 def _chat_room_member_response(member: ChatRoomMember, user: User | None = None, agent: Agent | None = None) -> ChatRoomMemberResponse:
@@ -378,7 +389,10 @@ async def send_message(
 
     # WebSocket 广播消息给聊天室成员
     await _broadcast_message_to_room(room_id, msg, db)
-    await _push_message_to_room(room_id, msg, db, exclude_user_ids={user_id})
+    try:
+        await _push_message_to_room(room_id, msg, db, exclude_user_ids={user_id})
+    except Exception as exc:
+        logger.warning("Message saved but push notification failed for room %s: %s", room_id, exc)
 
     # 检测 @Agent，触发 Agent 回复
     if data.mentions:
@@ -754,8 +768,7 @@ async def _handle_agent_mention(
                     {"role": "user", "content": f"请回复这次 @{agent.name} 的消息，只返回 JSON。"},
                 ]
 
-                raw_reply = await llm_service.chat(messages, max_tokens=300)
-                reply = _extract_room_agent_reply(raw_reply)
+                reply = await _room_agent_reply(messages)
 
                 # 保存 Agent 回复（sender_id FK 指向 users.id，用 agent 所属用户的 ID）
                 agent_msg = ChatMessage(

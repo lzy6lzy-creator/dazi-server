@@ -49,6 +49,24 @@ class AdminConsoleStaticTests(unittest.TestCase):
         self.assertNotIn("data.pipeline", html)
         self.assertNotIn("coarse_rank_top10", html)
 
+    def test_matching_preview_selects_can_show_matched_events(self):
+        html = self.admin_html()
+
+        self.assertIn("eventOptions", html)
+        self.assertIn("loadEventOptions", html)
+        self.assertIn("requestAdmin('/api/admin/events')", html)
+        self.assertIn("const source = state.eventOptions.length ? state.eventOptions : state.events", html)
+        self.assertNotIn("previewEventSelect'].forEach", html)
+
+    def test_matching_preview_renders_current_matched_event(self):
+        html = self.admin_html()
+
+        self.assertIn("renderMatchedEventPreview(data.matched_event, event.id)", html)
+        self.assertIn("function renderMatchedEventPreview", html)
+        self.assertIn("已匹配事件", html)
+        self.assertIn("matched_pair", html)
+        self.assertIn("当前已匹配", html)
+
     def test_dangerous_admin_actions_require_confirmation(self):
         html = self.admin_html()
 

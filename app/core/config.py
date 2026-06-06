@@ -43,15 +43,12 @@ class Settings(BaseSettings):
     APNS_PRIVATE_KEY_PATH: str = ""
     APNS_BUNDLE_ID: str = "com.linke.dazi"
 
-    # LLM
+    # Legacy model config names accepted as agent server fallbacks.
     LLM_API_KEY: str = ""
     LLM_BASE_URL: str = "https://api.moonshot.cn/v1"
     LLM_MODEL: str = "kimi-k2.5"
-    LLM_MAX_CONCURRENT_REQUESTS: int = 1
-    LLM_MIN_INTERVAL_SECONDS: float = 2.0
-    LLM_RETRIES: int = 5
 
-    # Agent model routing. Empty values fall back to LLM_* settings.
+    # Agent model routing.
     AGENT_MODEL_PROVIDER: str = ""
     AGENT_MODEL: str = ""
     AGENT_BASE_URL: str = ""

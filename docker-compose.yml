@@ -35,9 +35,14 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://dazi:dazi_dev_2024@db:5432/dazi
       REDIS_URL: redis://redis:6379/0
-      LLM_API_KEY: ${LLM_API_KEY:?LLM_API_KEY is required}
-      LLM_BASE_URL: https://api.moonshot.cn/v1
-      LLM_MODEL: kimi-k2.5
+      AGENT_MODEL_PROVIDER: ${AGENT_MODEL_PROVIDER:-kimi}
+      AGENT_MODEL: ${AGENT_MODEL:-${LLM_MODEL:-kimi-k2.5}}
+      AGENT_BASE_URL: ${AGENT_BASE_URL:-${LLM_BASE_URL:-https://api.moonshot.cn/v1}}
+      AGENT_API_KEY: ${AGENT_API_KEY:-${LLM_API_KEY:?AGENT_API_KEY or LLM_API_KEY is required}}
+      AGENT_DRAFT_MODEL_PROVIDER: ${AGENT_DRAFT_MODEL_PROVIDER:-}
+      AGENT_DRAFT_MODEL: ${AGENT_DRAFT_MODEL:-}
+      AGENT_DRAFT_BASE_URL: ${AGENT_DRAFT_BASE_URL:-}
+      AGENT_DRAFT_API_KEY: ${AGENT_DRAFT_API_KEY:-}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       ADMIN_TOKEN: ${ADMIN_TOKEN:?ADMIN_TOKEN is required}
       INTERNAL_TEST_MODE: ${INTERNAL_TEST_MODE:-false}

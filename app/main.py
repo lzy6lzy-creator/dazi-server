@@ -15,7 +15,6 @@ from app.core.database import engine, Base, async_session
 from app.core.config import settings
 from app.core.redis import close_redis
 from app.core.log_buffer import log_buffer
-from app.services.llm_service import llm_service
 from app.services.agent_server import agent_server
 from app.services.embedding_service import embedding_service
 from app.services.scheduler import match_scheduler
@@ -80,8 +79,7 @@ async def lifespan(app: FastAPI):
                 PromptBuilder.override_template(row.name, row.content)
                 logging.info(f"Loaded prompt override: {row.name}")
 
-    # 初始化 LLM httpx 客户端
-    llm_service.start()
+    # 初始化统一 agent server 客户端
     agent_server.start()
 
     # 启动定时匹配任务（每小时扫描 pending 事件）
@@ -91,7 +89,6 @@ async def lifespan(app: FastAPI):
     # 关闭时清理资源
     await match_scheduler.stop()
     await agent_server.close()
-    await llm_service.close()
     await embedding_service.close()
     await close_redis()
     await engine.dispose()
@@ -109,6 +106,7 @@ async def _ensure_runtime_schema(conn) -> None:
     await conn.execute(text("ALTER TABLE events ADD COLUMN IF NOT EXISTS age_filter_min INTEGER"))
     await conn.execute(text("ALTER TABLE events ADD COLUMN IF NOT EXISTS age_filter_max INTEGER"))
     await conn.execute(text("ALTER TABLE events ADD COLUMN IF NOT EXISTS age_filter_mode VARCHAR(20)"))
+    await conn.execute(text("ALTER TABLE match_logs ADD COLUMN IF NOT EXISTS score_breakdown JSONB"))
     await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS key VARCHAR(100)"))
     await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS category VARCHAR(40)"))
     await conn.execute(text("ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS scope VARCHAR(20) DEFAULT 'long_term'"))

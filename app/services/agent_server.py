@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import json
+import logging
+import re
 from dataclasses import dataclass
 from typing import Any, AsyncIterator
 
 import httpx
 
 from app.core.config import settings
-from app.services.llm_service import LLMService
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -71,7 +74,6 @@ class AgentServer:
         self.conversation_config = conversation_config or load_conversation_config()
         self.draft_config = draft_config or load_draft_config()
         self._client: httpx.AsyncClient | None = None
-        self._json_helper = LLMService()
 
     def start(self) -> None:
         if self._client is not None and not self._client.is_closed:
@@ -110,7 +112,30 @@ class AgentServer:
             max_tokens=max_tokens,
         ):
             text += piece
-        return self._json_helper._extract_json(text)
+        return self.extract_json(text)
+
+    @staticmethod
+    def extract_json(text: str) -> Any:
+        match = re.search(r"```(?:json)?\s*\n?(.*?)\n?\s*```", text, re.DOTALL)
+        if match:
+            text = match.group(1).strip()
+
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            pass
+
+        for start_char, end_char in [("{", "}"), ("[", "]")]:
+            start = text.find(start_char)
+            end = text.rfind(end_char)
+            if start != -1 and end > start:
+                try:
+                    return json.loads(text[start:end + 1])
+                except json.JSONDecodeError:
+                    continue
+
+        logger.warning("Failed to extract JSON from agent server output: %s", text[:200])
+        return None
 
     async def stream_chat(
         self,
